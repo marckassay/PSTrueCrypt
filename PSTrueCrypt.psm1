@@ -3,14 +3,15 @@
 Mounts a TrueCrypt container using config settings in the config file and credentials from Windows Credential Manager.
 
 .DESCRIPTION
-
+After editing PSTrueCrypt-Config.xml file and adding a password to Windows Credential Manager, you will be able to mount 
+a TrueCrypt container (assuming TrueCrypt is installed).  This method of mounting and dismounting a TrueCrypt container
+does not require and GUI, its all done in PowerShell!
 
 .PARAMETER Name
 The name attribute value of the config element.
 
 .EXAMPLE
 PS C:\>Mount-TrueCrypt -Name Area51
-
 
 .INPUTS
 System.String
@@ -22,15 +23,6 @@ None
 To add Windows Credentials, open up Control Panel>User Accounts>Credential Manager and click "Add a gereric credential". 
 The "Internet or network address" field must equal the credential attribute in a the config node.
 
-.LINK
-???
-
-.ROLE
-???
-
-.FUNCTIONALITY
-???
-    
 #>
 
 function Mount-TrueCrypt
@@ -38,10 +30,7 @@ function Mount-TrueCrypt
 	[CmdletBinding()]
 	param(
 	  [Parameter(Mandatory=$True,Position=1)]
-	   [string]$Name,
-	   
-	  [Parameter(Mandatory=$False,Position=2)]
-	   [string]$KeyFilePath
+	   [string]$Name
 	)
 
     begin {
@@ -61,6 +50,33 @@ function Mount-TrueCrypt
         $Password = ""
     }
 }
+
+
+<#
+.SYNOPSIS
+Dismounts a TrueCrypt container using config settings in the config file.
+
+.DESCRIPTION
+After editing PSTrueCrypt-Config.xml file and adding a password to Windows Credential Manager, you will be able to mount 
+a TrueCrypt container (assuming TrueCrypt is installed).  This method of mounting and dismounting a TrueCrypt container
+does not require and GUI, its all done in PowerShell!
+
+.PARAMETER Name
+The name attribute value of the config element.
+
+.EXAMPLE
+PS C:\>Dismount-TrueCrypt -Name Area51
+
+.INPUTS
+System.String
+
+.OUTPUTS
+None
+
+.NOTES
+To add Windows Credentials, open up Control Panel>User Accounts>Credential Manager and click "Add a gereric credential". 
+The "Internet or network address" field must equal the credential attribute in a the config node.
+#>
 
 function Dismount-TrueCrypt
 {
