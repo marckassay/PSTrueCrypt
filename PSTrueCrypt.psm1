@@ -10,8 +10,14 @@ does not require and GUI, its all done in PowerShell!
 .PARAMETER Name
 The name attribute value of the config element.
 
+.PARAMETER KeyfilePath
+Any path(s) to keyfiles (or directories) if required.
+
 .EXAMPLE
 PS C:\>Mount-TrueCrypt -Name Area51
+
+.EXAMPLE
+PS C:\>Mount-TrueCrypt -Name Area51 -KeyfilePath C:/Music/Louie_Louie.mp3
 
 .INPUTS
 System.String
@@ -30,7 +36,10 @@ function Mount-TrueCrypt
 	[CmdletBinding()]
 	param(
 	  [Parameter(Mandatory=$True,Position=1)]
-	   [string]$Name
+	   [string]$Name,
+	   
+	  [Parameter(Mandatory=$False,Position=2)]
+	   [array]$KeyfilePath
 	)
 
     begin {
@@ -40,10 +49,15 @@ function Mount-TrueCrypt
     }
 
     process {
+
         $Credentials = Get-Credential $Settings.WindowsCredentialName
         $Password = $Credentials.GetNetworkCredential().Password
 
-        & TrueCrypt /quit /v $Settings.TrueCryptContainerPath /l $Settings.PreferredMountDrive /a /p $Password /e /b
+        [string]$TrueCryptParams = Get-TrueCryptParams -Password $Password -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
+        
+        $Expression = $TrueCryptParams.Insert(0,"& TrueCrypt ")
+        
+        Invoke-Expression $Expression
     }
 
     end {
@@ -127,6 +141,55 @@ function Get-TrueCryptConfigNode
         }
 
         return $Settings
+    }
+}
+
+function Get-TrueCryptParams
+{
+    param(
+	  [Parameter(Mandatory=$True,Position=1)]
+	   [string]$Password,
+
+	  [Parameter(Mandatory=$True,Position=2)]
+	   [string]$TrueCryptContainerPath,
+
+	  [Parameter(Mandatory=$True,Position=3)]
+	   [string]$PreferredMountDrive,
+	   
+	  [Parameter(Mandatory=$false,Position=4)]
+	   [array]$KeyfilePath
+    )
+
+    process {
+
+        $ParamsHash = @{
+            "/quit"="";
+            "/v"=$TrueCryptContainerPath;
+            "/l"=$PreferredMountDrive;
+            "/a"="";
+            "/p"="'$Password'";
+            "/e"="";
+        }
+		
+        if($KeyfilePath.count -gt 0) {
+            $KeyfilePath | % { 
+                $ParamsHash.Add("/keyfile",$_)
+            }
+        }
+        
+        $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
+
+        $ParamsHash.GetEnumerator() | ForEach-Object {
+            if($_.Value.Equals("")) {
+                [void]$ParamsString.AppendFormat("{0}", $_.Key)
+            } else {
+                [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
+            }
+
+            [void]$ParamsString.Append(" ")
+        }
+        
+        return $ParamsString.ToString().TrimEnd(" ");
     }
 }
 
