@@ -12,4 +12,4 @@ Public functions are Mount-TrueCrypt and Dismount-TrueCrypt.
 
 ### Roadmap
 * Add project to PSGet Directory
-* Add function parameter (and possibly config attribute) to add keyfile path
+* Add tab completion (via PSReadLine) for config settings
