@@ -124,12 +124,19 @@ function Get-TrueCryptConfigNode
 	    #    <config name="Area51" path="D:\Area51" drive="X" credential="Area51" />
         # </configs>
         [xml]$ConfigFile = Get-Content $PSScriptRoot"\PSTrueCrypt-Config.xml"
+        
 
-        $TargetedConfigNode = $ConfigFile.Configs.Config | ? { $_.name -eq $Name}
-
-        if(-not $TargetedConfigNode.name) {
+        if(-not $ConfigFile.Configs) {
             $ErrorMessage = @"
-"There was no node found with a name attribute of '$Name' in the '$PSScriptRoot\TrueCrypt-Config.xml' file."
+"You need to add at least one config node in '$PSScriptRoot\PSTrueCrypt-Config.xml' file.  View '$PSScriptRoot\PSTrueCrypt-Config.Sample.xml' as a reference."
+"@
+            Write-Error $ErrorMessage            
+        }
+        elseif(-not $TargetedConfigNode.name) {
+            $TargetedConfigNode = $ConfigFile.Configs.Config | ? { $_.name -eq $Name}
+            
+            $ErrorMessage = @"
+"There was no node found with a name attribute of '$Name' in the '$PSScriptRoot\PSTrueCrypt-Config.xml' file."
 "@
             Write-Error $ErrorMessage
         }
