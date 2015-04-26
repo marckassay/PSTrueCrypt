@@ -125,6 +125,7 @@ function Get-TrueCryptConfigNode
         # </configs>
         [xml]$ConfigFile = Get-Content $PSScriptRoot"\PSTrueCrypt-Config.xml"
         
+        $TargetedConfigNode = $ConfigFile.Configs.Config | ? { $_.name -eq $Name}
 
         if(-not $ConfigFile.Configs) {
             $ErrorMessage = @"
@@ -132,9 +133,7 @@ function Get-TrueCryptConfigNode
 "@
             Write-Error $ErrorMessage            
         }
-        elseif(-not $TargetedConfigNode.name) {
-            $TargetedConfigNode = $ConfigFile.Configs.Config | ? { $_.name -eq $Name}
-            
+        elseif(-not $TargetedConfigNode.name) {    
             $ErrorMessage = @"
 "There was no node found with a name attribute of '$Name' in the '$PSScriptRoot\PSTrueCrypt-Config.xml' file."
 "@
@@ -180,7 +179,7 @@ function Get-TrueCryptParams
 		
         if($KeyfilePath.count -gt 0) {
             $KeyfilePath | % { 
-                $ParamsHash.Add("/keyfile",$_)
+                $ParamsHash.Add("/keyfile","'$_'")
             }
         }
         
