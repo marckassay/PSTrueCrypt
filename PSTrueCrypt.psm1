@@ -44,9 +44,13 @@ function Mount-TrueCrypt
 
     begin {
         
-        $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+        $WasConsolePromptingPrior
 
-        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+        if(Test-IsAdmin -eq $True) { 
+            $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+
+            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+        }
 
         $Settings = Get-TrueCryptConfigNode -Name $Name
     }
@@ -206,6 +210,11 @@ function Get-TrueCryptParams
         
         return $ParamsString.ToString().TrimEnd(" ");
     }
+}
+
+# http://www.jonathanmedd.net/2014/01/testing-for-admin-privileges-in-powershell.html
+function Test-IsAdmin {
+    ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
 
 Export-ModuleMember -function Mount-TrueCrypt
