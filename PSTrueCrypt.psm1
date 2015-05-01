@@ -43,6 +43,9 @@ function Mount-TrueCrypt
 	)
 
     begin {
+        
+        $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+
         Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
 
         $Settings = Get-TrueCryptConfigNode -Name $Name
@@ -61,6 +64,12 @@ function Mount-TrueCrypt
     }
 
     end {
+        
+        # if console prompting was set to false prior to this module, then set it back to false... 
+        if($WasConsolePromptingPrior -eq $False) {
+            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
+        }
+
         $Password = ""
     }
 }
