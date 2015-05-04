@@ -38,18 +38,27 @@ function Mount-TrueCrypt
 	  [Parameter(Mandatory=$True,Position=1)]
 	   [string]$Name,
 	   
-	  [Parameter(Mandatory=$False,Position=2)]
-	   [array]$KeyfilePath
+	  [Parameter(Mandatory=$False)]
+	   [array]$KeyfilePath,
+
+	  [Parameter(Mandatory=$False)]
+	   [System.Security.SecureString]$Password
 	)
 
     begin {
         
-        $WasConsolePromptingPrior
+        # if no password was given, then we need to start the process for of prompting for one...
+        if([string]::IsNullOrEmpty($Password) -eq $True) {
 
-        if(Test-IsAdmin -eq $True) { 
-            $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+            $WasConsolePromptingPrior
 
-            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+            # check to see if session is in admin mode for console prompting...
+            if(Test-IsAdmin -eq $True) { 
+                $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+
+                Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+            }
+
         }
 
         $Settings = Get-TrueCryptConfigNode -Name $Name
@@ -57,10 +66,16 @@ function Mount-TrueCrypt
 
     process {
 
-        $Credentials = Get-Credential $Settings.WindowsCredentialName
-        $Password = $Credentials.GetNetworkCredential().Password
+        # get password string...
+        if([string]::IsNullOrEmpty($Password) -eq $True) {
+            $Password = Read-Host -Prompt "Enter password" -AsSecureString
+        }
 
-        [string]$TrueCryptParams = Get-TrueCryptParams -Password $Password -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
+        $Credentials = New-Object System.Management.Automation.PSCredential("nil", $Password)
+        $PasswordString = $Credentials.GetNetworkCredential().Password
+
+        # construct arguements and execute expression...
+        [string]$TrueCryptParams = Get-TrueCryptMountParams -Password $PasswordString -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
         
         $Expression = $TrueCryptParams.Insert(0,"& TrueCrypt ")
         
@@ -74,7 +89,7 @@ function Mount-TrueCrypt
             Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
         }
 
-        $Password = ""
+        $PasswordString = ""
     }
 }
 
@@ -109,16 +124,32 @@ function Dismount-TrueCrypt
 {
 	[CmdletBinding()]
 	param(
-	  [Parameter(Mandatory=$True,Position=1)]
-	   [string]$Name
+	  [Parameter(Mandatory=$False,Position=1)]
+	   [string]$Name,
+
+	   [switch]$ForceAll
 	)
 
     begin { 
-        $Settings = Get-TrueCryptConfigNode -Name $Name
+
+        $Settings
+        # is Dismount-TrueCrypt has been invoked with the -Force flag, then it will have a value of true..
+        if($Force -eq $False) {
+            $Settings = Get-TrueCryptConfigNode -Name $Name
+            
+            # construct arguments and execute expression...
+            [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive
+        } else {
+            # construct arguments for Force dismount(s)...
+            [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive ""
+        }
     }
 
     process {
-        & TrueCrypt /quit /d $Settings.PerferredDrive
+
+        $Expression = $TrueCryptParams.Insert(0,"& TrueCrypt ")
+        
+        Invoke-Expression $Expression 
     }
 }
 
@@ -134,7 +165,7 @@ function Get-TrueCryptConfigNode
 
         # import config file
         # <configs>
-	    #    <config name="Area51" path="D:\Area51" drive="X" credential="Area51" />
+	    #    <config name="Area51" path="D:\Area51" drive="X" />
         # </configs>
         [xml]$ConfigFile = Get-Content $PSScriptRoot"\PSTrueCrypt-Config.xml"
         
@@ -156,14 +187,13 @@ function Get-TrueCryptConfigNode
         $Settings = @{
             TrueCryptContainerPath = $TargetedConfigNode.path
             PreferredMountDrive = $TargetedConfigNode.drive
-            WindowsCredentialName = $TargetedConfigNode.credential
         }
 
         return $Settings
     }
 }
 
-function Get-TrueCryptParams
+function Get-TrueCryptMountParams
 {
     param(
 	  [Parameter(Mandatory=$True,Position=1)]
@@ -196,6 +226,41 @@ function Get-TrueCryptParams
             }
         }
         
+        $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
+
+        $ParamsHash.GetEnumerator() | ForEach-Object {
+            if($_.Value.Equals("")) {
+                [void]$ParamsString.AppendFormat("{0}", $_.Key)
+            } else {
+                [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
+            }
+
+            [void]$ParamsString.Append(" ")
+        }
+        
+        return $ParamsString.ToString().TrimEnd(" ");
+    }
+}
+
+function Get-TrueCryptDismountParams
+{
+    param(
+	  [Parameter(Mandatory=$False,Position=1)]
+	   [string]$Drive
+    )
+
+    process {
+
+        $ParamsHash = @{
+            "/quit"="";
+            "/d"=$Drive;
+        }
+        
+        # Force dismount for all TrueCrypt volumes? ...
+        if($Drive -eq "") {
+            $ParamsHash.Add("/f","")
+        }
+
         $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
 
         $ParamsHash.GetEnumerator() | ForEach-Object {
