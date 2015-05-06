@@ -1,34 +1,43 @@
 <#
 .SYNOPSIS
-Mounts a TrueCrypt container using config settings in the config file and credentials from Windows Credential Manager.
+    Mounts a TrueCrypt container. 
 
 .DESCRIPTION
-After editing PSTrueCrypt-Config.xml file and adding a password to Windows Credential Manager, you will be able to mount 
-a TrueCrypt container (assuming TrueCrypt is installed).  This method of mounting and dismounting a TrueCrypt container
-does not require and GUI, its all done in PowerShell!
+    In order to use this function, there must be a file in this module directory named, 'PSTrueCrypt-Config.xml'.  This file must contain a config node referencing the TrueCrypt container with a drive letter.
 
 .PARAMETER Name
-The name attribute value of the config element.
+    The name attribute value of the config node.
 
 .PARAMETER KeyfilePath
-Any path(s) to keyfiles (or directories) if required.
+    Any path(s) to keyfiles (or directories) if required.
+
+.PARAMETER $Password
+    If invoking this function in a background task, give value to this parameter to prevent function from prompting user for password.
 
 .EXAMPLE
-PS C:\>Mount-TrueCrypt -Name Area51
+    Mounts a TrueCrypt container with name of 'Area51' which must be in the 'PSTrueCrypt-Config.xml'.
+
+    PS C:\>Mount-TrueCrypt -Name Area51
 
 .EXAMPLE
-PS C:\>Mount-TrueCrypt -Name Area51 -KeyfilePath C:/Music/Louie_Louie.mp3
+    Mounts a TrueCrypt container with name of 'Area51' that requires a Keyfile.
+
+    PS C:\>Mount-TrueCrypt -Name Area51 -KeyfilePath C:/Music/Louie_Louie.mp3
+
+.EXAMPLE
+    Mounts a TrueCrypt container with name of 'Area51' that requires a Keyfile and passes a secure password into the Password parameter.  This is usefull for background tasks that can't rely on user input.
+
+    PS C:\>$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
+    PS C:\>Mount-TrueCrypt -Name Area51 -KeyfilePath C:/Music/Louie_Louie.mp3 -Password $SecurePassword
 
 .INPUTS
-System.String
+    None
 
 .OUTPUTS
-None
+    None
 
-.NOTES
-To add Windows Credentials, open up Control Panel>User Accounts>Credential Manager and click "Add a gereric credential". 
-The "Internet or network address" field must equal the credential attribute in a the config node.
-
+.LINK
+    https://github.com/marckassay/PSTrueCrypt
 #>
 
 function Mount-TrueCrypt
@@ -93,31 +102,37 @@ function Mount-TrueCrypt
     }
 }
 
-
 <#
 .SYNOPSIS
-Dismounts a TrueCrypt container using config settings in the config file.
+    Dsmounts a TrueCrypt container. 
 
 .DESCRIPTION
-After editing PSTrueCrypt-Config.xml file and adding a password to Windows Credential Manager, you will be able to mount 
-a TrueCrypt container (assuming TrueCrypt is installed).  This method of mounting and dismounting a TrueCrypt container
-does not require and GUI, its all done in PowerShell!
+    In order to use this function, there must be a file in this module directory named, 'PSTrueCrypt-Config.xml'.  This file must contain a config node referencing the TrueCrypt container with a drive letter.
 
 .PARAMETER Name
-The name attribute value of the config element.
+    The name attribute value of the config node.
+
+.PARAMETER ForceAll
+    If method is invoked with this flag/switch parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
 
 .EXAMPLE
-PS C:\>Dismount-TrueCrypt -Name Area51
+    Dismounts a TrueCrypt container with name of 'Area51' which must be in the 'PSTrueCrypt-Config.xml'.
+
+    PS C:\>Dismount-TrueCrypt -Name Area51
+
+.EXAMPLE
+    Dismounts all TrueCrypt containers
+
+    PS C:\>Dismount-TrueCrypt -ForceAll
 
 .INPUTS
-System.String
+    None
 
 .OUTPUTS
-None
+    None
 
-.NOTES
-To add Windows Credentials, open up Control Panel>User Accounts>Credential Manager and click "Add a gereric credential". 
-The "Internet or network address" field must equal the credential attribute in a the config node.
+.LINK
+    https://github.com/marckassay/PSTrueCrypt
 #>
 
 function Dismount-TrueCrypt
@@ -134,7 +149,7 @@ function Dismount-TrueCrypt
 
         $Settings
         # is Dismount-TrueCrypt has been invoked with the -Force flag, then it will have a value of true..
-        if($Force -eq $False) {
+        if($ForceAll -eq $False) {
             $Settings = Get-TrueCryptConfigNode -Name $Name
             
             # construct arguments and execute expression...
@@ -153,6 +168,7 @@ function Dismount-TrueCrypt
     }
 }
 
+# internal function
 function Get-TrueCryptConfigNode
 {
 	param(
@@ -193,6 +209,7 @@ function Get-TrueCryptConfigNode
     }
 }
 
+# internal function
 function Get-TrueCryptMountParams
 {
     param(
@@ -242,6 +259,7 @@ function Get-TrueCryptMountParams
     }
 }
 
+# internal function
 function Get-TrueCryptDismountParams
 {
     param(
@@ -277,7 +295,9 @@ function Get-TrueCryptDismountParams
     }
 }
 
-# http://www.jonathanmedd.net/2014/01/testing-for-admin-privileges-in-powershell.html
+
+# internal function
+# ref: http://www.jonathanmedd.net/2014/01/testing-for-admin-privileges-in-powershell.html
 function Test-IsAdmin {
     ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
