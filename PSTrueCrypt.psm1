@@ -11,7 +11,7 @@
 .PARAMETER KeyfilePath
     Any path(s) to keyfiles (or directories) if required.
 
-.PARAMETER $Password
+.PARAMETER Password
     If invoking this function in a background task, give value to this parameter to prevent function from prompting user for password.
 
 .EXAMPLE
