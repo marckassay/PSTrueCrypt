@@ -83,7 +83,7 @@ function Mount-TrueCrypt
         $Credentials = New-Object System.Management.Automation.PSCredential("nil", $Password)
         $PasswordString = $Credentials.GetNetworkCredential().Password
 
-        # construct arguements and execute expression...
+        # construct arguments and execute expression...
         [string]$TrueCryptParams = Get-TrueCryptMountParams -Password $PasswordString -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
         
         $Expression = $TrueCryptParams.Insert(0,"& TrueCrypt ")
@@ -185,7 +185,7 @@ function Get-TrueCryptConfigNode
         # </configs>
         [xml]$ConfigFile = Get-Content $PSScriptRoot"\PSTrueCrypt-Config.xml"
         
-        $TargetedConfigNode = $ConfigFile.Configs.Config | ? { $_.name -eq $Name}
+        $TargetedConfigNode = $ConfigFile.Configs.Config | Where-Object { $_.name -eq $Name}
 
         if(-not $ConfigFile.Configs) {
             $ErrorMessage = @"
@@ -238,7 +238,7 @@ function Get-TrueCryptMountParams
         }
 		
         if($KeyfilePath.count -gt 0) {
-            $KeyfilePath | % { 
+            $KeyfilePath | For-Each { 
                 $ParamsHash.Add("/keyfile","'$_'")
             }
         }
