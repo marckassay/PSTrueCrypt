@@ -104,7 +104,7 @@ function Mount-TrueCrypt
 
 <#
 .SYNOPSIS
-    Dsmounts a TrueCrypt container. 
+    Dismounts a TrueCrypt container. 
 
 .DESCRIPTION
     In order to use this function, there must be a file in this module directory named, 'PSTrueCrypt-Config.xml'.  This file must contain a config node referencing the TrueCrypt container with a drive letter.
@@ -166,6 +166,97 @@ function Dismount-TrueCrypt
         
         Invoke-Expression $Expression 
     }
+}
+
+
+<#
+.SYNOPSIS
+    Sets in the registry the TrueCrypt container's path and name (that may be used when invoking Mount-TrueCrypt function). 
+
+.DESCRIPTION
+    When invoked successfully, the container's path, preferred mount drive letter (if given), and a name (if given) will be stored
+    as a subkey in the HKEY_LOCAL_MACHINE\SOFTWARE\PSTrueCrypt registry key (which will be created if it doesn't exists).
+
+.PARAMETER Path
+    The TrueCrypt container's location.
+
+.PARAMETER Name
+    A name to be used to reference this container.
+
+.PARAMETER Letter
+    A preferred mount drive letter for this container.
+
+.EXAMPLE
+    Dismounts a TrueCrypt container with name of 'Area51' which must be in the 'PSTrueCrypt-Config.xml'.
+
+    PS C:\>Dismount-TrueCrypt -Name Area51
+
+.EXAMPLE
+    Dismounts all TrueCrypt containers
+
+    PS C:\>Dismount-TrueCrypt -ForceAll
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+
+.LINK
+    https://github.com/marckassay/PSTrueCrypt
+#>
+function Set-TrueCryptContainer
+{
+	[CmdletBinding()]
+	param(
+	  [Parameter(Mandatory=$True,Position=1)]
+	   [string]$Path,
+	   
+	  [Parameter(Mandatory=$False)]
+	   [string]$Name,
+
+	  [Parameter(Mandatory=$False)]
+       [string]$Letter
+	)
+
+    begin {
+        # check to see if a subkey exists, if not create one and return item...
+        $PSTrueCrypt = Get-HKCUSoftwareKey -Name "PSTrueCrypt"
+        
+        $PSTrueCrypt
+    }
+}
+
+# internal function
+function Get-HKCUSoftwareKey
+{
+	param(
+	  [Parameter(Mandatory=$True,Position=1)]
+	   [string]$Name
+	)
+
+    process {
+        $SubKey
+
+        try { 
+            $SubKey = Get-Item -Path HKCU:\Software\$Name -ErrorAction Stop
+        }
+        catch {
+            $SubKey = New-Item -Path HKCU:\Software\$Name 
+        }
+
+        return $SubKey
+    }
+}
+
+# internal function
+function Create-SubKey
+{
+	param(
+	  [Parameter(Mandatory=$True,Position=1)]
+	   [string]$Name
+	)
+    +=$SubKey.SubKeyCount
 }
 
 # internal function
@@ -304,3 +395,5 @@ function Test-IsAdmin {
 
 Export-ModuleMember -function Mount-TrueCrypt
 Export-ModuleMember -function Dismount-TrueCrypt
+Export-ModuleMember -function Set-TrueCryptContainer
+Export-ModuleMember -function Get-HKCUSoftwareKey
