@@ -205,7 +205,7 @@ function Dismount-TrueCrypt
 .LINK
     https://github.com/marckassay/PSTrueCrypt
 #>
-function Set-TrueCryptContainer
+function New-PSTrueCryptContainer
 {
 	[CmdletBinding()]
 	param(
@@ -220,38 +220,21 @@ function Set-TrueCryptContainer
 	)
 
     begin {
-        # check to see if a subkey exists, if not create one and return item...
-        $PSTrueCrypt = Set-PSTrueCryptSubKey -Path $Location -Name $Name -MountLetter $MountLetter
-    }
-}
 
-# internal function
-function Set-PSTrueCryptSubKey
-{
-	[CmdletBinding()]
-	param(
-	  [Parameter(Mandatory=$True,Position=1)]
-	   [string]$Location,
-	   
-	  [Parameter(Mandatory=$False)]
-	   [string]$Name,
-
-	  [Parameter(Mandatory=$False)]
-       [string]$MountLetter
-	)
-
-    process {
         $Key
         $SubKey
 
         $rule = New-Object System.Security.AccessControl.RegistryAccessRule (
-			[System.Security.Principal.WindowsIdentity]::GetCurrent().Name,"FullControl",
-			[System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
-			[System.Security.AccessControl.PropagationFlags]"None",
-			[System.Security.AccessControl.AccessControlType]"Allow")
+		    [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,"FullControl",
+		    [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
+		    [System.Security.AccessControl.PropagationFlags]"None",
+		    [System.Security.AccessControl.AccessControlType]"Allow")
 
         Push-Location
         Set-Location HKCU:\SOFTWARE
+    }
+
+    process {
 
         try {
             $Key = Get-Item -Path "PSTrueCrypt"
@@ -263,64 +246,65 @@ function Set-PSTrueCryptSubKey
             $Key = New-Item -Path "PSTrueCrypt"
         }
 
-        [string]$SubName = ($Key.SubKeyCount+1).ToString()
+        [string]$SubKeyName = ($Key.SubKeyCount+1).ToString()
 
-		$SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubName",
+		$SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
 					[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
 
         $acl = $SubKey.GetAccessControl()
 		$acl.SetAccessRule($rule)
 		$SubKey.SetAccessControl($acl)
         
-        New-ItemProperty -Path  "PSTrueCrypt\$SubName" -Name Location    -PropertyType String -Value $Location
-        New-ItemProperty -Path  "PSTrueCrypt\$SubName" -Name Name        -PropertyType String -Value $Name
-        New-ItemProperty -Path  "PSTrueCrypt\$SubName" -Name MountLetter -PropertyType String -Value $MountLetter
-        
+        New-ItemProperty -Path  "PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
+        New-ItemProperty -Path  "PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
+        New-ItemProperty -Path  "PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+    }
+
+    end {
+
         Pop-Location
 
         return $SubKey
     }
 }
 
-# internal function
-function Get-TrueCryptConfigNode
+function Remove-PSTrueCryptContainer
 {
+	[CmdletBinding()]
 	param(
 	  [Parameter(Mandatory=$True,Position=1)]
 	   [string]$Name
 	)
 
     begin {
-        $ErrorActionPreference = "Stop"
-
-        # import config file
-        # <configs>
-	    #    <config name="Area51" path="D:\Area51" drive="X" />
-        # </configs>
-        [xml]$ConfigFile = Get-Content $PSScriptRoot"\PSTrueCrypt-Config.xml"
-        
-        $TargetedConfigNode = $ConfigFile.Configs.Config | Where-Object { $_.name -eq $Name}
-
-        if(-not $ConfigFile.Configs) {
-            $ErrorMessage = @"
-"You need to add at least one config node in '$PSScriptRoot\PSTrueCrypt-Config.xml' file.  View '$PSScriptRoot\PSTrueCrypt-Config.Sample.xml' as a reference."
-"@
-            Write-Error $ErrorMessage            
-        }
-        elseif(-not $TargetedConfigNode.name) {    
-            $ErrorMessage = @"
-"There was no node found with a name attribute of '$Name' in the '$PSScriptRoot\PSTrueCrypt-Config.xml' file."
-"@
-            Write-Error $ErrorMessage
-        }
-
-        $Settings = @{
-            TrueCryptContainerPath = $TargetedConfigNode.path
-            PreferredMountDrive = $TargetedConfigNode.drive
-        }
-
-        return $Settings
+        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$Name",
+			[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
     }
+}
+
+function Show-PSTrueCryptContainers
+{
+    begin {
+        Get-RegistryKeyPropertiesAndValues -path  "HKCU:\SOFTWARE\PSTrueCrypt"
+    }
+}
+
+# internal function
+function Get-RegistryKeyPropertiesAndValues
+{
+    param(
+      [Parameter(Mandatory=$true)]
+      [string]$path
+    )
+
+    Push-Location
+    Set-Location -Path $path
+
+    Get-ChildItem . -Recurse | ForEach-Object {
+        Get-ItemProperty $_.PsPath
+    } | Format-Table Name, MountLetter, Location -AutoSize
+
+    Pop-Location
 }
 
 # internal function
@@ -418,5 +402,6 @@ function Test-IsAdmin {
 
 Export-ModuleMember -function Mount-TrueCrypt
 Export-ModuleMember -function Dismount-TrueCrypt
-Export-ModuleMember -function Set-TrueCryptContainer
-Export-ModuleMember -function Set-PSTrueCryptSubKey
+Export-ModuleMember -function New-PSTrueCryptContainer
+Export-ModuleMember -function Remove-PSTrueCryptContainer
+Export-ModuleMember -function Show-PSTrueCryptContainers
