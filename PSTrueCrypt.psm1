@@ -171,19 +171,19 @@ function Dismount-TrueCrypt
 
 <#
 .SYNOPSIS
-    Sets in the registry the TrueCrypt container's path and name (that may be used when invoking Mount-TrueCrypt function). 
+    Sets in the registry the TrueCrypt container's location and name (that may be used when invoking Mount-TrueCrypt function). 
 
 .DESCRIPTION
-    When invoked successfully, the container's path, preferred mount drive letter (if given), and a name (if given) will be stored
-    as a subkey in the HKEY_LOCAL_MACHINE\SOFTWARE\PSTrueCrypt registry key (which will be created if it doesn't exists).
+    When invoked successfully, the container's location, preferred mount drive letter (if given), and a name will be stored
+    as a subkey in the HKCU:\Software\PSTrueCrypt registry key (which will be created if it doesn't exists).
 
-.PARAMETER Path
+.PARAMETER Location
     The TrueCrypt container's location.
 
 .PARAMETER Name
     A name to be used to reference this container.
 
-.PARAMETER Letter
+.PARAMETER MountLetter
     A preferred mount drive letter for this container.
 
 .EXAMPLE
@@ -210,53 +210,76 @@ function Set-TrueCryptContainer
 	[CmdletBinding()]
 	param(
 	  [Parameter(Mandatory=$True,Position=1)]
-	   [string]$Path,
+	   [string]$Location,
+	   
+	  [Parameter(Mandatory=$True)]
+	   [string]$Name,
+
+	  [Parameter(Mandatory=$False)]
+       [string]$MountLetter
+	)
+
+    begin {
+        # check to see if a subkey exists, if not create one and return item...
+        $PSTrueCrypt = Set-PSTrueCryptSubKey -Path $Location -Name $Name -MountLetter $MountLetter
+    }
+}
+
+# internal function
+function Set-PSTrueCryptSubKey
+{
+	[CmdletBinding()]
+	param(
+	  [Parameter(Mandatory=$True,Position=1)]
+	   [string]$Location,
 	   
 	  [Parameter(Mandatory=$False)]
 	   [string]$Name,
 
 	  [Parameter(Mandatory=$False)]
-       [string]$Letter
-	)
-
-    begin {
-        # check to see if a subkey exists, if not create one and return item...
-        $PSTrueCrypt = Get-HKCUSoftwareKey -Name "PSTrueCrypt"
-        
-        $PSTrueCrypt
-    }
-}
-
-# internal function
-function Get-HKCUSoftwareKey
-{
-	param(
-	  [Parameter(Mandatory=$True,Position=1)]
-	   [string]$Name
+       [string]$MountLetter
 	)
 
     process {
+        $Key
         $SubKey
 
-        try { 
-            $SubKey = Get-Item -Path HKCU:\Software\$Name -ErrorAction Stop
+        $rule = New-Object System.Security.AccessControl.RegistryAccessRule (
+			[System.Security.Principal.WindowsIdentity]::GetCurrent().Name,"FullControl",
+			[System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
+			[System.Security.AccessControl.PropagationFlags]"None",
+			[System.Security.AccessControl.AccessControlType]"Allow")
+
+        Push-Location
+        Set-Location HKCU:\SOFTWARE
+
+        try {
+            $Key = Get-Item -Path "PSTrueCrypt"
+
+            if($Key -eq $null) {
+                throw [System.IO.FileNotFoundException]
+            }
+        } catch {
+            $Key = New-Item -Path "PSTrueCrypt"
         }
-        catch {
-            $SubKey = New-Item -Path HKCU:\Software\$Name 
-        }
+
+        [string]$SubName = ($Key.SubKeyCount+1).ToString()
+
+		$SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubName",
+					[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+
+        $acl = $SubKey.GetAccessControl()
+		$acl.SetAccessRule($rule)
+		$SubKey.SetAccessControl($acl)
+        
+        New-ItemProperty -Path  "PSTrueCrypt\$SubName" -Name Location    -PropertyType String -Value $Location
+        New-ItemProperty -Path  "PSTrueCrypt\$SubName" -Name Name        -PropertyType String -Value $Name
+        New-ItemProperty -Path  "PSTrueCrypt\$SubName" -Name MountLetter -PropertyType String -Value $MountLetter
+        
+        Pop-Location
 
         return $SubKey
     }
-}
-
-# internal function
-function Create-SubKey
-{
-	param(
-	  [Parameter(Mandatory=$True,Position=1)]
-	   [string]$Name
-	)
-    +=$SubKey.SubKeyCount
 }
 
 # internal function
@@ -396,4 +419,4 @@ function Test-IsAdmin {
 Export-ModuleMember -function Mount-TrueCrypt
 Export-ModuleMember -function Dismount-TrueCrypt
 Export-ModuleMember -function Set-TrueCryptContainer
-Export-ModuleMember -function Get-HKCUSoftwareKey
+Export-ModuleMember -function Set-PSTrueCryptSubKey
