@@ -19,3 +19,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Visual Studio Code config
+.vscode/launch.json

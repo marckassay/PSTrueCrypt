@@ -246,7 +246,7 @@ function New-PSTrueCryptContainer
             $Key = New-Item -Path "PSTrueCrypt"
         }
 
-        [string]$SubKeyName = ($Key.SubKeyCount+1).ToString()
+        [string]$SubKeyName = New-Guid
 
 		$SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
 					[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
@@ -277,34 +277,35 @@ function Remove-PSTrueCryptContainer
 	)
 
     begin {
-        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$Name",
+        Push-Location
+        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+
+        $PSChildName
+        Get-ChildItem . -Recurse | ForEach-Object {
+           if($Name -eq (Get-ItemProperty $_.PsPath).Name) {
+            $PSChildName = $_.PSChildName
+           }
+        }
+
+        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$PSChildName",
 			[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+
+        Pop-Location
     }
 }
 
 function Show-PSTrueCryptContainers
 {
     begin {
-        Get-RegistryKeyPropertiesAndValues -path  "HKCU:\SOFTWARE\PSTrueCrypt"
+        Push-Location
+        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+
+        Get-ChildItem . -Recurse | ForEach-Object {
+            Get-ItemProperty $_.PsPath
+        } | Format-Table Name, MountLetter, Location -AutoSize
+
+        Pop-Location
     }
-}
-
-# internal function
-function Get-RegistryKeyPropertiesAndValues
-{
-    param(
-      [Parameter(Mandatory=$true)]
-      [string]$path
-    )
-
-    Push-Location
-    Set-Location -Path $path
-
-    Get-ChildItem . -Recurse | ForEach-Object {
-        Get-ItemProperty $_.PsPath
-    } | Format-Table Name, MountLetter, Location -AutoSize
-
-    Pop-Location
 }
 
 # internal function
