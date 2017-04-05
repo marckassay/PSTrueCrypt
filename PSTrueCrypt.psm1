@@ -70,7 +70,7 @@ function Mount-TrueCrypt
 
         }
 
-        $Settings = Get-TrueCryptConfigNode -Name $Name
+        $Settings = Get-PSTrueCryptContainer -Name $Name
     }
 
     process {
@@ -150,7 +150,7 @@ function Dismount-TrueCrypt
         $Settings
         # is Dismount-TrueCrypt has been invoked with the -Force flag, then it will have a value of true..
         if($ForceAll -eq $False) {
-            $Settings = Get-TrueCryptConfigNode -Name $Name
+            $Settings = Get-PSTrueCryptContainer -Name $Name
             
             # construct arguments and execute expression...
             [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive
@@ -215,57 +215,29 @@ function New-PSTrueCryptContainer
 	  [Parameter(Mandatory=$True)]
 	   [string]$Name,
 
-	  [Parameter(Mandatory=$False)]
+	  [Parameter(Mandatory=$True)]
        [string]$MountLetter
 	)
+    $rule = New-Object System.Security.AccessControl.RegistryAccessRule (
+	    [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,"FullControl",
+	    [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
+	    [System.Security.AccessControl.PropagationFlags]"None",
+	    [System.Security.AccessControl.AccessControlType]"Allow")
 
-    begin {
+    [System.String]$SubKeyName = New-Guid
 
-        $Key
-        $SubKey
+    $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
+			    [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
 
-        $rule = New-Object System.Security.AccessControl.RegistryAccessRule (
-		    [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,"FullControl",
-		    [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
-		    [System.Security.AccessControl.PropagationFlags]"None",
-		    [System.Security.AccessControl.AccessControlType]"Allow")
-
-        Push-Location
-        Set-Location HKCU:\SOFTWARE
-    }
-
-    process {
-
-        try {
-            $Key = Get-Item -Path "PSTrueCrypt"
-
-            if($Key -eq $null) {
-                throw [System.IO.FileNotFoundException]
-            }
-        } catch {
-            $Key = New-Item -Path "PSTrueCrypt"
-        }
-
-        [string]$SubKeyName = New-Guid
-
-		$SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
-					[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
-
-        $acl = $SubKey.GetAccessControl()
-		$acl.SetAccessRule($rule)
-		$SubKey.SetAccessControl($acl)
+    $acl = $SubKey.GetAccessControl()
+    $acl.SetAccessRule($rule)
+    $SubKey.SetAccessControl($acl)
         
-        New-ItemProperty -Path  "PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
-        New-ItemProperty -Path  "PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
-        New-ItemProperty -Path  "PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
-    }
-
-    end {
-
-        Pop-Location
-
-        return $SubKey
-    }
+    New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
+    New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
+    New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+        
+    $SubKey
 }
 
 function Remove-PSTrueCryptContainer
@@ -276,36 +248,71 @@ function Remove-PSTrueCryptContainer
 	   [string]$Name
 	)
 
-    begin {
-        Push-Location
-        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-
-        $PSChildName
-        Get-ChildItem . -Recurse | ForEach-Object {
-           if($Name -eq (Get-ItemProperty $_.PsPath).Name) {
-            $PSChildName = $_.PSChildName
-           }
+    [System.String]$PSChildName = Get-SubKeyPath -Name $Name
+    $PSChildName = $PSChildName.TrimStart()
+       
+        try{
+        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$PSChildName", $True)
         }
-
-        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$PSChildName",
-			[Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
-
-        Pop-Location
-    }
+        catch {
+        echo $_.Exception |format-list -force
+        }
 }
 
 function Show-PSTrueCryptContainers
 {
-    begin {
-        Push-Location
-        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+    Push-Location
+    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
 
-        Get-ChildItem . -Recurse | ForEach-Object {
-            Get-ItemProperty $_.PsPath
-        } | Format-Table Name, MountLetter, Location -AutoSize
+    Get-ChildItem . -Recurse | ForEach-Object {
+        Get-ItemProperty $_.PsPath
+    } | Format-Table Name, MountLetter, Location -AutoSize
 
-        Pop-Location
+    Pop-Location
+}
+
+#internal function
+function Get-PSTrueCryptContainer
+{
+[CmdletBinding()]
+	param(
+	  [Parameter(Mandatory=$True,Position=1)]
+	   [string]$Name
+	)
+    [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
+    $SubKeyName = $SubKeyName.TrimStart()
+
+    $Settings = @{
+        TrueCryptContainerPath = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
+        PreferredMountDrive = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
     }
+    
+    $Settings
+}
+
+# internal function
+function Get-SubKeyPath
+{
+[CmdletBinding()]
+	param(
+	  [Parameter(Mandatory=$True)]
+	   [string]$Name
+	)
+
+    Push-Location
+    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+
+    $PSChildName
+
+    Get-ChildItem . -Recurse | ForEach-Object {
+        if($Name -eq (Get-ItemProperty $_.PsPath).Name) {
+        $PSChildName =$_.PSChildName
+        }
+    }
+
+    Pop-Location
+
+    $PSChildName
 }
 
 # internal function
@@ -393,7 +400,6 @@ function Get-TrueCryptDismountParams
         return $ParamsString.ToString().TrimEnd(" ");
     }
 }
-
 
 # internal function
 # ref: http://www.jonathanmedd.net/2014/01/testing-for-admin-privileges-in-powershell.html
