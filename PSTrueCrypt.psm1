@@ -3,32 +3,36 @@
     Mounts a TrueCrypt container. 
 
 .DESCRIPTION
-    In order to use this function, there must be a file in this module directory named, 'PSTrueCrypt-Config.xml'.  This file must contain a config node referencing the TrueCrypt container with a drive letter.
+    In order to use this function, you must provide container settings that will be added to the local registry.  You can add container 
+    settings via New-PSTrueCryptContainer.
 
 .PARAMETER Name
-    The name attribute value of the config node.
+    The name attribute value of the container settings that was added to the registry.  Call Show-PSTrueCryptContainers to displayed all 
+    container settings.
 
 .PARAMETER KeyfilePath
     Any path(s) to keyfiles (or directories) if required.
 
 .PARAMETER Password
-    If invoking this function in a background task, give value to this parameter to prevent function from prompting user for password.
+    If invoking this function in a background task, give value to this parameter to prevent function from prompting user for password. See
+    the third example that is in this function's header comment.
 
 .EXAMPLE
-    Mounts a TrueCrypt container with name of 'Area51' which must be in the 'PSTrueCrypt-Config.xml'.
+    Mounts a TrueCrypt container with name of 'Kryptos' must be in the registry.
 
-    PS C:\>Mount-TrueCrypt -Name Area51
-
-.EXAMPLE
-    Mounts a TrueCrypt container with name of 'Area51' that requires a Keyfile.
-
-    PS C:\>Mount-TrueCrypt -Name Area51 -KeyfilePath C:/Music/Louie_Louie.mp3
+    PS C:\>Mount-TrueCrypt -Name Kryptos
 
 .EXAMPLE
-    Mounts a TrueCrypt container with name of 'Area51' that requires a Keyfile and passes a secure password into the Password parameter.  This is usefull for background tasks that can't rely on user input.
+    Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.
+
+    PS C:\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
+
+.EXAMPLE
+    Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile and passes a secure password into the Password parameter.  
+    This is usefull for background tasks that can't rely on user input.
 
     PS C:\>$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
-    PS C:\>Mount-TrueCrypt -Name Area51 -KeyfilePath C:/Music/Louie_Louie.mp3 -Password $SecurePassword
+    PS C:\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword
 
 .INPUTS
     None
@@ -99,18 +103,19 @@ function Mount-TrueCrypt
     Dismounts a TrueCrypt container. 
 
 .DESCRIPTION
-    In order to use this function, there must be a file in this module directory named, 'PSTrueCrypt-Config.xml'.  This file must contain a config node referencing the TrueCrypt container with a drive letter.
+    In order to use this function, you must provide container settings that will be added to the local registry.  You can add container 
+    settings via New-PSTrueCryptContainer.
 
 .PARAMETER Name
-    The name attribute value of the config node.
+    The name attribute value of the that was used in mounting the container.
 
 .PARAMETER ForceAll
-    If method is invoked with this flag/switch parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
+    If method is invoked with this switch (flag) parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
 
 .EXAMPLE
-    Dismounts a TrueCrypt container with name of 'Area51' which must be in the 'PSTrueCrypt-Config.xml'.
+    Dismounts a TrueCrypt container with name of 'Kryptos' which must be in the container settings.
 
-    PS C:\>Dismount-TrueCrypt -Name Area51
+    PS C:\>Dismount-TrueCrypt -Name Kryptos
 
 .EXAMPLE
     Dismounts all TrueCrypt containers
@@ -173,7 +178,7 @@ function Dismount-TrueCrypt
     The TrueCrypt container's location.
 
 .PARAMETER Name
-    An  arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
+    An arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
 
 .PARAMETER MountLetter
     A preferred mount drive letter for this container.
@@ -181,7 +186,7 @@ function Dismount-TrueCrypt
 .EXAMPLE
     Adds settings for PSTrueCrypt.
 
-    PS C:\>New-PSTrueCryptContainer -Location D:\Area51 -Name Area51 -MountLetter F
+    PS C:\>New-PSTrueCryptContainer -Location D:\Kryptos -Name Kryptos -MountLetter F
 
 .INPUTS
     None
@@ -200,7 +205,7 @@ function New-PSTrueCryptContainer
         [Parameter(Mandatory = $True, Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string]$Location,
-	   
+
         [Parameter(Mandatory = $True)]
         [ValidateNotNullOrEmpty()]
         [string]$Name,
@@ -224,10 +229,17 @@ function New-PSTrueCryptContainer
     $AccessControl = $SubKey.GetAccessControl()
     $AccessControl.SetAccessRule($AccessRule)
     $SubKey.SetAccessControl($AccessControl)
+
+    try 
+    {
+        New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
+        New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
+        New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+    }
+    catch 
+    {
         
-    New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
-    New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
-    New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+    }
 }
 
 
@@ -242,7 +254,7 @@ function New-PSTrueCryptContainer
     The name that is used to reference this setting for Mount-TrueCrypt or Dismount-TrueCrypt functions. 
 
 .EXAMPLE
-    Remove-PSTrueCryptContainer -Name Area51
+    Remove-PSTrueCryptContainer -Name Kryptos
 
 .INPUTS
     None
@@ -299,9 +311,16 @@ function Show-PSTrueCryptContainers
     Push-Location
     Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
 
-    Get-ChildItem . -Recurse | ForEach-Object {
-        Get-ItemProperty $_.PsPath
-    } | Format-Table Name, MountLetter, Location -AutoSize
+    try 
+    {
+        Get-ChildItem . -Recurse | ForEach-Object {
+            Get-ItemProperty $_.PsPath
+        }| Format-Table Name, MountLetter, Location -AutoSize
+    }
+    catch
+    {
+        
+    }
 
     Pop-Location
 }
@@ -320,10 +339,17 @@ function Get-PSTrueCryptContainer
     [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name
     $SubKeyName                 = $SubKeyName.TrimStart() # unsure why there is a space at the start?
 
-    $Settings = @{
-                    TrueCryptContainerPath = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
-                    PreferredMountDrive = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
-                }
+    try 
+    {
+        $Settings = @{
+            TrueCryptContainerPath = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
+            PreferredMountDrive = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
+                    }
+    }
+    catch
+    {
+        
+    }
 
     $Settings
 }
@@ -343,11 +369,18 @@ function Get-SubKeyPath
 
     $PSChildName
 
-    Get-ChildItem . -Recurse | ForEach-Object {
-        if ($Name -eq (Get-ItemProperty $_.PsPath).Name) 
-        {
-            $PSChildName = $_.PSChildName
+    try 
+    {
+        Get-ChildItem . -Recurse | ForEach-Object {
+            if ($Name -eq (Get-ItemProperty $_.PsPath).Name) 
+            {
+                $PSChildName = $_.PSChildName
+            }
         }
+    }
+    catch 
+    {
+        
     }
 
     Pop-Location
