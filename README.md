@@ -47,9 +47,9 @@ Features:
 
 	Name  MountLetter Location
 	----  ----------- --------
-	brian B           D:\Area51
-	marc  M           D:\Area51
-	lori  L           D:\Area51
+	brian B           D:\Passwords
+	marc  M           D:\Kryptos
+	lori  L           D:\Documents
 
 	E:\>
 	```
