@@ -1,20 +1,60 @@
 # PSTrueCrypt
 PSTrueCrypt is a PowerShell module to mount and dismount TrueCrypt containers.  
 
-Public functions are Mount-TrueCrypt and Dismount-TrueCrypt.  
+Features:
+* No configuration files are needed
+* Supports the use of keyfiles
+* Dismounts all TrueCrypt containers with one command
 
-Mount-TrueCrypt supports Keyfile path(s) if needed and Dismount-TrueCrypt supports force dismounting of all TrueCrypt containers.
 
 ## Instructions
 * Download project to your PowerShell Module directory.  Or if PsGet is installed run the following command:
-
 	```
 	Install-Module PSTrueCrypt
 	```
+### Usage:
+	* Mount-TrueCrypt
+		```
+		E:\> Mount-TrueCrypt -Name marc
+		Enter password: **********
+		```
 
-* Copy-and-paste PSTrueCrypt-Config.Sample.xml file, rename it to 'PSTrueCrypt-Config'.
-* Mount TrueCrypt container
-![screenshot of mounting TrueCrypt container](screenshot_1.png)
+	* Dismount-TrueCrypt
+		```
+		E:\> Dismount-TrueCrypt -Name marc
+		```
+
+	* New-PSTrueCryptContainer
+		```
+		E:\> New-PSTrueCryptContainer -Name marc -Location D:\Kryptos -MountLetter M
+
+		New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
+		Are you sure you want to proceed?
+		[Y] Yes  [N] No  [?] Help (default is "N"): Y
+
+		E:\>
+		```
+
+	* Remove-PSTrueCryptContainer
+		```
+		E:\> Remove-PSTrueCryptContainer -Name marc
+		Container settings has been deleted from registry.
+		```
+
+	* Show-PSTrueCryptContainers
+		```
+		E:\> Show-PSTrueCryptContainers
+
+		Name  MountLetter Location
+		----  ----------- --------
+		brian B           D:\Area51
+		marc  M           D:\Area51
+		lori  L           D:\Area51
+
+		E:\>
+		```
 
 ### Roadmap
-* Add tab completion (via PSReadLine) for config settings
+* Add tab completion (via PSReadLine) for container settings in the registry
+* Add the ability to use without registry.
+* Add functionality to attempt to resolve conflicts.
