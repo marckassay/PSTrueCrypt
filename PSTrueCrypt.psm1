@@ -39,7 +39,6 @@
 .LINK
     https://github.com/marckassay/PSTrueCrypt
 #>
-
 function Mount-TrueCrypt
 {
     [CmdletBinding()]
@@ -55,54 +54,44 @@ function Mount-TrueCrypt
         [System.Security.SecureString]$Password
     )
 
-    Begin
+    # if no password was given, then we need to start the process for of prompting for one...
+    if ([string]::IsNullOrEmpty($Password) -eq $True)
     {
-        # if no password was given, then we need to start the process for of prompting for one...
-        if ([string]::IsNullOrEmpty($Password) -eq $True)
+        $WasConsolePromptingPrior
+        # check to see if session is in admin mode for console prompting...
+        if (Test-IsAdmin -eq $True)
         {
-            $WasConsolePromptingPrior
-            # check to see if session is in admin mode for console prompting...
-            if (Test-IsAdmin -eq $True)
-            {
-                $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+            $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
 
-                Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
-            }
-
+            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
         }
-
-        $Settings = Get-PSTrueCryptContainer -Name $Name
     }
 
-    Process
+    $Settings = Get-PSTrueCryptContainer -Name $Name
+
+    # get password string...
+    if ([string]::IsNullOrEmpty($Password) -eq $True)
     {
-        # get password string...
-        if ([string]::IsNullOrEmpty($Password) -eq $True)
-        {
-            $Password = Read-Host -Prompt "Enter password" -AsSecureString
-        }
-
-        $Credentials = New-Object System.Management.Automation.PSCredential("nil", $Password)
-        $PasswordString = $Credentials.GetNetworkCredential().Password
-
-        # construct arguments and execute expression...
-        [string]$TrueCryptParams = Get-TrueCryptMountParams -Password $PasswordString -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
-        
-        $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
-        
-        Invoke-Expression $Expression
+        $Password = Read-Host -Prompt "Enter password" -AsSecureString
     }
 
-    End
-    {
-        # if console prompting was set to false prior to this module, then set it back to false... 
-        if ($WasConsolePromptingPrior -eq $False)
-        {
-            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
-        }
+    $Credentials = New-Object System.Management.Automation.PSCredential("nil", $Password)
+    $PasswordString = $Credentials.GetNetworkCredential().Password
 
-        $PasswordString = ""
+    # construct arguments and execute expression...
+    [string]$TrueCryptParams = Get-TrueCryptMountParams -Password $PasswordString -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
+    
+    $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
+    
+    Invoke-Expression $Expression
+
+    # if console prompting was set to false prior to this module, then set it back to false... 
+    if ($WasConsolePromptingPrior -eq $False)
+    {
+        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
     }
+
+    $PasswordString = ""
 }
 
 <#
@@ -137,71 +126,62 @@ function Mount-TrueCrypt
 .LINK
     https://github.com/marckassay/PSTrueCrypt
 #>
-
 function Dismount-TrueCrypt
 {
     [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $False, Position = 1)]
+        [ValidateNotNullOrEmpty()]
         [string]$Name,
 
         [switch]$ForceAll
     )
 
-    Begin
-    { 
-        $Settings
-        # is Dismount-TrueCrypt has been invoked with the -Force flag, then it will have a value of true..
-        if ($ForceAll -eq $False)
-        {
-            $Settings = Get-PSTrueCryptContainer -Name $Name
-            
-            # construct arguments and execute expression...
-            [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive
-        }
-        else
-        {
-            # construct arguments for Force dismount(s)...
-            [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive ""
-        }
+    $Settings
+
+    # is Dismount-TrueCrypt has been invoked with the -Force flag, then it will have a value of true..
+    if ($ForceAll -eq $False)
+    {
+        $Settings = Get-PSTrueCryptContainer -Name $Name
+        
+        # construct arguments and execute expression...
+        [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive
+    }
+    else
+    {
+        # construct arguments for Force dismount(s)...
+        [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive ""
     }
 
-    Process
-    {
-        $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
-        
-        Invoke-Expression $Expression 
-    }
+    $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
+    
+    Invoke-Expression $Expression
 }
 
 
 <#
 .SYNOPSIS
-    Sets in the registry the TrueCrypt container's location and name (that may be used when invoking Mount-TrueCrypt function). 
+    Sets in the registry the TrueCrypt container's location, preferred mount drive letter, and name. 
 
 .DESCRIPTION
-    When invoked successfully, the container's location, preferred mount drive letter (if given), and a name will be stored
-    as a subkey in the HKCU:\Software\PSTrueCrypt registry key (which will be created if it doesn't exists).
+    When invoked successfully, the container's: location, preferred mount drive letter, and name will be stored
+    as a subkey in the HKCU:\Software\PSTrueCrypt registry key.  If call for first time, PSTrueCrypt registry key
+    will be created.
 
 .PARAMETER Location
     The TrueCrypt container's location.
 
 .PARAMETER Name
-    A name to be used to reference this container.
+    An  arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
 
 .PARAMETER MountLetter
     A preferred mount drive letter for this container.
 
 .EXAMPLE
-    Dismounts a TrueCrypt container with name of 'Area51' which must be in the 'PSTrueCrypt-Config.xml'.
+    Adds settings for PSTrueCrypt.
 
-    PS C:\>Dismount-TrueCrypt -Name Area51
-
-.EXAMPLE
-    Dismounts all TrueCrypt containers
-
-    PS C:\>Dismount-TrueCrypt -ForceAll
+    PS C:\>New-PSTrueCryptContainer -Location D:\Area51 -Name Area51 -MountLetter F
 
 .INPUTS
     None
@@ -218,12 +198,15 @@ function New-PSTrueCryptContainer
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
         [string]$Location,
 	   
         [Parameter(Mandatory = $True)]
+        [ValidateNotNullOrEmpty()]
         [string]$Name,
 
         [Parameter(Mandatory = $True)]
+        [ValidateNotNullOrEmpty()]
         [string]$MountLetter
     )
 
@@ -247,17 +230,41 @@ function New-PSTrueCryptContainer
     New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
 }
 
+
+<#
+.SYNOPSIS
+    Remove settings that were added by the New-PSTrueCryptContainer function.
+
+.DESCRIPTION
+    Remove the subkey in the HKCU:\Software\PSTrueCrypt registry, that contains the value of Name parameter.
+
+.PARAMETER Name
+    The name that is used to reference this setting for Mount-TrueCrypt or Dismount-TrueCrypt functions. 
+
+.EXAMPLE
+    Remove-PSTrueCryptContainer -Name Area51
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+
+.LINK
+    https://github.com/marckassay/PSTrueCrypt
+#>
 function Remove-PSTrueCryptContainer 
 {
     [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
         [string]$Name
     )
 
     [System.String]$PSChildName = Get-SubKeyPath -Name $Name
-    $PSChildName                = $PSChildName.TrimStart()
+    $PSChildName                = $PSChildName.TrimStart() # unsure why there is a space at the start?
        
     try 
     {
@@ -269,6 +276,24 @@ function Remove-PSTrueCryptContainer
     }
 }
 
+
+<#
+.SYNOPSIS
+    Displays all settings for mounting and dismounting.
+
+.DESCRIPTION
+    When this parameterless function is called, a list is displayed in the command-line shell for all subkey registries
+    under the HKCU:\Software\PSTrueCrypt registry key.
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+
+.LINK
+    https://github.com/marckassay/PSTrueCrypt
+#>
 function Show-PSTrueCryptContainers 
 {
     Push-Location
@@ -288,17 +313,18 @@ function Get-PSTrueCryptContainer
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
         [string]$Name
     )
 
     [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name
-    $SubKeyName                 = $SubKeyName.TrimStart()
+    $SubKeyName                 = $SubKeyName.TrimStart() # unsure why there is a space at the start?
 
     $Settings = @{
                     TrueCryptContainerPath = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
                     PreferredMountDrive = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
                 }
-    
+
     $Settings
 }
 
@@ -347,42 +373,39 @@ function Get-TrueCryptMountParams
         [array]$KeyfilePath
     )
 
-    Process
+    $ParamsHash = @{
+                        "/quit" = "";
+                        "/v" = $TrueCryptContainerPath;
+                        "/l" = $PreferredMountDrive;
+                        "/a" = "";
+                        "/p" = "'$Password'";
+                        "/e" = "";
+                    }
+
+    if ($KeyfilePath.count -gt 0) 
     {
-        $ParamsHash = @{
-                            "/quit" = "";
-                            "/v" = $TrueCryptContainerPath;
-                            "/l" = $PreferredMountDrive;
-                            "/a" = "";
-                            "/p" = "'$Password'";
-                            "/e" = "";
-                        }
-
-        if ($KeyfilePath.count -gt 0) 
-        {
-            $KeyfilePath | For-Each 
-            { 
-                $ParamsHash.Add("/keyfile", "'$_'")
-            }
+        $KeyfilePath | For-Each 
+        { 
+            $ParamsHash.Add("/keyfile", "'$_'")
         }
-        
-        $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
-
-        $ParamsHash.GetEnumerator() | ForEach-Object {
-            if ($_.Value.Equals(""))
-            {
-                [void]$ParamsString.AppendFormat("{0}", $_.Key)
-            }
-            else
-            {
-                [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
-            }
-
-            [void]$ParamsString.Append(" ")
-        }
-        
-        return $ParamsString.ToString().TrimEnd(" ");
     }
+    
+    $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
+
+    $ParamsHash.GetEnumerator() | ForEach-Object {
+        if ($_.Value.Equals(""))
+        {
+            [void]$ParamsString.AppendFormat("{0}", $_.Key)
+        }
+        else
+        {
+            [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
+        }
+
+        [void]$ParamsString.Append(" ")
+    }
+    
+    return $ParamsString.ToString().TrimEnd(" ");
 }
 
 # internal function
@@ -394,36 +417,33 @@ function Get-TrueCryptDismountParams
         [string]$Drive
     )
 
-    Process
+    $ParamsHash = @{
+                    "/quit" = "";
+                    "/d" = $Drive;
+                    }
+    
+    # Force dismount for all TrueCrypt volumes? ...
+    if ($Drive -eq "") 
     {
-        $ParamsHash = @{
-                        "/quit" = "";
-                        "/d" = $Drive;
-                        }
-        
-        # Force dismount for all TrueCrypt volumes? ...
-        if ($Drive -eq "") 
-        {
-            $ParamsHash.Add("/f", "")
-        }
-
-        $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
-
-        $ParamsHash.GetEnumerator() | ForEach-Object {
-            if ($_.Value.Equals("")) 
-            {
-                [void]$ParamsString.AppendFormat("{0}", $_.Key)
-            }
-            else
-            {
-                [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
-            }
-
-            [void]$ParamsString.Append(" ")
-        }
-        
-        return $ParamsString.ToString().TrimEnd(" ");
+        $ParamsHash.Add("/f", "")
     }
+
+    $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
+
+    $ParamsHash.GetEnumerator() | ForEach-Object {
+        if ($_.Value.Equals("")) 
+        {
+            [void]$ParamsString.AppendFormat("{0}", $_.Key)
+        }
+        else
+        {
+            [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
+        }
+
+        [void]$ParamsString.Append(" ")
+    }
+    
+    return $ParamsString.ToString().TrimEnd(" ");
 }
 
 # internal function
