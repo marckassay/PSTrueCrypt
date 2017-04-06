@@ -69,13 +69,17 @@ function Mount-TrueCrypt
 
             Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
         }
-    }
 
-    $Settings = Get-PSTrueCryptContainer -Name $Name
+        # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
+        try 
+        {
+            $Settings = Get-PSTrueCryptContainer -Name $Name
+        }
+        catch [System.Management.Automation.ItemNotFoundException]
+        {
+            Write-Error "At least one subkey of HKCU:\SOFTWARE\PSTrueCrypt is required.  Use New-PSTrueCryptContainer to add a subkey." -ErrorAction Stop
+        }
 
-    # get password string...
-    if ([string]::IsNullOrEmpty($Password) -eq $True)
-    {
         $Password = Read-Host -Prompt "Enter password" -AsSecureString
     }
 
@@ -223,8 +227,25 @@ function New-PSTrueCryptContainer
 
     [System.String]$SubKeyName = New-Guid
 
-    $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
-              [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+    try
+    {
+        $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
+
+        if ($Decision -eq 0) 
+        {
+            $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
+                    [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+        }
+        else
+        {
+             Write-Warning "New-PSTrueCryptContainer operation has been cancelled."
+        }
+    }
+    catch [System.UnauthorizedAccessException]
+    {
+        # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
+        Write-Error "'UnauthorizedAccessException' has been thrown which prevents PSTrueCrypt from accessing your registry."
+    }
 
     $AccessControl = $SubKey.GetAccessControl()
     $AccessControl.SetAccessRule($AccessRule)
@@ -232,13 +253,20 @@ function New-PSTrueCryptContainer
 
     try 
     {
-        New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
-        New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
-        New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+        if ($Decision -eq 0) 
+        {
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location   
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name       
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+        } 
+        else
+        {
+            Write-Warning "New-PSTrueCryptContainer operation has been cancelled."
+        }
     }
-    catch 
+    catch [System.UnauthorizedAccessException]
     {
-        
+        Write-Error "'UnauthorizedAccessException' has been thrown which prevents PSTrueCrypt from accessing your registry."
     }
 }
 
@@ -275,17 +303,46 @@ function Remove-PSTrueCryptContainer
         [string]$Name
     )
 
-    [System.String]$PSChildName = Get-SubKeyPath -Name $Name
-    $PSChildName                = $PSChildName.TrimStart() # unsure why there is a space at the start?
+    [System.String]$PSChildName = Get-SubKeyPath -Name $Name -ErrorAction Stop
+    $PSChildName                = $PSChildName.TrimStart() # TODO: unsure why there is a space at the start?
        
     try 
     {
         [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$PSChildName", $True)
+
+        Write-Information -MessageData "Container settings has been deleted from registry." -InformationAction Continue
     }
-    catch 
+    catch [System.ObjectDisposedException]
     {
-        
+        #The RegistryKey being manipulated is closed (closed keys cannot be accessed).
+        Write-Error "'ObjectDisposedException' has been thrown which prevents you from removing this PSTrueCryptContainer.  This may be due
+        to the key being 'closed'."
     }
+    catch [System.ArgumentException],[System.ArgumentNullException]
+    {
+        #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
+        #subkey is null.
+        Write-Error "Unable to find a PSTrueCryptContainer that corresponds with $Name.  Are you sure the name is correct?  Use 
+        Show-PSTrueCryptContainers to view all container settings."
+    }
+    catch [System.Security.SecurityException]
+    {
+        #The user does not have the permissions required to delete the key.
+        Write-Error "'SecurityException' has been thrown which prevents you from removing this container setting." -RecommendedAction "You can 
+        set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy"
+    }
+    catch [System.InvalidOperationException]
+    {
+        # subkey has child subkeys.
+         Write-Error "Unable to remove PSTrueCryptContainer for unknown reason(s)."
+    }
+    catch [System.UnauthorizedAccessException]
+    {
+        #The user does not have the necessary registry rights.
+        Write-Error "'UnauthorizedAccessException' has been thrown which prevents PSTrueCrypt from accessing your registry."
+    }
+
+
 }
 
 
@@ -317,9 +374,11 @@ function Show-PSTrueCryptContainers
             Get-ItemProperty $_.PsPath
         }| Format-Table Name, MountLetter, Location -AutoSize
     }
-    catch
+    catch [System.Security.SecurityException]
     {
-        
+        #The user does not have the permissions required to delete the key.
+        Write-Error "'SecurityException' has been thrown which prevents you from viewing container setting." -RecommendedAction "You can 
+        set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy"
     }
 
     Pop-Location
@@ -336,8 +395,8 @@ function Get-PSTrueCryptContainer
         [string]$Name
     )
 
-    [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name
-    $SubKeyName                 = $SubKeyName.TrimStart() # unsure why there is a space at the start?
+    [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name -ErrorAction Stop
+    $SubKeyName                 = $SubKeyName.TrimStart() # TODO: unsure why there is a space at the start?
 
     try 
     {
@@ -348,7 +407,7 @@ function Get-PSTrueCryptContainer
     }
     catch
     {
-        
+        Write-Error -Message "Unable to read registry for unknown reason(s). Origin: Get-PSTrueCryptContainer."
     }
 
     $Settings
@@ -380,7 +439,7 @@ function Get-SubKeyPath
     }
     catch 
     {
-        
+        Write-Error -Message "Unable to read registry for unknown reason(s). Origin: Get-SubKeyPath."
     }
 
     Pop-Location
@@ -478,6 +537,29 @@ function Get-TrueCryptDismountParams
     
     return $ParamsString.ToString().TrimEnd(" ");
 }
+
+
+# internal function
+# ref: http://stackoverflow.com/a/24649481
+function Get-Confirmation
+{
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$Message
+    )
+    
+    $Question = 'Are you sure you want to proceed?'
+
+    $Choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
+    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+
+    $Decision = $Host.UI.PromptForChoice($Message, $Question, $Choices, 1)
+
+    $Decision
+}
+
 
 # internal function
 # ref: http://www.jonathanmedd.net/2014/01/testing-for-admin-privileges-in-powershell.html
