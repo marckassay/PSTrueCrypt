@@ -13,46 +13,46 @@ Features:
 	Install-Module PSTrueCrypt
 	```
 ### Usage:
-	* Mount-TrueCrypt
-		```
-		E:\> Mount-TrueCrypt -Name marc
-		Enter password: **********
-		```
+* Mount-TrueCrypt
+	```
+	E:\> Mount-TrueCrypt -Name marc
+	Enter password: **********
+	```
 
-	* Dismount-TrueCrypt
-		```
-		E:\> Dismount-TrueCrypt -Name marc
-		```
+* Dismount-TrueCrypt
+	```
+	E:\> Dismount-TrueCrypt -Name marc
+	```
 
-	* New-PSTrueCryptContainer
-		```
-		E:\> New-PSTrueCryptContainer -Name marc -Location D:\Kryptos -MountLetter M
+* New-PSTrueCryptContainer
+	```
+	E:\> New-PSTrueCryptContainer -Name marc -Location D:\Kryptos -MountLetter M
 
-		New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
-		Are you sure you want to proceed?
-		[Y] Yes  [N] No  [?] Help (default is "N"): Y
+	New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
+	Are you sure you want to proceed?
+	[Y] Yes  [N] No  [?] Help (default is "N"): Y
 
-		E:\>
-		```
+	E:\>
+	```
 
-	* Remove-PSTrueCryptContainer
-		```
-		E:\> Remove-PSTrueCryptContainer -Name marc
-		Container settings has been deleted from registry.
-		```
+* Remove-PSTrueCryptContainer
+	```
+	E:\> Remove-PSTrueCryptContainer -Name marc
+	Container settings has been deleted from registry.
+	```
 
-	* Show-PSTrueCryptContainers
-		```
-		E:\> Show-PSTrueCryptContainers
+* Show-PSTrueCryptContainers
+	```
+	E:\> Show-PSTrueCryptContainers
 
-		Name  MountLetter Location
-		----  ----------- --------
-		brian B           D:\Area51
-		marc  M           D:\Area51
-		lori  L           D:\Area51
+	Name  MountLetter Location
+	----  ----------- --------
+	brian B           D:\Area51
+	marc  M           D:\Area51
+	lori  L           D:\Area51
 
-		E:\>
-		```
+	E:\>
+	```
 
 ### Roadmap
 * Add tab completion (via PSReadLine) for container settings in the registry
