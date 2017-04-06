@@ -17,11 +17,13 @@ Features:
 	```
 	E:\> Mount-TrueCrypt -Name marc
 	Enter password: **********
+	E:\>
 	```
 
 * Dismount-TrueCrypt
 	```
 	E:\> Dismount-TrueCrypt -Name marc
+	E:\>
 	```
 
 * New-PSTrueCryptContainer
@@ -39,6 +41,8 @@ Features:
 	```
 	E:\> Remove-PSTrueCryptContainer -Name marc
 	Container settings has been deleted from registry.
+	
+	E:\>
 	```
 
 * Show-PSTrueCryptContainers
