@@ -467,7 +467,7 @@ function Get-TrueCryptMountParams
 
     $ParamsHash = @{
                         "/quit" = "";
-                        "/v" = $TrueCryptContainerPath;
+                        "/v" = "'$TrueCryptContainerPath'";
                         "/l" = $PreferredMountDrive;
                         "/a" = "";
                         "/p" = "'$Password'";
@@ -476,8 +476,7 @@ function Get-TrueCryptMountParams
 
     if ($KeyfilePath.count -gt 0) 
     {
-        $KeyfilePath | For-Each 
-        { 
+        $KeyfilePath | ForEach-Object { 
             $ParamsHash.Add("/keyfile", "'$_'")
         }
     }
