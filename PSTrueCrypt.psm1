@@ -58,6 +58,21 @@ function Mount-TrueCrypt
         [System.Security.SecureString]$Password
     )
 
+    # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
+    try 
+    {
+        $Settings = Get-PSTrueCryptContainer -Name $Name
+    }
+    catch [System.Management.Automation.ItemNotFoundException]
+    {
+        Write-Error "At least one subkey of HKCU:\SOFTWARE\PSTrueCrypt is required.  Use New-PSTrueCryptContainer to add a subkey." -ErrorAction Stop
+    }
+
+    # construct arguments for expression and insert token in for password...
+    [string]$TrueCryptParams = Get-TrueCryptMountParams -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
+    
+    $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
+
     # if no password was given, then we need to start the process for of prompting for one...
     if ([string]::IsNullOrEmpty($Password) -eq $True)
     {
@@ -70,36 +85,52 @@ function Mount-TrueCrypt
             Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
         }
 
-        # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
-        try 
-        {
-            $Settings = Get-PSTrueCryptContainer -Name $Name
-        }
-        catch [System.Management.Automation.ItemNotFoundException]
-        {
-            Write-Error "At least one subkey of HKCU:\SOFTWARE\PSTrueCrypt is required.  Use New-PSTrueCryptContainer to add a subkey." -ErrorAction Stop
-        }
-
-        $Password = Read-Host -Prompt "Enter password" -AsSecureString
+        [securestring]$Password = Read-Host -Prompt "Enter password" -AsSecureString
     }
 
-    $Credentials = New-Object System.Management.Automation.PSCredential("nil", $Password)
-    $PasswordString = $Credentials.GetNetworkCredential().Password
+    # this method of handling password securely has been mentioned at the following links:
+    # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
+    # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
+    # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
+    try
+    {
+        # Create IntPassword and dispose $Password...
+        [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+    }
+    catch [System.NotSupportedException]
+    {
+        # The current computer is not running Windows 2000 Service Pack 3 or later.
+        Write-Error "The current computer is not running Windows 2000 Service Pack 3 or later."
+    }
+    catch [System.OutOfMemoryException]
+    {
+        # OutOfMemoryException
+        Write-Error "Not enough memory for PSTrueCrypt to continue."
+    }
+    finally
+    {
+        $Password.Dispose()
+    }
 
-    # construct arguments and execute expression...
-    [string]$TrueCryptParams = Get-TrueCryptMountParams -Password $PasswordString -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
-    
-    $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
-    
-    Invoke-Expression $Expression
+    try
+    {
+        # Execute Expression and free IntPassword...
+        Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
+    }
+    catch [System.Exception]
+    {
+        Write-Error "An unkown issue occurred when TrueCrypt was executed.  Is the password correct or if required, keyfile(s) correct?"
+    }
+    finally
+    {
+       # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
+    }
 
     # if console prompting was set to false prior to this module, then set it back to false... 
     if ($WasConsolePromptingPrior -eq $False)
     {
         Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
     }
-
-    $PasswordString = ""
 }
 
 <#
@@ -334,7 +365,7 @@ function Remove-PSTrueCryptContainer
     catch [System.InvalidOperationException]
     {
         # subkey has child subkeys.
-         Write-Error "Unable to remove PSTrueCryptContainer for unknown reason(s)."
+        Write-Error "Unable to remove PSTrueCryptContainer for unknown reason(s)."
     }
     catch [System.UnauthorizedAccessException]
     {
@@ -453,15 +484,12 @@ function Get-TrueCryptMountParams
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
-        [string]$Password,
-
-        [Parameter(Mandatory = $True, Position = 2)]
         [string]$TrueCryptContainerPath,
 
-        [Parameter(Mandatory = $True, Position = 3)]
+        [Parameter(Mandatory = $True, Position = 2)]
         [string]$PreferredMountDrive,
 	   
-        [Parameter(Mandatory = $false, Position = 4)]
+        [Parameter(Mandatory = $false, Position = 3)]
         [array]$KeyfilePath
     )
 
@@ -470,7 +498,7 @@ function Get-TrueCryptMountParams
                         "/v" = "'$TrueCryptContainerPath'";
                         "/l" = $PreferredMountDrive;
                         "/a" = "";
-                        "/p" = "'$Password'";
+                        "/p" = "{0}";
                         "/e" = "";
                     }
 
