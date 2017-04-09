@@ -92,6 +92,7 @@ function Mount-TrueCrypt
     # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
     # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
     # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
+    # https://msdn.microsoft.com/en-us/library/ewyktcaa(v=vs.110).aspx
     try
     {
         # Create IntPassword and dispose $Password...
@@ -114,15 +115,17 @@ function Mount-TrueCrypt
 
     try
     {
-        # Execute Expression and free IntPassword...
+        # Execute Expression...
         Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
     }
     catch [System.Exception]
     {
-        Write-Error "An unkown issue occurred when TrueCrypt was executed.  Is the password correct or if required, keyfile(s) correct?"
+        Write-Error "An unkown issue occurred when TrueCrypt was executed.  Are keyfile(s) needed for this container?"
     }
     finally
     {
+       # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
+       # holding on to this pointer while container is open.
        # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
     }
 
