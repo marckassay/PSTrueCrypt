@@ -496,9 +496,9 @@ function Get-TrueCryptMountParams
     $ParamsHash = @{
                         "/quit" = "";
                         "/v" = "'$TrueCryptContainerPath'";
-                        "/l" = $PreferredMountDrive;
+                        "/l" = "'$PreferredMountDrive'";
                         "/a" = "";
-                        "/p" = "{0}";
+                        "/p" = "'{0}'";
                         "/e" = "";
                     }
 
