@@ -114,9 +114,8 @@ function Mount-TrueCrypt
 
     try
     {
-        $exp = ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
-        # Execute Expression...
-        Invoke-Expression $exp
+        # Execute Expression
+        Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
     }
     catch [System.Exception]
     {
@@ -189,16 +188,14 @@ function Dismount-TrueCrypt
         $Settings = Get-PSTrueCryptContainer -Name $Name
         
         # construct arguments and execute expression...
-        [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive
+        [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
     }
     else
     {
         # construct arguments for Force dismount(s)...
-        [string]$TrueCryptParams = Get-TrueCryptDismountParams -Drive ""
+        [string]$Expression = Get-TrueCryptDismountParams -Drive "" -Product $Settings.Product
     }
 
-    $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
-    
     Invoke-Expression $Expression
 }
 
@@ -516,6 +513,7 @@ function Get-TrueCryptMountParams
                     }
 
     $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
+
     [void]$ParamsString.Insert(0, "& "+$Product+" ")
 
     # add keyfile(s) if any to ParamsHash...
@@ -549,8 +547,11 @@ function Get-TrueCryptDismountParams
 {
     Param
     (
-        [Parameter(Mandatory = $False, Position = 1)]
-        [string]$Drive
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$Drive,
+
+        [Parameter(Mandatory = $True, Position = 2)]
+        [string]$Product
     )
 
     $ParamsHash = @{
@@ -565,6 +566,8 @@ function Get-TrueCryptDismountParams
     }
 
     $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
+
+    [void]$ParamsString.Insert(0, "& "+$Product+" ")
 
     $ParamsHash.GetEnumerator() | ForEach-Object {
         if ($_.Value.Equals("")) 
