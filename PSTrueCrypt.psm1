@@ -69,9 +69,7 @@ function Mount-TrueCrypt
     }
 
     # construct arguments for expression and insert token in for password...
-    [string]$TrueCryptParams = Get-TrueCryptMountParams -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -KeyfilePath $KeyfilePath
-    
-    $Expression = $TrueCryptParams.Insert(0, "& TrueCrypt ")
+    [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath
 
     # if no password was given, then we need to start the process for of prompting for one...
     if ([string]::IsNullOrEmpty($Password) -eq $True)
@@ -96,6 +94,7 @@ function Mount-TrueCrypt
     try
     {
         # Create IntPassword and dispose $Password...
+
         [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
     }
     catch [System.NotSupportedException]
@@ -115,8 +114,9 @@ function Mount-TrueCrypt
 
     try
     {
+        $exp = ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
         # Execute Expression...
-        Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
+        Invoke-Expression $exp
     }
     catch [System.Exception]
     {
@@ -212,19 +212,22 @@ function Dismount-TrueCrypt
     as a subkey in the HKCU:\Software\PSTrueCrypt registry key.  If call for first time, PSTrueCrypt registry key
     will be created.
 
-.PARAMETER Location
-    The TrueCrypt container's location.
-
 .PARAMETER Name
     An arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
+
+.PARAMETER Location
+    The TrueCrypt container's location.
 
 .PARAMETER MountLetter
     A preferred mount drive letter for this container.
 
+.PARAMETER Product
+    Specifies if the container has been created with TrueCrypt or VeraCrypt.
+
 .EXAMPLE
     Adds settings for PSTrueCrypt.
 
-    PS C:\>New-PSTrueCryptContainer -Location D:\Kryptos -Name Kryptos -MountLetter F
+    PS C:\>New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter F -Product TrueCrypt
 
 .INPUTS
     None
@@ -242,15 +245,19 @@ function New-PSTrueCryptContainer
     (
         [Parameter(Mandatory = $True, Position = 1)]
         [ValidateNotNullOrEmpty()]
-        [string]$Location,
-
-        [Parameter(Mandatory = $True)]
-        [ValidateNotNullOrEmpty()]
         [string]$Name,
 
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $True, Position = 2)]
         [ValidateNotNullOrEmpty()]
-        [string]$MountLetter
+        [string]$Location,
+
+        [Parameter(Mandatory = $True, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string]$MountLetter,
+
+        [Parameter(Mandatory = $True, Position = 4)]
+        [ValidateSet("TrueCrypt", "VeraCrypt")]
+        [string]$Product
     )
 
     $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
@@ -289,9 +296,10 @@ function New-PSTrueCryptContainer
     {
         if ($Decision -eq 0) 
         {
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location   
             New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name       
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location   
             New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product
         } 
         else
         {
@@ -375,8 +383,6 @@ function Remove-PSTrueCryptContainer
         #The user does not have the necessary registry rights.
         Write-Error "'UnauthorizedAccessException' has been thrown which prevents PSTrueCrypt from accessing your registry."
     }
-
-
 }
 
 
@@ -406,7 +412,7 @@ function Show-PSTrueCryptContainers
     {
         Get-ChildItem . -Recurse | ForEach-Object {
             Get-ItemProperty $_.PsPath
-        }| Format-Table Name, MountLetter, Location -AutoSize
+        }| Format-Table Name, Location, MountLetter, Product -AutoSize
     }
     catch [System.Security.SecurityException]
     {
@@ -435,8 +441,9 @@ function Get-PSTrueCryptContainer
     try 
     {
         $Settings = @{
-            TrueCryptContainerPath = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
-            PreferredMountDrive = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
+            TrueCryptContainerPath  = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
+            PreferredMountDrive     = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
+            Product                 = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
                     }
     }
     catch
@@ -491,8 +498,11 @@ function Get-TrueCryptMountParams
 
         [Parameter(Mandatory = $True, Position = 2)]
         [string]$PreferredMountDrive,
-	   
-        [Parameter(Mandatory = $false, Position = 3)]
+
+        [Parameter(Mandatory = $True, Position = 3)]
+        [string]$Product,
+
+        [Parameter(Mandatory = $False, Position = 4)]
         [array]$KeyfilePath
     )
 
@@ -505,6 +515,10 @@ function Get-TrueCryptMountParams
                         "/e" = "";
                     }
 
+    $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
+    [void]$ParamsString.Insert(0, "& "+$Product+" ")
+
+    # add keyfile(s) if any to ParamsHash...
     if ($KeyfilePath.count -gt 0) 
     {
         $KeyfilePath | ForEach-Object { 
@@ -512,9 +526,9 @@ function Get-TrueCryptMountParams
         }
     }
     
-    $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
-
+    # populate ParamsString with ParamsHash data...
     $ParamsHash.GetEnumerator() | ForEach-Object {
+        # if no value assigned to this TrueCrypt attribute, then just append attribute to ParamsString...
         if ($_.Value.Equals(""))
         {
             [void]$ParamsString.AppendFormat("{0}", $_.Key)
@@ -527,7 +541,7 @@ function Get-TrueCryptMountParams
         [void]$ParamsString.Append(" ")
     }
     
-    return $ParamsString.ToString().TrimEnd(" ");
+    $ParamsString.ToString().TrimEnd(" ");
 }
 
 # internal function
@@ -603,3 +617,5 @@ Export-ModuleMember -function Dismount-TrueCrypt
 Export-ModuleMember -function New-PSTrueCryptContainer
 Export-ModuleMember -function Remove-PSTrueCryptContainer
 Export-ModuleMember -function Show-PSTrueCryptContainers
+
+# $PSDefaultParameterValues = @{"New-PSTrueCryptContainer:Product"="TrueCrypt"}
