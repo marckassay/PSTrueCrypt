@@ -189,14 +189,63 @@ function Dismount-TrueCrypt
         
         # construct arguments and execute expression...
         [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
+
+        Invoke-Expression $Expression
     }
     else
     {
         # construct arguments for Force dismount(s)...
-        [string]$Expression = Get-TrueCryptDismountParams -Drive "" -Product $Settings.Product
-    }
+        [string]$Expression = Get-TrueCryptDismountParams -Product "TrueCrypt"
 
-    Invoke-Expression $Expression
+        $HasTrueCryptDismountFailed
+        # TODO: this is an ugly hack; they may only have 1 product installed.  it will work for now...
+        try 
+        {
+            Invoke-Expression $Expression
+            $HasTrueCryptDismountFailed = $False
+        }
+        catch 
+        {
+            $HasTrueCryptDismountFailed = $True
+        }
+        finally
+        {
+            if($HasTrueCryptDismountFailed -eq $False)
+            {
+                Write-Information -MessageData "All TrueCrypt containers have successfully dismounted.  Please verify." -InformationAction Continue
+            }
+            else 
+            {
+                Write-Error "Dismounting TrueCrypt containers has failed!"
+            }
+        }
+        
+        # construct arguments for Force dismount(s)...
+        [string]$Expression = Get-TrueCryptDismountParams -Product "VeraCrypt"
+
+        $HasVeraCryptDismountFailed
+        # TODO: this is an ugly hack; they may only have 1 product installed.  it will work for now...
+        try 
+        {
+            Invoke-Expression $Expression
+            $HasVeraCryptDismountFailed = $False
+        }
+        catch 
+        {
+            $HasVeraCryptDismountFailed = $True
+        }
+        finally
+        {
+            if($HasVeraCryptDismountFailed -eq $False)
+            {
+                Write-Information -MessageData "All VeraCrypt containers have successfully dismounted.  Please verify." -InformationAction Continue
+            }
+            else 
+            {
+                Write-Error "Dismounting VeraCrypt containers has failed!"
+            }
+        }
+    }
 }
 
 
@@ -547,20 +596,20 @@ function Get-TrueCryptDismountParams
 {
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1)]
+        [Parameter(Mandatory = $False)]
         [string]$Drive,
 
-        [Parameter(Mandatory = $True, Position = 2)]
+        [Parameter(Mandatory = $True)]
         [string]$Product
     )
 
     $ParamsHash = @{
                     "/quit" = "";
-                    "/d" = $Drive;
-                    }
+                    "/d" = $Drive
+                }
     
     # Force dismount for all TrueCrypt volumes? ...
-    if ($Drive -eq "") 
+    if($Drive -eq "")
     {
         $ParamsHash.Add("/f", "")
     }
@@ -620,5 +669,3 @@ Export-ModuleMember -function Dismount-TrueCrypt
 Export-ModuleMember -function New-PSTrueCryptContainer
 Export-ModuleMember -function Remove-PSTrueCryptContainer
 Export-ModuleMember -function Show-PSTrueCryptContainers
-
-# $PSDefaultParameterValues = @{"New-PSTrueCryptContainer:Product"="TrueCrypt"}

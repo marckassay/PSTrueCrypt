@@ -1,18 +1,19 @@
 # PSTrueCrypt
-PSTrueCrypt is a PowerShell module to mount and dismount TrueCrypt containers.  
+PSTrueCrypt is a PowerShell module for mounting TrueCrypt and VeraCrypt containers.  
 
 ### Features:
 * No configuration files are needed.  Registry is used to store non-sensitive data for the container.
 * Supports the use of keyfiles
-* Uses SecureString and binary string (BSTR) to handle password securely.
+* Uses SecureString and binary string (BSTR) to handle password securely
 
 ### Limitations:
-* Only supports TrueCrypt containers.  No support for disk/parition or system encryption.
+* No support for disk/parition or system encryption
+* TrueCrypt or VeraCrypt must be installed
 
 ### Notes:
 * Only tested on Windows 10 using .NET 4.6
-* One love, one heart.  (I'm unaware of any other users or developers.)  So there are unknown issues.
-Please add an issue if found.
+* One love, one heart.  (One project, one contributor)  So there are most likely unknown limitations and issues.
+Please add any feedback, concerns, requests and/or bugs in the 'Issues' section of this project
 
 ## Instructions
 * Download project to your PowerShell Module directory.  Or if PsGet is installed run the following command:
@@ -22,24 +23,32 @@ Please add an issue if found.
 
 	### Mount-TrueCrypt
 
-	Mounts a TrueCrypt container with name of 'Kryptos', which must be in the registry.
+	Mounts a TrueCrypt container with name of 'Kryptos', which must be in the registry and specifying 'TrueCrypt'
+	as the executable to use in the Product parameter.
 	```powershell
-	E:\> Mount-TrueCrypt -Name Kryptos
+	E:\> Mount-TrueCrypt -Name Kryptos -Product TrueCrypt
 	Enter password: **********
 	E:\>
 	```
 
-	Although not recommended, due to plain-text password variable, this demostrates passing a varible into the 
+	Same as above but specifying 'VeraCrypt' as the executable as the product
+	```powershell
+	E:\> Mount-TrueCrypt -Name Kryptos -Product VeraCrypt
+	Enter password: **********
+	E:\>
+	```
+
+	Although not recommended, due to plain-text password varible, this demostrates passing a varible into the 
 	Mount-TrueCrypt cmdlet. 
 	```powershell
 	E:\> $SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
-	E:\> Mount-TrueCrypt -Name Kryptos -Password $SecurePassword
+	E:\> Mount-TrueCrypt -Name Kryptos -Password $SecurePassword -Product TrueCrypt
 	E:\>
 	```
 
 	Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.
 	```powershell
-	E:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
+	E:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Product TrueCrypt
 	Enter password: **********
 	E:\>
 	```
@@ -48,6 +57,12 @@ Please add an issue if found.
 
 	```powershell
 	E:\> Dismount-TrueCrypt -Name Kryptos
+	E:\>
+	```
+
+	Dismounts all 
+	```powershell
+	E:\> Dismount-TrueCrypt -ForceAll
 	E:\>
 	```
 
@@ -87,7 +102,7 @@ Please add an issue if found.
 	```
 
 ### Roadmap
-* Compatible with VeraCrypt (currently in progress)
+* Verify and set environment varible for TrueCrypt and VerCrypt.  This will be only for Windows at this time. 
 * Add tab completion (via PSReadLine) for container settings in the registry
 * Add the ability to use without registry.
 * Add functionality to attempt to resolve conflicts.
