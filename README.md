@@ -7,12 +7,12 @@ PSTrueCrypt is a PowerShell module for mounting TrueCrypt and VeraCrypt containe
 * Uses SecureString and binary string (BSTR) to handle password securely
 
 ### Limitations:
-* No support for disk/parition or system encryption
+* No support for disk/partition or system encryption
 * TrueCrypt or VeraCrypt must be installed
 
 ### Notes:
 * Only tested on Windows 10 using .NET 4.6
-* One love, one heart.  (One project, one contributor)  So there are most likely unknown limitations and issues.
+* One love, one heart (One project, one contributor).  So there are most likely unknown limitations and issues.
 Please add any feedback, concerns, requests and/or bugs in the 'Issues' section of this project
 
 ## Instructions
@@ -23,17 +23,9 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 
 	### Mount-TrueCrypt
 
-	Mounts a TrueCrypt container with name of 'Kryptos', which must be in the registry and specifying 'TrueCrypt'
-	as the executable to use in the Product parameter.
+	Mounts a TrueCrypt container with name of 'Kryptos', which must be in the registry.
 	```powershell
-	E:\> Mount-TrueCrypt -Name Kryptos -Product TrueCrypt
-	Enter password: **********
-	E:\>
-	```
-
-	Same as above but specifying 'VeraCrypt' as the executable as the product
-	```powershell
-	E:\> Mount-TrueCrypt -Name Kryptos -Product VeraCrypt
+	E:\> Mount-TrueCrypt -Name Kryptos
 	Enter password: **********
 	E:\>
 	```
@@ -42,13 +34,13 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	Mount-TrueCrypt cmdlet. 
 	```powershell
 	E:\> $SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
-	E:\> Mount-TrueCrypt -Name Kryptos -Password $SecurePassword -Product TrueCrypt
+	E:\> Mount-TrueCrypt -Name Kryptos -Password $SecurePassword
 	E:\>
 	```
 
 	Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.
 	```powershell
-	E:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Product TrueCrypt
+	E:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
 	Enter password: **********
 	E:\>
 	```
@@ -60,7 +52,7 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	E:\>
 	```
 
-	Dismounts all 
+	Dismounts all TrueCrypt and all VeraCrypt containers in sequential order.
 	```powershell
 	E:\> Dismount-TrueCrypt -ForceAll
 	E:\>
@@ -68,8 +60,11 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 
 	### New-PSTrueCryptContainer
 
+	Creates a container setting in the registry, specifying 'Kryptos' for the name which is referenced by PSTrueCrypt.
+	And specifying the path to the container at 'D:\Kryptos' with 'M' being the letter of the drive.  And claiming the
+	container having been created with VeraCrypt.
 	```powershell
-	E:\> New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter M
+	E:\> New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter M -Product VeraCrypt
 
 	New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
 	Are you sure you want to proceed?
@@ -92,17 +87,12 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	```powershell
 	E:\> Show-PSTrueCryptContainers
 
-	Name     MountLetter Location
-	----     ----------- --------
-	brian    B           D:\Passwords
-	Kryptos  K           D:\Kryptos
-	lori     F           D:\Documents
+	Name  Location                      MountLetter Product
+	----  --------                      ----------- -------
+	brian C:\passwords                  X           VeraCrypt
+	verac D:\veracrypt                  V           VeraCrypt
+	lori  D:\Documents                  H           TrueCrypt
+	1pw   F:\Google Drive\1pw           Z           TrueCrypt
 
 	E:\>
 	```
-
-### Roadmap
-* Verify and set environment varible for TrueCrypt and VerCrypt.  This will be only for Windows at this time. 
-* Add tab completion (via PSReadLine) for container settings in the registry
-* Add the ability to use without registry.
-* Add functionality to attempt to resolve conflicts.
