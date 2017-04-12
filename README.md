@@ -29,7 +29,7 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	Enter password: **********
 	E:\>
 	```
-
+	
 	Although not recommended, due to plain-text password variable, this demostrates passing a variable into the 
 	Mount-TrueCrypt cmdlet. 
 	```powershell
