@@ -391,12 +391,11 @@ function Remove-PSTrueCryptContainer
         [string]$Name
     )
 
-    [System.String]$PSChildName = Get-SubKeyPath -Name $Name -ErrorAction Stop
-    $PSChildName                = $PSChildName.TrimStart() # TODO: unsure why there is a space at the start?
-       
-    try 
+    [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name -ErrorAction Stop
+
+    try
     {
-        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$PSChildName", $True)
+        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName", $True)
 
         Write-Information -MessageData "Container settings has been deleted from registry." -InformationAction Continue
     }
@@ -482,7 +481,6 @@ function Get-PSTrueCryptContainer
     )
 
     [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name -ErrorAction Stop
-    $SubKeyName                 = $SubKeyName.TrimStart() # TODO: unsure why there is a space at the start?
 
     try 
     {
@@ -513,8 +511,6 @@ function Get-SubKeyPath
     Push-Location
     Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
 
-    $PSChildName
-
     try 
     {
         Get-ChildItem . -Recurse | ForEach-Object {
@@ -531,7 +527,7 @@ function Get-SubKeyPath
 
     Pop-Location
 
-    $PSChildName
+    Write-Output $PSChildName
 }
 
 # internal function
