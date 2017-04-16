@@ -180,8 +180,6 @@ function Dismount-TrueCrypt
         [switch]$ForceAll
     )
 
-    $Settings
-
     # is Dismount-TrueCrypt has been invoked with the -Force flag, then it will have a value of true..
     if ($ForceAll -eq $False)
     {
@@ -194,57 +192,9 @@ function Dismount-TrueCrypt
     }
     else
     {
-        # construct arguments for Force dismount(s)...
-        [string]$Expression = Get-TrueCryptDismountParams -Product "TrueCrypt"
-
-        $HasTrueCryptDismountFailed
-        # TODO: this is an ugly hack; they may only have 1 product installed.  it will work for now...
-        try 
-        {
-            Invoke-Expression $Expression
-            $HasTrueCryptDismountFailed = $False
-        }
-        catch 
-        {
-            $HasTrueCryptDismountFailed = $True
-        }
-        finally
-        {
-            if($HasTrueCryptDismountFailed -eq $False)
-            {
-                Write-Information -MessageData "All TrueCrypt containers have successfully dismounted.  Please verify." -InformationAction Continue
-            }
-            else 
-            {
-                Write-Error "Dismounting TrueCrypt containers has failed!"
-            }
-        }
+        Invoke-DismountAll -Product TrueCrypt
         
-        # construct arguments for Force dismount(s)...
-        [string]$Expression = Get-TrueCryptDismountParams -Product "VeraCrypt"
-
-        $HasVeraCryptDismountFailed
-        # TODO: this is an ugly hack; they may only have 1 product installed.  it will work for now...
-        try 
-        {
-            Invoke-Expression $Expression
-            $HasVeraCryptDismountFailed = $False
-        }
-        catch 
-        {
-            $HasVeraCryptDismountFailed = $True
-        }
-        finally
-        {
-            if($HasVeraCryptDismountFailed -eq $False)
-            {
-                Write-Information -MessageData "All VeraCrypt containers have successfully dismounted.  Please verify." -InformationAction Continue
-            }
-            else 
-            {
-                Write-Error "Dismounting VeraCrypt containers has failed!"
-            }
-        }
+        Invoke-DismountAll -Product VeraCrypt
     }
 }
 
@@ -391,7 +341,7 @@ function Remove-PSTrueCryptContainer
         [string]$Name
     )
 
-    [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name -ErrorAction Stop
+    [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
 
     try
     {
@@ -480,7 +430,7 @@ function Get-PSTrueCryptContainer
         [string]$Name
     )
 
-    [System.String]$SubKeyName  = Get-SubKeyPath -Name $Name -ErrorAction Stop
+    [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
 
     try 
     {
@@ -650,6 +600,39 @@ function Get-Confirmation
     $Decision = $Host.UI.PromptForChoice($Message, $Question, $Choices, 1)
 
     $Decision
+}
+
+function Invoke-DismountAll
+{
+    Param
+    (
+        [ValidateSet("TrueCrypt", "VeraCrypt")]
+        [string]$Product
+    )
+
+    # construct arguments for Force dismount(s)...
+    [string]$Expression = Get-TrueCryptDismountParams -Product $Product
+
+    try
+    {
+        Invoke-Expression $Expression
+        $HasXCryptDismountFailed = $False
+    }
+    catch 
+    {
+        $HasXCryptDismountFailed = $True
+    }
+    finally
+    {
+        if($HasXCryptDismountFailed -eq $False)
+        {
+            Write-Information -MessageData "All $Product containers have successfully dismounted.  Please verify." -InformationAction Continue
+        }
+        else 
+        {
+            Write-Error "Dismounting $Product containers has failed!"
+        }
+    }
 }
 
 
