@@ -3,8 +3,9 @@ PSTrueCrypt is a PowerShell module for mounting TrueCrypt and VeraCrypt containe
 
 ### Features:
 * No configuration files are needed.  Registry is used to store non-sensitive data for the container.
-* Supports the use of keyfiles
+* Option to update container's last write time for cloud storage services can sync it
 * Uses SecureString and binary string (BSTR) to handle password securely
+* Supports the use of keyfiles
 
 ### Limitations:
 * No support for disk/partition or system encryption
@@ -65,6 +66,19 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	container having been created with VeraCrypt.
 	```powershell
 	E:\> New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter M -Product VeraCrypt
+
+	New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
+	Are you sure you want to proceed?
+	[Y] Yes  [N] No  [?] Help (default is "N"): Y
+
+	E:\>
+	```
+	
+	Identical as the example directly above except the 'Timestamp' switch parameter is being used to indicate that
+	the container's 'Last Write Time' should be updated when dismounted.  This is particularly useful if the container resides
+	in a cloud storage service directory.
+	```powershell
+	E:\> New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter M -Product VeraCrypt -Timestamp
 
 	New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
 	Are you sure you want to proceed?
