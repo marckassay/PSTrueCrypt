@@ -69,7 +69,7 @@ function Mount-TrueCrypt
     }
 
     # construct arguments for expression and insert token in for password...
-    [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath
+    [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
 
     # if no password was given, then we need to start the process for of prompting for one...
     if ([string]::IsNullOrEmpty($Password) -eq $True)
@@ -134,6 +134,7 @@ function Mount-TrueCrypt
         Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
     }
 }
+
 
 <#
 .SYNOPSIS
@@ -220,6 +221,10 @@ function Dismount-TrueCrypt
 .PARAMETER Product
     Specifies if the container has been created with TrueCrypt or VeraCrypt.
 
+.PARAMETER Timestamp
+    This switch will update the container's last write time.  This is particularly useful when the container resides in 
+    a cloud storage service such as: 'Dropbox', 'Google Drive' or 'OneDrive'.
+
 .EXAMPLE
     Adds settings for PSTrueCrypt.
 
@@ -253,7 +258,9 @@ function New-PSTrueCryptContainer
 
         [Parameter(Mandatory = $True, Position = 4)]
         [ValidateSet("TrueCrypt", "VeraCrypt")]
-        [string]$Product
+        [string]$Product,
+
+        [switch]$Timestamp
     )
 
     $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
@@ -296,6 +303,7 @@ function New-PSTrueCryptContainer
             New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location   
             New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
             New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType Binary -Value $Timestamp.GetHashCode()
         } 
         else
         {
@@ -407,7 +415,7 @@ function Show-PSTrueCryptContainers
     {
         Get-ChildItem . -Recurse | ForEach-Object {
             Get-ItemProperty $_.PsPath
-        }| Format-Table Name, Location, MountLetter, Product -AutoSize
+        }| Format-Table Name, Location, MountLetter, Product, Timestamp -AutoSize
     }
     catch [System.Security.SecurityException]
     {
@@ -418,6 +426,7 @@ function Show-PSTrueCryptContainers
 
     Pop-Location
 }
+
 
 #internal function
 function Get-PSTrueCryptContainer 
@@ -438,6 +447,7 @@ function Get-PSTrueCryptContainer
             TrueCryptContainerPath  = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
             PreferredMountDrive     = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
             Product                 = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
+            Timestamp               = (Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp) -eq 01
                     }
     }
     catch
@@ -447,6 +457,7 @@ function Get-PSTrueCryptContainer
 
     $Settings
 }
+
 
 # internal function
 function Get-SubKeyPath
@@ -480,6 +491,7 @@ function Get-SubKeyPath
     Write-Output $PSChildName
 }
 
+
 # internal function
 function Get-TrueCryptMountParams 
 {
@@ -495,21 +507,29 @@ function Get-TrueCryptMountParams
         [string]$Product,
 
         [Parameter(Mandatory = $False, Position = 4)]
-        [array]$KeyfilePath
+        [array]$KeyfilePath,
+
+        [Parameter(Mandatory = $False, Position = 5)]
+        [bool]$Timestamp
     )
 
     $ParamsHash = @{
                         "/quit" = "";
-                        "/v" = "'$TrueCryptContainerPath'";
-                        "/l" = "'$PreferredMountDrive'";
-                        "/a" = "";
-                        "/p" = "'{0}'";
-                        "/e" = "";
+                        "/volume" = "'$TrueCryptContainerPath'";
+                        "/letter" = "'$PreferredMountDrive'";
+                        "/auto" = "";
+                        "/password" = "'{0}'";
+                        "/explore" = "";
                     }
 
     $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
 
     [void]$ParamsString.Insert(0, "& "+$Product+" ")
+
+    if ($Timestamp) 
+    {
+        $ParamsHash.Add("/mountoption", "timestamp")
+    }
 
     # add keyfile(s) if any to ParamsHash...
     if ($KeyfilePath.count -gt 0) 
@@ -537,6 +557,7 @@ function Get-TrueCryptMountParams
     $ParamsString.ToString().TrimEnd(" ");
 }
 
+
 # internal function
 function Get-TrueCryptDismountParams
 {
@@ -551,13 +572,13 @@ function Get-TrueCryptDismountParams
 
     $ParamsHash = @{
                     "/quit" = "";
-                    "/d" = $Drive
+                    "/dismount" = $Drive
                 }
     
     # Force dismount for all TrueCrypt volumes? ...
     if($Drive -eq "")
     {
-        $ParamsHash.Add("/f", "")
+        $ParamsHash.Add("/force", "")
     }
 
     $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
@@ -602,6 +623,8 @@ function Get-Confirmation
     $Decision
 }
 
+
+# internal function
 function Invoke-DismountAll
 {
     Param
