@@ -6,6 +6,8 @@
     In order to use this function, you must provide container settings that will be added to the local registry.  You can add container 
     settings via New-PSTrueCryptContainer.
 
+    The default Alias name is: mt
+
 .PARAMETER Name
     The name attribute value of the container settings that was added to the registry.  Call Show-PSTrueCryptContainers to displayed all 
     container settings.
@@ -144,6 +146,8 @@ function Mount-TrueCrypt
     In order to use this function, you must provide container settings that will be added to the local registry.  You can add container 
     settings via New-PSTrueCryptContainer.
 
+    The default Alias name is: dt
+
 .PARAMETER Name
     The name attribute value of the that was used in mounting the container.
 
@@ -199,6 +203,38 @@ function Dismount-TrueCrypt
     }
 }
 
+<#
+.SYNOPSIS
+    Dismounts a TrueCrypt container. 
+.
+.DESCRIPTION
+    This method simply wraps Dismount-TrueCrypt.  This method isn't intended to be used directly.
+
+    The default Alias name is: dtf
+
+.EXAMPLE
+    Dismounts all containers of TrueCrypt and VeraCrypt
+
+    PS C:\>Dismount-TrueCryptForceAll
+
+.EXAMPLE
+    Equivalent as example above.
+
+    PS C:\>dtf
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+
+.LINK
+    https://github.com/marckassay/PSTrueCrypt
+#>
+function Dismount-TrueCryptForceAll
+{
+    Dismount-TrueCrypt -ForceAll
+}
 
 <#
 .SYNOPSIS
@@ -666,8 +702,13 @@ function Test-IsAdmin
     ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
 
-Export-ModuleMember -function Mount-TrueCrypt
-Export-ModuleMember -function Dismount-TrueCrypt
-Export-ModuleMember -function New-PSTrueCryptContainer
-Export-ModuleMember -function Remove-PSTrueCryptContainer
-Export-ModuleMember -function Show-PSTrueCryptContainers
+Set-Alias -Name mt -Value Mount-TrueCrypt
+Set-Alias -Name dt -Value Dismount-TrueCrypt
+Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
+
+Export-ModuleMember -Function Mount-TrueCrypt -Alias mt
+Export-ModuleMember -Function Dismount-TrueCrypt -Alias dt
+Export-ModuleMember -Function Dismount-TrueCryptForceAll -Alias dtf
+Export-ModuleMember -Function New-PSTrueCryptContainer
+Export-ModuleMember -Function Remove-PSTrueCryptContainer
+Export-ModuleMember -Function Show-PSTrueCryptContainers
