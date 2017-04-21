@@ -702,6 +702,26 @@ function Test-IsAdmin
     ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
 
+function Private:Initialize
+{
+    ($Env:Path).Split(';') | ForEach-Object {
+        if($_ -match "crypt")
+        {
+            try
+            {
+                Write-Warning -Message "$_ has been found in the Environment Path and will now be tested."
+                Test-Path ($Env:Path).Split(';') -Include "*Crypt"
+                Write-Warning -Message "$_ has been tested and is valid." 
+            }
+            catch
+            {
+                Write-Error "$_ has been tested and is invalid!" -ErrorAction Inquire 
+            }
+        }
+    }
+}
+Initialize
+
 Set-Alias -Name mt -Value Mount-TrueCrypt
 Set-Alias -Name dt -Value Dismount-TrueCrypt
 Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
