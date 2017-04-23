@@ -702,23 +702,88 @@ function Test-IsAdmin
     ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
 
+
+# internal function
+function OSVerificationResults
+{
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$EnvPathName,
+
+        [Parameter(Mandatory = $True, Position = 2)]
+        [int16]$results
+    )
+
+    try 
+    {
+        ([OSVerification]::($EnvPathName+"Success") -band $results)/[OSVerification]::($EnvPathName+"Success")  -eq $True
+    }
+    catch
+    {
+        $False
+    }
+}
+
 function Private:Initialize
 {
+    [int]$results = 0;
+    
+    $regex = ".*\\([^\\]+$)"
+
     ($Env:Path).Split(';') | ForEach-Object {
-        if($_ -match "crypt")
+
+        ($_ -match $regex)
+        $EnvPathName = $Matches[1]
+        
+        if(($EnvPathName -eq "TrueCrypt") -or ($EnvPathName -eq "VeraCrypt"))
         {
+            $results += [OSVerification]::($EnvPathName+"Found")
+
             try
             {
-                Write-Warning -Message "$_ has been found in the Environment Path and will now be tested."
-                Test-Path ($Env:Path).Split(';') -Include "*Crypt"
-                Write-Warning -Message "$_ has been tested and is valid." 
+                Write-Verbose -Message "$EnvPathName has been found in the 'PATH' environment variable and will now be tested."
+                
+                $IsValid = Test-Path $_ -IsValid
+                
+                if($IsValid -eq $True) {
+                     $results += [OSVerification]::($EnvPathName+"Valid")
+
+                    $IsVerified = Test-Path $_
+                    
+                    if($IsVerified -eq $True) {
+                        $results += [OSVerification]::($EnvPathName+"Verified")
+                    }
+                }
             }
-            catch
+            # should be safe to swallow.  any discrepanceis will result in the OSVerificationResults call...
+            catch{ }
+
+            if(OSVerificationResults $EnvPathName $results)
             {
-                Write-Error "$_ has been tested and is invalid!" -ErrorAction Inquire 
+                Write-Verbose -Message "$EnvPathName has been successfully tested in the 'PATH' environment variable." -InformationAction Continue
+            }
+            else
+            {
+                Write-Error "The following PATH is has failed: $_"
+                Write-Error "$EnvPathName's 'PATH' environment system variable is invalid!" -ErrorAction Continue
             }
         }
     }
+}
+
+enum OSVerification {
+    TrueCryptFound = 1
+    VeraCryptFound = 2
+                
+    TrueCryptValid = 4
+    VeraCryptValid = 8
+     
+    TrueCryptVerified = 16
+    VeraCryptVerified = 32
+
+    TrueCryptSuccess = 21
+    VeraCryptSuccess = 42
 }
 Initialize
 
