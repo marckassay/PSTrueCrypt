@@ -728,7 +728,7 @@ function OSVerificationResults
 function Private:Initialize
 {
     [int]$results = 0;
-    
+
     $regex = ".*\\([^\\]+$)"
 
     ($Env:Path).Split(';') | ForEach-Object {
