@@ -311,7 +311,7 @@ function New-PSTrueCryptContainer
     {
         $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
 
-        if ($Decision -eq 0) 
+        if ($Decision -eq $True) 
         {
             $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
                     [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
@@ -463,6 +463,86 @@ function Show-PSTrueCryptContainers
     Pop-Location
 }
 
+
+function Set-TrueCryptPathVariable
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$PathVar
+    )
+
+    [int]$results = 0
+
+    $regex = ".*\\([^\\]+$)"
+    
+    $PathVar -match $regex
+    
+    $EnvPathName = $Matches[1]
+
+    $results += [OSVerification]::($EnvPathName+"Found")
+
+    $IsValid = Test-Path $PathVar -IsValid
+    
+    if($IsValid -eq $True) {
+        $results += [OSVerification]::($EnvPathName+"Valid")
+    }
+
+    $IsVerified = Test-Path $PathVar
+        
+    if($IsVerified -eq $True) {
+        $results += [OSVerification]::($EnvPathName+"Verified")
+    }
+
+    if(Get-OSVerificationResults $EnvPathName $results)
+    {
+        Write-Verbose -Message "$PathVar is valid and verified for the 'PATH' environment variable."
+
+        $Decision = $True #Get-Confirmation -Message "$PathVar will be added to the 'PATH' environment variable."
+
+        if($Decision -eq $True)
+        {
+            try
+            {
+                #$rs = New-Object [System.Security.AccessControl]::ReadWriteSubTree
+          
+                $SubKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey("HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment", $True)
+                
+                $AccessRule = New-Object [System.Security.AccessControl]::RegistryAccessRule (
+                    [Microsoft.Win32.Registry]::CurrentUser.Name, "FullControl",
+                    [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
+                    [System.Security.AccessControl.PropagationFlags]"None",
+                    [System.Security.AccessControl.AccessControlType]"Allow")
+
+                $AccessControl = $SubKey.GetAccessControl()
+
+                $AccessControl.SetAccessRule($AccessRule)
+                
+                $SubKey.SetAccessControl($AccessControl)
+                
+
+                
+                # unable to find any documentation on this cmdlet to see what, if any errors/exceptions are thrown
+                Set-ItemProperty $SubKey -Name Path -Value $PathVar -ErrorAction Stop
+                Write-Verbose -Message "$PathVar has been set to 'PATH' environment variable."
+            }
+            catch
+            {
+                Write-Error "'An error has been thrown which prevents you from modifiying the PATH registry." -RecommendedAction "You can set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy"            
+            }
+        }
+        else
+        {
+            Write-Warning "You have selected 'No': No changes to 'PATH' environment variable has been made." -WarningAction Continue
+        }  
+    }
+    else
+    {
+        Write-Warning "$_ is not valid!  No changes to 'PATH' environment variable has been made." -WarningAction Inquire
+    }
+}
 
 #internal function
 function Get-PSTrueCryptContainer 
@@ -651,12 +731,12 @@ function Get-Confirmation
     $Question = 'Are you sure you want to proceed?'
 
     $Choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
-    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&Yes'))
-    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList '&No'))
+    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&Yes"))
+    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&No"))
 
     $Decision = $Host.UI.PromptForChoice($Message, $Question, $Choices, 1)
 
-    $Decision
+    $Decision -eq 0
 }
 
 
@@ -779,6 +859,7 @@ function Initialize
     }
 }
 
+
 enum OSVerification {
     TrueCryptFound = 1
     VeraCryptFound = 2
@@ -804,3 +885,5 @@ Export-ModuleMember -Function Dismount-TrueCryptForceAll -Alias dtf
 Export-ModuleMember -Function New-PSTrueCryptContainer
 Export-ModuleMember -Function Remove-PSTrueCryptContainer
 Export-ModuleMember -Function Show-PSTrueCryptContainers
+
+Export-ModuleMember -Function Set-TrueCryptPathVariable

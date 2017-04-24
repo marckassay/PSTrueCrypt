@@ -18,4 +18,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # Visual Studio Code config
-.vscode/launch.json
+.vscode/*.json
