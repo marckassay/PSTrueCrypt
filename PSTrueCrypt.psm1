@@ -704,7 +704,7 @@ function Test-IsAdmin
 
 
 # internal function
-function OSVerificationResults
+function Get-OSVerificationResults
 {
     Param
     (
@@ -712,12 +712,15 @@ function OSVerificationResults
         [string]$EnvPathName,
 
         [Parameter(Mandatory = $True, Position = 2)]
-        [int16]$results
+        [int]$Results,
+
+        [ValidateSet("Found", "Valid", "Verified", "Success")]
+        [string]$ResultStep = "Success"
     )
 
     try 
     {
-        ([OSVerification]::($EnvPathName+"Success") -band $results)/[OSVerification]::($EnvPathName+"Success")  -eq $True
+        ([OSVerification]::($EnvPathName+$ResultStep) -band $Results)/[OSVerification]::($EnvPathName+$ResultStep) -eq $True
     }
     catch
     {
@@ -725,7 +728,7 @@ function OSVerificationResults
     }
 }
 
-function Private:Initialize
+function Initialize
 {
     [int]$results = 0;
 
@@ -756,17 +759,21 @@ function Private:Initialize
                     }
                 }
             }
-            # should be safe to swallow.  any discrepanceis will result in the OSVerificationResults call...
+            # should be safe to swallow.  any discrepanceis will result in the Get-OSVerificationResults call...
             catch{ }
 
-            if(OSVerificationResults $EnvPathName $results)
+            if(Get-OSVerificationResults $EnvPathName $results)
             {
                 Write-Verbose -Message "$EnvPathName has been successfully tested in the 'PATH' environment variable." -InformationAction Continue
             }
             else
             {
-                Write-Error "The following PATH is has failed: $_"
-                Write-Error "$EnvPathName's 'PATH' environment system variable is invalid!" -ErrorAction Continue
+                Write-Warning "The module PSTrueCrypt has detected the following PATH has failed: $_"
+                $message = "To reset $EnvPathName's 'PATH' environment system variable, use the Set-$EnvPathName{0}PathVariable function." -f ""
+                Write-Warning $message
+                $message = "For an example: PS E:>Set-$EnvPathName{0}PathVariable 'C:\Program Files\TrueCrypt\'" -f ""
+                Write-Warning $message
+                Write-Warning "Afterwards, restart Powershell.  Upon restart, if the original path is still being used logout and try again."
             }
         }
     }
