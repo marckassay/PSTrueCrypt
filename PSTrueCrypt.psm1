@@ -203,6 +203,7 @@ function Dismount-TrueCrypt
     }
 }
 
+
 <#
 .SYNOPSIS
     Dismounts a TrueCrypt container. 
@@ -235,6 +236,7 @@ function Dismount-TrueCryptForceAll
 {
     Dismount-TrueCrypt -ForceAll
 }
+
 
 <#
 .SYNOPSIS
@@ -464,6 +466,32 @@ function Show-PSTrueCryptContainers
 }
 
 
+<#
+.SYNOPSIS
+    Sets the TrueCrypt directory in the environment variable field.
+
+.DESCRIPTION
+    Will accept TrueCrypt or VeraCrypt directory paths to be used to set the operating system's environment variable. This
+    is needed when Mount-TrueCrypt or Dismount-TrueCrypt functions are called.  It will check ParVar parameter to make sure
+    its valid before setting it as an environment variable.
+
+.PARAMETER PathVar
+    The directory path where TrueCrypt or VeraCrypt executable resides. 
+
+.EXAMPLE
+    Setting TrueCrypt directory.
+
+    PS C:\>Set-EnvironmentPathVariable 'C:\Program Files\TrueCrypt'
+
+.INPUTS
+    None
+
+.OUTPUTS
+    None
+
+.LINK
+    https://github.com/marckassay/PSTrueCrypt
+#>
 function Set-EnvironmentPathVariable
 {
     [CmdletBinding()]
@@ -507,19 +535,25 @@ function Set-EnvironmentPathVariable
             {
                 try
                 {
+                    Write-Verbose -Message "Attempting to set $PathVar for the 'PATH' environment variable."
+
                     [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
 
-                    Write-Verbose -Message "$PathVar has been set to 'PATH' environment variable."
+                    Write-Information -MessageData "$PathVar has been set to 'PATH' environment variable." -InformationAction Continue
                 }
                 catch
                 {
-                    Write-Error "An error has been thrown which prevents you from modifiying the PATH registry." -RecommendedAction "You can set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy" 
+                    Write-Error "An error has been thrown which prevents you from modifiying the PATH registry." -RecommendedAction "You can set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy" -ErrorAction Stop
                 }
             }
             else
             {
-                Write-Warning "You have selected 'No': No changes to 'PATH' environment variable has been made." -WarningAction Continue
+                Write-Warning "You have selected 'No', no changes to 'PATH' environment variable has been made." -WarningAction Continue
             }  
+        }
+        else 
+        {
+            Write-Warning "$PathVar is not valid!  No changes to 'PATH' environment variable has been made." -WarningAction Inquire
         }
     }
     catch
@@ -553,7 +587,7 @@ function Get-PSTrueCryptContainer
     }
     catch
     {
-        Write-Error -Message "Unable to read registry for unknown reason(s). Origin: Get-PSTrueCryptContainer."
+        Write-Error -Message "Unable to read registry for unknown reason(s)."
     }
 
     $Settings
@@ -584,7 +618,7 @@ function Get-SubKeyPath
     }
     catch 
     {
-        Write-Error -Message "Unable to read registry for unknown reason(s). Origin: Get-SubKeyPath."
+        Write-Error -Message "Unable to read registry for unknown reason(s)."
     }
 
     Pop-Location
@@ -829,7 +863,7 @@ function Initialize
 
             if(Get-OSVerificationResults $EnvPathName $Results)
             {
-                Write-Verbose -Message "$EnvPathName has been successfully tested in the 'PATH' environment variable." -InformationAction Continue
+                Write-Verbose -Message "$EnvPathName has been successfully tested in the 'PATH' environment variable."
             }
             else
             {
