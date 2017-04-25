@@ -464,85 +464,70 @@ function Show-PSTrueCryptContainers
 }
 
 
-function Set-TrueCryptPathVariable
+function Set-EnvironmentPathVariable
 {
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1)]
+        [Parameter(Mandatory = $True)]
         [ValidateNotNullOrEmpty()]
         [string]$PathVar
     )
 
-    [int]$results = 0
+    [int]$Results = 0
 
-    $regex = ".*\\([^\\]+$)"
-    
-    $PathVar -match $regex
-    
-    $EnvPathName = $Matches[1]
+    $Regex = "(\w+)\\?$"
 
-    $results += [OSVerification]::($EnvPathName+"Found")
-
-    $IsValid = Test-Path $PathVar -IsValid
-    
-    if($IsValid -eq $True) {
-        $results += [OSVerification]::($EnvPathName+"Valid")
-    }
-
-    $IsVerified = Test-Path $PathVar
+    try 
+    {
+        ($PathVar -match $Regex)
+        $EnvPathName = $Matches[1]
         
-    if($IsVerified -eq $True) {
-        $results += [OSVerification]::($EnvPathName+"Verified")
-    }
+        $Results += [OSVerification]::($EnvPathName+"Found")
 
-    if(Get-OSVerificationResults $EnvPathName $results)
-    {
-        Write-Verbose -Message "$PathVar is valid and verified for the 'PATH' environment variable."
-
-        $Decision = $True #Get-Confirmation -Message "$PathVar will be added to the 'PATH' environment variable."
-
-        if($Decision -eq $True)
-        {
-            try
-            {
-                #$rs = New-Object [System.Security.AccessControl]::ReadWriteSubTree
-          
-                $SubKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey("HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment", $True)
-                
-                $AccessRule = New-Object [System.Security.AccessControl]::RegistryAccessRule (
-                    [Microsoft.Win32.Registry]::CurrentUser.Name, "FullControl",
-                    [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
-                    [System.Security.AccessControl.PropagationFlags]"None",
-                    [System.Security.AccessControl.AccessControlType]"Allow")
-
-                $AccessControl = $SubKey.GetAccessControl()
-
-                $AccessControl.SetAccessRule($AccessRule)
-                
-                $SubKey.SetAccessControl($AccessControl)
-                
-
-                
-                # unable to find any documentation on this cmdlet to see what, if any errors/exceptions are thrown
-                Set-ItemProperty $SubKey -Name Path -Value $PathVar -ErrorAction Stop
-                Write-Verbose -Message "$PathVar has been set to 'PATH' environment variable."
-            }
-            catch
-            {
-                Write-Error "'An error has been thrown which prevents you from modifiying the PATH registry." -RecommendedAction "You can set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy"            
-            }
+        $IsValid = Test-Path $PathVar -IsValid
+        
+        if($IsValid -eq $True) {
+            $Results += [OSVerification]::($EnvPathName+"Valid")
         }
-        else
+
+        $IsVerified = Test-Path $PathVar
+            
+        if($IsVerified -eq $True) {
+            $Results += [OSVerification]::($EnvPathName+"Verified")
+        }
+
+        if(Get-OSVerificationResults $EnvPathName $Results)
         {
-            Write-Warning "You have selected 'No': No changes to 'PATH' environment variable has been made." -WarningAction Continue
-        }  
+            Write-Verbose -Message "$PathVar is valid and verified for the 'PATH' environment variable."
+
+            $Decision = Get-Confirmation -Message "$PathVar will be added to the 'PATH' environment variable."
+
+            if($Decision -eq $True)
+            {
+                try
+                {
+                    [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
+
+                    Write-Verbose -Message "$PathVar has been set to 'PATH' environment variable."
+                }
+                catch
+                {
+                    Write-Error "An error has been thrown which prevents you from modifiying the PATH registry." -RecommendedAction "You can set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy" 
+                }
+            }
+            else
+            {
+                Write-Warning "You have selected 'No': No changes to 'PATH' environment variable has been made." -WarningAction Continue
+            }  
+        }
     }
-    else
+    catch
     {
-        Write-Warning "$_ is not valid!  No changes to 'PATH' environment variable has been made." -WarningAction Inquire
+        Write-Warning "$PathVar is not valid!  No changes to 'PATH' environment variable has been made." -WarningAction Inquire
     }
 }
+
 
 #internal function
 function Get-PSTrueCryptContainer 
@@ -564,7 +549,7 @@ function Get-PSTrueCryptContainer
             PreferredMountDrive     = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
             Product                 = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
             Timestamp               = (Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp) -eq 1
-                    }
+        }
     }
     catch
     {
@@ -810,18 +795,18 @@ function Get-OSVerificationResults
 
 function Initialize
 {
-    [int]$results = 0;
+    [int]$Results = 0;
 
-    $regex = ".*\\([^\\]+$)"
+    $Regex = "(\w+)\\?$"
 
     ($Env:Path).Split(';') | ForEach-Object {
 
-        ($_ -match $regex)
+        ($_ -match $Regex)
         $EnvPathName = $Matches[1]
         
         if(($EnvPathName -eq "TrueCrypt") -or ($EnvPathName -eq "VeraCrypt"))
         {
-            $results += [OSVerification]::($EnvPathName+"Found")
+            $Results += [OSVerification]::($EnvPathName+"Found")
 
             try
             {
@@ -830,19 +815,19 @@ function Initialize
                 $IsValid = Test-Path $_ -IsValid
                 
                 if($IsValid -eq $True) {
-                     $results += [OSVerification]::($EnvPathName+"Valid")
+                     $Results += [OSVerification]::($EnvPathName+"Valid")
 
                     $IsVerified = Test-Path $_
                     
                     if($IsVerified -eq $True) {
-                        $results += [OSVerification]::($EnvPathName+"Verified")
+                        $Results += [OSVerification]::($EnvPathName+"Verified")
                     }
                 }
             }
             # should be safe to swallow.  any discrepanceis will result in the Get-OSVerificationResults call...
             catch{ }
 
-            if(Get-OSVerificationResults $EnvPathName $results)
+            if(Get-OSVerificationResults $EnvPathName $Results)
             {
                 Write-Verbose -Message "$EnvPathName has been successfully tested in the 'PATH' environment variable." -InformationAction Continue
             }
@@ -886,4 +871,4 @@ Export-ModuleMember -Function New-PSTrueCryptContainer
 Export-ModuleMember -Function Remove-PSTrueCryptContainer
 Export-ModuleMember -Function Show-PSTrueCryptContainers
 
-Export-ModuleMember -Function Set-TrueCryptPathVariable
+Export-ModuleMember -Function Set-EnvironmentPathVariable
