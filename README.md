@@ -7,7 +7,7 @@ PSTrueCrypt is a PowerShell module for mounting TrueCrypt and VeraCrypt containe
 * Uses SecureString and binary string (BSTR) to handle password securely
 * Supports the use of keyfiles
 * On PowerShell startup, a test will be made to unsure that TrueCrypt and/or VeraCrypt are set in the 
-system environment 'path' varible 
+system environment 'path' variable 
 
 ### Limitations:
 * No support for full disk/partition or system encryption
