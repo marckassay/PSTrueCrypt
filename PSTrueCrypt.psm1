@@ -59,81 +59,86 @@ function Mount-TrueCrypt
         [Parameter(Mandatory = $False)]
         [System.Security.SecureString]$Password
     )
-
-    # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
-    try 
+    
+    end
     {
-        $Settings = Get-PSTrueCryptContainer -Name $Name
-    }
-    catch [System.Management.Automation.ItemNotFoundException]
-    {
-        Write-Error "At least one subkey of HKCU:\SOFTWARE\PSTrueCrypt is required.  Use New-PSTrueCryptContainer to add a subkey." -ErrorAction Stop
-    }
-
-    # construct arguments for expression and insert token in for password...
-    [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
-
-    # if no password was given, then we need to start the process for of prompting for one...
-    if ([string]::IsNullOrEmpty($Password) -eq $True)
-    {
-        $WasConsolePromptingPrior
-        # check to see if session is in admin mode for console prompting...
-        if (Test-IsAdmin -eq $True)
+        # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
+        try 
         {
-            $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
-
-            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+            $Settings = Get-PSTrueCryptContainer -Name $Name
+        }
+        catch [System.Management.Automation.ItemNotFoundException]
+        {
+            Write-Error "At least one subkey of HKCU:\SOFTWARE\PSTrueCrypt is required.  Use New-PSTrueCryptContainer to add a subkey." -ErrorAction Stop
         }
 
-        [securestring]$Password = Read-Host -Prompt "Enter password" -AsSecureString
-    }
+        # construct arguments for expression and insert token in for password...
+        [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
 
-    # this method of handling password securely has been mentioned at the following links:
-    # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
-    # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
-    # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
-    # https://msdn.microsoft.com/en-us/library/ewyktcaa(v=vs.110).aspx
-    try
-    {
-        # Create IntPassword and dispose $Password...
+        # if no password was given, then we need to start the process for of prompting for one...
+        if ([string]::IsNullOrEmpty($Password) -eq $True)
+        {
+            $WasConsolePromptingPrior
+            # check to see if session is in admin mode for console prompting...
+            if (Test-IsAdmin -eq $True)
+            {
+                $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
 
-        [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
-    }
-    catch [System.NotSupportedException]
-    {
-        # The current computer is not running Windows 2000 Service Pack 3 or later.
-        Write-Error "The current computer is not running Windows 2000 Service Pack 3 or later."
-    }
-    catch [System.OutOfMemoryException]
-    {
-        # OutOfMemoryException
-        Write-Error "Not enough memory for PSTrueCrypt to continue."
-    }
-    finally
-    {
-        $Password.Dispose()
-    }
+                Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+            }
 
-    try
-    {
-        # Execute Expression
-        Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
-    }
-    catch [System.Exception]
-    {
-        Write-Error "An unkown issue occurred when TrueCrypt was executed.  Are keyfile(s) needed for this container?"
-    }
-    finally
-    {
-       # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
-       # holding on to this pointer while container is open.
-       # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
-    }
+            [securestring]$Password = Read-Host -Prompt "Enter password" -AsSecureString
+        }
 
-    # if console prompting was set to false prior to this module, then set it back to false... 
-    if ($WasConsolePromptingPrior -eq $False)
-    {
-        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
+        # this method of handling password securely has been mentioned at the following links:
+        # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
+        # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
+        # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
+        # https://msdn.microsoft.com/en-us/library/ewyktcaa(v=vs.110).aspx
+        try
+        {
+            # Create IntPassword and dispose $Password...
+
+            [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+        }
+        catch [System.NotSupportedException]
+        {
+            # The current computer is not running Windows 2000 Service Pack 3 or later.
+            Write-Error "The current computer is not running Windows 2000 Service Pack 3 or later."
+        }
+        catch [System.OutOfMemoryException]
+        {
+            # OutOfMemoryException
+            Write-Error "Not enough memory for PSTrueCrypt to continue."
+        }
+        finally
+        {
+            $Password.Dispose()
+        }
+
+        try
+        {
+            # Execute Expression
+            Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
+        }
+        catch [System.Exception]
+        {
+            Write-Error "An unkown issue occurred when TrueCrypt was executed.  Are keyfile(s) needed for this container?"
+        }
+        finally
+        {
+        # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
+        # holding on to this pointer while container is open.
+        # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
+        }
+
+        # if console prompting was set to false prior to this module, then set it back to false... 
+        if ($WasConsolePromptingPrior -eq $False)
+        {
+            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
+        }
+
+        Set-MountHistoryEntry -Name $Name -KeyfilePath $KeyfilePath -Password $Password
     }
 }
 
@@ -562,6 +567,29 @@ function Set-EnvironmentPathVariable
     }
 }
 
+
+#internal function
+function Set-MountHistoryEntry
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $False)]
+        [array]$KeyfilePath,
+
+        [Parameter(Mandatory = $False)]
+        [System.Security.SecureString]$Password
+    )
+
+    $PSHistoryFilePath = (Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath)
+
+    Get-Content -Path $PSHistoryFilePath | ForEach-Object { $_ -replace "-KeyfilePath.*(?<!Mount\-TrueCrypt|mt)", "X:\XXXXX\XXXXX\XXXXX"} | Set-Content -Path $PSHistoryFilePath+".tmp"
+
+    Copy-Item -Path $PSHistoryFilePath+".tmp" -Destination $PSHistoryFilePath -Force
+}
 
 #internal function
 function Get-PSTrueCryptContainer 
