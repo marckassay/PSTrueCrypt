@@ -138,7 +138,10 @@ function Mount-TrueCrypt
             Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
         }
 
-        Set-MountHistoryEntry -Name $Name -KeyfilePath $KeyfilePath -Password $Password
+        if($KeyfilePath -ne $null)
+        {
+            Edit-HistoryFile -KeyfilePath $KeyfilePath
+        }
     }
 }
 
@@ -569,26 +572,31 @@ function Set-EnvironmentPathVariable
 
 
 #internal function
-function Set-MountHistoryEntry
+function Edit-HistoryFile
 {
     [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
-        [string]$Name,
-
-        [Parameter(Mandatory = $False)]
-        [array]$KeyfilePath,
-
-        [Parameter(Mandatory = $False)]
-        [System.Security.SecureString]$Password
+        [array]$KeyfilePath
     )
 
-    $PSHistoryFilePath = (Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath)
+    try
+    {
+        $PSHistoryFilePath = (Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath)
+        $PSHistoryTempFilePath = $PSHistoryFilePath+".tmp"
 
-    Get-Content -Path $PSHistoryFilePath | ForEach-Object { $_ -replace "-KeyfilePath.*(?<!Mount\-TrueCrypt|mt)", "X:\XXXXX\XXXXX\XXXXX"} | Set-Content -Path $PSHistoryFilePath+".tmp"
+        Get-Content -Path $PSHistoryFilePath | ForEach-Object { $_ -replace "-KeyfilePath.*(?<!Mount\-TrueCrypt|mt)", "-KeyfilePath X:\XXXXX\XXXXX\XXXXX"} | Set-Content -Path $PSHistoryTempFilePath
 
-    Copy-Item -Path $PSHistoryFilePath+".tmp" -Destination $PSHistoryFilePath -Force
+        Copy-Item -Path $PSHistoryTempFilePath -Destination $PSHistoryFilePath -Force
+
+        Remove-Item -Path $PSHistoryTempFilePath -Force
+    }
+    catch
+    {
+        Write-Error -Message "Unable to redact the history file!  When KeyfilePath is not null, PSTrueCrypt will make an attempt to remove the KeyfilePath value from the following file:"
+        Write-Error -Message $PSHistoryFilePath -ErrorAction Inquire
+    }
 }
 
 #internal function
