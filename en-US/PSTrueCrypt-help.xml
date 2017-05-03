@@ -1,0 +1,565 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<helpItems xmlns="http://msh" schema="maml">
+
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Dismount-TrueCrypt</command:name>
+<command:verb>Dismount</command:verb>
+<command:noun>TrueCrypt</command:noun>
+<maml:description><maml:para>Dismounts a TrueCrypt container.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>In order to use this function, you must provide container settings that will be added to the local registry.  You can add container  settings via New-PSTrueCryptContainer.
+</maml:para>
+<maml:para>The default Alias name is: dt
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Dismount-TrueCrypt</maml:name>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name attribute value of the that was used in mounting the container.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>ForceAll</maml:name>
+<maml:Description><maml:para>If method is invoked with this switch (flag) parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name attribute value of the that was used in mounting the container.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>ForceAll</maml:name>
+<maml:Description><maml:para>If method is invoked with this switch (flag) parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Dismounts a TrueCrypt container with name of 'Kryptos' which must be in the container settings.</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;Dismount-TrueCrypt -Name Kryptos
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>Dismounts all TrueCrypt containers</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;Dismount-TrueCrypt -ForceAll
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Online Version:</maml:linkText>
+<maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Dismount-TrueCryptForceAll</command:name>
+<command:verb>Dismount</command:verb>
+<command:noun>TrueCryptForceAll</command:noun>
+<maml:description><maml:para>Dismounts a TrueCrypt container.  .
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>This method simply wraps Dismount-TrueCrypt.  This method isn't intended to be used directly.
+</maml:para>
+<maml:para>The default Alias name is: dtf
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Dismount-TrueCryptForceAll</maml:name>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters></command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Dismounts all containers of TrueCrypt and VeraCrypt</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;Dismount-TrueCryptForceAll
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>Equivalent as example above.</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;dtf
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Online Version:</maml:linkText>
+<maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Mount-TrueCrypt</command:name>
+<command:verb>Mount</command:verb>
+<command:noun>TrueCrypt</command:noun>
+<maml:description><maml:para>Mounts a TrueCrypt container.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>In order to use this function, you must provide container settings that will be added to the local registry.  You can add container  settings via New-PSTrueCryptContainer.
+</maml:para>
+<maml:para>The default Alias name is: mt
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Mount-TrueCrypt</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name attribute value of the container settings that was added to the registry.  Call Show-PSTrueCryptContainers to displayed all  container settings.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>KeyfilePath</maml:name>
+<maml:Description><maml:para>Any path(s) to keyfiles (or directories) if required.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Array</command:parameterValue>
+<dev:type><maml:name>Array</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Password</maml:name>
+<maml:Description><maml:para>If invoking this function in a background task, give value to this parameter to prevent function from prompting user for password. See the third example that is in this function's header comment.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
+<dev:type><maml:name>SecureString</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name attribute value of the container settings that was added to the registry.  Call Show-PSTrueCryptContainers to displayed all  container settings.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>KeyfilePath</maml:name>
+<maml:Description><maml:para>Any path(s) to keyfiles (or directories) if required.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">Array</command:parameterValue>
+<dev:type><maml:name>Array</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Password</maml:name>
+<maml:Description><maml:para>If invoking this function in a background task, give value to this parameter to prevent function from prompting user for password. See the third example that is in this function's header comment.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">SecureString</command:parameterValue>
+<dev:type><maml:name>SecureString</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Mounts a TrueCrypt container with name of 'Kryptos' must be in the registry.</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;Mount-TrueCrypt -Name Kryptos
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
+<dev:code>Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
+</maml:para>
+</dev:remarks>
+</command:example>
+<command:example><maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
+<dev:code>Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile and passes a secure password into the Password parameter.</dev:code>
+<dev:remarks><maml:para>This is usefull for background tasks that can't rely on user input.
+</maml:para>
+<maml:para>PS C:\&gt;$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force PS C:\&gt;Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>https://github.com/marckassay/PSTrueCrypt</maml:linkText>
+<maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>New-PSTrueCryptContainer</command:name>
+<command:verb>New</command:verb>
+<command:noun>PSTrueCryptContainer</command:noun>
+<maml:description><maml:para>Sets in the registry the TrueCrypt container's location, preferred mount drive letter, and name.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>When invoked successfully, the container's: location, preferred mount drive letter, and name will be stored as a subkey in the HKCU:\Software\PSTrueCrypt registry key.  If call for first time, PSTrueCrypt registry key will be created.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>New-PSTrueCryptContainer</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>An arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>Location</maml:name>
+<maml:Description><maml:para>The TrueCrypt container's location.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>MountLetter</maml:name>
+<maml:Description><maml:para>A preferred mount drive letter for this container.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none"><maml:name>Product</maml:name>
+<maml:Description><maml:para>Specifies if the container has been created with TrueCrypt or VeraCrypt.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Timestamp</maml:name>
+<maml:Description><maml:para>This switch will update the container's last write time.  This is particularly useful when the container resides in  a cloud storage service such as: 'Dropbox', 'Google Drive' or 'OneDrive'.
+</maml:para>
+</maml:Description>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>An arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="3" aliases="none"><maml:name>Location</maml:name>
+<maml:Description><maml:para>The TrueCrypt container's location.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="4" aliases="none"><maml:name>MountLetter</maml:name>
+<maml:Description><maml:para>A preferred mount drive letter for this container.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="5" aliases="none"><maml:name>Product</maml:name>
+<maml:Description><maml:para>Specifies if the container has been created with TrueCrypt or VeraCrypt.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>Timestamp</maml:name>
+<maml:Description><maml:para>This switch will update the container's last write time.  This is particularly useful when the container resides in  a cloud storage service such as: 'Dropbox', 'Google Drive' or 'OneDrive'.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
+<dev:type><maml:name>SwitchParameter</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>False</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Adds settings for PSTrueCrypt.</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter F -Product TrueCrypt
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Online Version:</maml:linkText>
+<maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Remove-PSTrueCryptContainer</command:name>
+<command:verb>Remove</command:verb>
+<command:noun>PSTrueCryptContainer</command:noun>
+<maml:description><maml:para>Remove settings that were added by the New-PSTrueCryptContainer function.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Remove the subkey in the HKCU:\Software\PSTrueCrypt registry, that contains the value of Name parameter.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Remove-PSTrueCryptContainer</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name that is used to reference this setting for Mount-TrueCrypt or Dismount-TrueCrypt functions.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
+<maml:Description><maml:para>The name that is used to reference this setting for Mount-TrueCrypt or Dismount-TrueCrypt functions.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Remove-PSTrueCryptContainer -Name Kryptos</dev:code>
+<dev:remarks><maml:para>
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Online Version:</maml:linkText>
+<maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Set-EnvironmentPathVariable</command:name>
+<command:verb>Set</command:verb>
+<command:noun>EnvironmentPathVariable</command:noun>
+<maml:description><maml:para>Sets the TrueCrypt directory in the environment variable field.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>Will accept TrueCrypt or VeraCrypt directory paths to be used to set the operating system's environment variable. This is needed when Mount-TrueCrypt or Dismount-TrueCrypt functions are called.  It will check ParVar parameter to make sure its valid before setting it as an environment variable.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Set-EnvironmentPathVariable</maml:name>
+<command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>PathVar</maml:name>
+<maml:Description><maml:para>The directory path where TrueCrypt or VeraCrypt executable resides.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters><command:parameter required="true" variableLength="true" globbing="false" pipelineInput="False" position="1" aliases="none"><maml:name>PathVar</maml:name>
+<maml:Description><maml:para>The directory path where TrueCrypt or VeraCrypt executable resides.
+</maml:para>
+</maml:Description>
+<command:parameterValue required="true" variableLength="false">String</command:parameterValue>
+<dev:type><maml:name>String</maml:name>
+<maml:uri /></dev:type>
+<dev:defaultValue>None</dev:defaultValue>
+</command:parameter>
+</command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>Setting TrueCrypt directory.</dev:code>
+<dev:remarks><maml:para>PS C:\&gt;Set-EnvironmentPathVariable 'C:\Program Files\TrueCrypt'
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Online Version:</maml:linkText>
+<maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+<command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<command:details><command:name>Show-PSTrueCryptContainers</command:name>
+<command:verb>Show</command:verb>
+<command:noun>PSTrueCryptContainers</command:noun>
+<maml:description><maml:para>Displays all settings for mounting and dismounting.
+</maml:para>
+</maml:description>
+</command:details>
+<maml:description><maml:para>When this parameterless function is called, a list is displayed in the command-line shell for all subkey registries under the HKCU:\Software\PSTrueCrypt registry key.
+</maml:para>
+</maml:description>
+<command:syntax><command:syntaxItem><maml:name>Show-PSTrueCryptContainers</maml:name>
+</command:syntaxItem>
+</command:syntax>
+<command:parameters></command:parameters>
+<command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:inputType>
+</command:inputTypes>
+<command:returnValues><command:returnValue><dev:type><maml:name>None</maml:name>
+</dev:type>
+<maml:description><maml:para>
+</maml:para>
+</maml:description>
+</command:returnValue>
+</command:returnValues>
+<maml:alertSet><maml:alert><maml:para>
+</maml:para>
+</maml:alert>
+</maml:alertSet>
+<command:examples><command:example><maml:title>Example 1</maml:title>
+<dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
+<dev:remarks><maml:para>{{ Add example description here }}
+</maml:para>
+</dev:remarks>
+</command:example>
+</command:examples>
+<command:relatedLinks><maml:navigationLink><maml:linkText>Online Version:</maml:linkText>
+<maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
+</maml:navigationLink>
+</command:relatedLinks>
+</command:command>
+</helpItems>

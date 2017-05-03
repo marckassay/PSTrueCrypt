@@ -1,59 +1,11 @@
-<#
-.SYNOPSIS
-    Mounts a TrueCrypt container. 
-
-.DESCRIPTION
-    In order to use this function, you must provide container settings that will be added to the local registry.  You can add container 
-    settings via New-PSTrueCryptContainer.
-
-    The default Alias name is: mt
-
-.PARAMETER Name
-    The name attribute value of the container settings that was added to the registry.  Call Show-PSTrueCryptContainers to displayed all 
-    container settings.
-
-.PARAMETER KeyfilePath
-    Any path(s) to keyfiles (or directories) if required.
-
-.PARAMETER Password
-    If invoking this function in a background task, give value to this parameter to prevent function from prompting user for password. See
-    the third example that is in this function's header comment.
-
-.EXAMPLE
-    Mounts a TrueCrypt container with name of 'Kryptos' must be in the registry.
-
-    PS C:\>Mount-TrueCrypt -Name Kryptos
-
-.EXAMPLE
-    Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.
-
-    PS C:\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
-
-.EXAMPLE
-    Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile and passes a secure password into the Password parameter.  
-    This is usefull for background tasks that can't rely on user input.
-
-    PS C:\>$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
-    PS C:\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword
-
-.INPUTS
-    None
-
-.OUTPUTS
-    None
-
-.LINK
-    https://github.com/marckassay/PSTrueCrypt
-
-.ExternalHelp PSTrueCrypt.psm1-Help.xml
-#>
+#.ExternalHelp PSTrueCrypt-help.xml
 function Mount-TrueCrypt
 {
-    
     [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
         [string]$Name,
 
         [Parameter(Mandatory = $False)]
@@ -63,127 +15,90 @@ function Mount-TrueCrypt
         [System.Security.SecureString]$Password
     )
     
-    end
+    # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
+    try 
     {
-        # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
-        try 
+        $Settings = Get-PSTrueCryptContainer -Name $Name
+    }
+    catch [System.Management.Automation.ItemNotFoundException]
+    {
+        Write-Error "At least one subkey of HKCU:\SOFTWARE\PSTrueCrypt is required.  Use New-PSTrueCryptContainer to add a subkey." -ErrorAction Stop
+    }
+
+    # construct arguments for expression and insert token in for password...
+    [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
+
+    # if no password was given, then we need to start the process for of prompting for one...
+    if ([string]::IsNullOrEmpty($Password) -eq $True)
+    {
+        $WasConsolePromptingPrior
+        # check to see if session is in admin mode for console prompting...
+        if (Test-IsAdmin -eq $True)
         {
-            $Settings = Get-PSTrueCryptContainer -Name $Name
-        }
-        catch [System.Management.Automation.ItemNotFoundException]
-        {
-            Write-Error "At least one subkey of HKCU:\SOFTWARE\PSTrueCrypt is required.  Use New-PSTrueCryptContainer to add a subkey." -ErrorAction Stop
+            $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+
+            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
         }
 
-        # construct arguments for expression and insert token in for password...
-        [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
+        [securestring]$Password = Read-Host -Prompt "Enter password" -AsSecureString
+    }
 
-        # if no password was given, then we need to start the process for of prompting for one...
-        if ([string]::IsNullOrEmpty($Password) -eq $True)
-        {
-            $WasConsolePromptingPrior
-            # check to see if session is in admin mode for console prompting...
-            if (Test-IsAdmin -eq $True)
-            {
-                $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
+    # this method of handling password securely has been mentioned at the following links:
+    # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
+    # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
+    # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
+    # https://msdn.microsoft.com/en-us/library/ewyktcaa(v=vs.110).aspx
+    try
+    {
+        # Create IntPassword and dispose $Password...
 
-                Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
-            }
+        [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+    }
+    catch [System.NotSupportedException]
+    {
+        # The current computer is not running Windows 2000 Service Pack 3 or later.
+        Write-Error "The current computer is not running Windows 2000 Service Pack 3 or later."
+    }
+    catch [System.OutOfMemoryException]
+    {
+        # OutOfMemoryException
+        Write-Error "Not enough memory for PSTrueCrypt to continue."
+    }
+    finally
+    {
+        $Password.Dispose()
+    }
 
-            [securestring]$Password = Read-Host -Prompt "Enter password" -AsSecureString
-        }
+    try
+    {
+        # Execute Expression
+        Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
+    }
+    catch [System.Exception]
+    {
+        Write-Error "An unkown issue occurred when TrueCrypt was executed.  Are keyfile(s) needed for this container?"
+    }
+    finally
+    {
+    # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
+    # holding on to this pointer while container is open.
+    # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
+    }
 
-        # this method of handling password securely has been mentioned at the following links:
-        # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
-        # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
-        # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
-        # https://msdn.microsoft.com/en-us/library/ewyktcaa(v=vs.110).aspx
-        try
-        {
-            # Create IntPassword and dispose $Password...
+    # if console prompting was set to false prior to this module, then set it back to false... 
+    if ($WasConsolePromptingPrior -eq $False)
+    {
+        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
+    }
 
-            [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
-        }
-        catch [System.NotSupportedException]
-        {
-            # The current computer is not running Windows 2000 Service Pack 3 or later.
-            Write-Error "The current computer is not running Windows 2000 Service Pack 3 or later."
-        }
-        catch [System.OutOfMemoryException]
-        {
-            # OutOfMemoryException
-            Write-Error "Not enough memory for PSTrueCrypt to continue."
-        }
-        finally
-        {
-            $Password.Dispose()
-        }
-
-        try
-        {
-            # Execute Expression
-            Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
-        }
-        catch [System.Exception]
-        {
-            Write-Error "An unkown issue occurred when TrueCrypt was executed.  Are keyfile(s) needed for this container?"
-        }
-        finally
-        {
-        # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
-        # holding on to this pointer while container is open.
-        # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
-        }
-
-        # if console prompting was set to false prior to this module, then set it back to false... 
-        if ($WasConsolePromptingPrior -eq $False)
-        {
-            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
-        }
-
-        if($KeyfilePath -ne $null)
-        {
-            Edit-HistoryFile -KeyfilePath $KeyfilePath
-        }
+    if($KeyfilePath -ne $null)
+    {
+        Edit-HistoryFile -KeyfilePath $KeyfilePath
     }
 }
 
 
-<#
-.SYNOPSIS
-    Dismounts a TrueCrypt container. 
-
-.DESCRIPTION
-    In order to use this function, you must provide container settings that will be added to the local registry.  You can add container 
-    settings via New-PSTrueCryptContainer.
-
-    The default Alias name is: dt
-
-.PARAMETER Name
-    The name attribute value of the that was used in mounting the container.
-
-.PARAMETER ForceAll
-    If method is invoked with this switch (flag) parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
-
-.EXAMPLE
-    Dismounts a TrueCrypt container with name of 'Kryptos' which must be in the container settings.
-
-    PS C:\>Dismount-TrueCrypt -Name Kryptos
-
-.EXAMPLE
-    Dismounts all TrueCrypt containers
-
-    PS C:\>Dismount-TrueCrypt -ForceAll
-
-.INPUTS
-    None
-
-.OUTPUTS
-    None
-
-.LINK
-    https://github.com/marckassay/PSTrueCrypt
-#>
+#.ExternalHelp PSTrueCrypt-help.xml
 function Dismount-TrueCrypt
 {
     [CmdletBinding()]
@@ -215,79 +130,14 @@ function Dismount-TrueCrypt
 }
 
 
-<#
-.SYNOPSIS
-    Dismounts a TrueCrypt container. 
-.
-.DESCRIPTION
-    This method simply wraps Dismount-TrueCrypt.  This method isn't intended to be used directly.
-
-    The default Alias name is: dtf
-
-.EXAMPLE
-    Dismounts all containers of TrueCrypt and VeraCrypt
-
-    PS C:\>Dismount-TrueCryptForceAll
-
-.EXAMPLE
-    Equivalent as example above.
-
-    PS C:\>dtf
-
-.INPUTS
-    None
-
-.OUTPUTS
-    None
-
-.LINK
-    https://github.com/marckassay/PSTrueCrypt
-#>
+#.ExternalHelp PSTrueCrypt-help.xml
 function Dismount-TrueCryptForceAll
 {
     Dismount-TrueCrypt -ForceAll
 }
 
 
-<#
-.SYNOPSIS
-    Sets in the registry the TrueCrypt container's location, preferred mount drive letter, and name. 
-
-.DESCRIPTION
-    When invoked successfully, the container's: location, preferred mount drive letter, and name will be stored
-    as a subkey in the HKCU:\Software\PSTrueCrypt registry key.  If call for first time, PSTrueCrypt registry key
-    will be created.
-
-.PARAMETER Name
-    An arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
-
-.PARAMETER Location
-    The TrueCrypt container's location.
-
-.PARAMETER MountLetter
-    A preferred mount drive letter for this container.
-
-.PARAMETER Product
-    Specifies if the container has been created with TrueCrypt or VeraCrypt.
-
-.PARAMETER Timestamp
-    This switch will update the container's last write time.  This is particularly useful when the container resides in 
-    a cloud storage service such as: 'Dropbox', 'Google Drive' or 'OneDrive'.
-
-.EXAMPLE
-    Adds settings for PSTrueCrypt.
-
-    PS C:\>New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter F -Product TrueCrypt
-
-.INPUTS
-    None
-
-.OUTPUTS
-    None
-
-.LINK
-    https://github.com/marckassay/PSTrueCrypt
-#>
+#.ExternalHelp PSTrueCrypt-help.xml
 function New-PSTrueCryptContainer
 {
     [CmdletBinding()]
@@ -366,28 +216,7 @@ function New-PSTrueCryptContainer
 }
 
 
-<#
-.SYNOPSIS
-    Remove settings that were added by the New-PSTrueCryptContainer function.
-
-.DESCRIPTION
-    Remove the subkey in the HKCU:\Software\PSTrueCrypt registry, that contains the value of Name parameter.
-
-.PARAMETER Name
-    The name that is used to reference this setting for Mount-TrueCrypt or Dismount-TrueCrypt functions. 
-
-.EXAMPLE
-    Remove-PSTrueCryptContainer -Name Kryptos
-
-.INPUTS
-    None
-
-.OUTPUTS
-    None
-
-.LINK
-    https://github.com/marckassay/PSTrueCrypt
-#>
+#.ExternalHelp PSTrueCrypt-help.xml
 function Remove-PSTrueCryptContainer 
 {
     [CmdletBinding()]
@@ -438,23 +267,7 @@ function Remove-PSTrueCryptContainer
 }
 
 
-<#
-.SYNOPSIS
-    Displays all settings for mounting and dismounting.
-
-.DESCRIPTION
-    When this parameterless function is called, a list is displayed in the command-line shell for all subkey registries
-    under the HKCU:\Software\PSTrueCrypt registry key.
-
-.INPUTS
-    None
-
-.OUTPUTS
-    None
-
-.LINK
-    https://github.com/marckassay/PSTrueCrypt
-#>
+#.ExternalHelp PSTrueCrypt-help.xml
 function Show-PSTrueCryptContainers 
 {
     Push-Location
@@ -477,32 +290,7 @@ function Show-PSTrueCryptContainers
 }
 
 
-<#
-.SYNOPSIS
-    Sets the TrueCrypt directory in the environment variable field.
-
-.DESCRIPTION
-    Will accept TrueCrypt or VeraCrypt directory paths to be used to set the operating system's environment variable. This
-    is needed when Mount-TrueCrypt or Dismount-TrueCrypt functions are called.  It will check ParVar parameter to make sure
-    its valid before setting it as an environment variable.
-
-.PARAMETER PathVar
-    The directory path where TrueCrypt or VeraCrypt executable resides. 
-
-.EXAMPLE
-    Setting TrueCrypt directory.
-
-    PS C:\>Set-EnvironmentPathVariable 'C:\Program Files\TrueCrypt'
-
-.INPUTS
-    None
-
-.OUTPUTS
-    None
-
-.LINK
-    https://github.com/marckassay/PSTrueCrypt
-#>
+#.ExternalHelp PSTrueCrypt-help.xml
 function Set-EnvironmentPathVariable
 {
     [CmdletBinding()]
@@ -936,12 +724,3 @@ Initialize
 Set-Alias -Name mt -Value Mount-TrueCrypt
 Set-Alias -Name dt -Value Dismount-TrueCrypt
 Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
-
-Export-ModuleMember -Function Mount-TrueCrypt -Alias mt
-Export-ModuleMember -Function Dismount-TrueCrypt -Alias dt
-Export-ModuleMember -Function Dismount-TrueCryptForceAll -Alias dtf
-Export-ModuleMember -Function New-PSTrueCryptContainer
-Export-ModuleMember -Function Remove-PSTrueCryptContainer
-Export-ModuleMember -Function Show-PSTrueCryptContainers
-
-Export-ModuleMember -Function Set-EnvironmentPathVariable
