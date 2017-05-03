@@ -44,9 +44,12 @@
 
 .LINK
     https://github.com/marckassay/PSTrueCrypt
+
+.ExternalHelp PSTrueCrypt.psm1-Help.xml
 #>
 function Mount-TrueCrypt
 {
+    
     [CmdletBinding()]
     Param
     (
