@@ -656,6 +656,12 @@ function Get-OSVerificationResults
 
 function Initialize
 {
+    Add-Type -AssemblyName System.Windows.Forms 
+     
+    $ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Debugger.resx"
+
+    Write-Information -MessageData $ResourceSet.GetString('RemoteDebuggerNotSupported') -InformationAction Continue
+
     [int]$Results = 0;
 
     $Regex = "(\w+)\\?$"

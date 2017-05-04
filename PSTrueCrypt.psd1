@@ -90,11 +90,12 @@ ModuleList = @()
 # List of all files packaged with this module
 FileList = @( 'PSTrueCrypt.psd1',
               'PSTrueCrypt.psm1',
-              'en-US/PSTrueCrypt-help.xml')
+              'en-US/PSTrueCrypt-help.xml',
+              'resx/Debugger.resx')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
-
+    
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
