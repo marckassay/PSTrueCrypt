@@ -91,7 +91,10 @@ ModuleList = @()
 FileList = @( 'PSTrueCrypt.psd1',
               'PSTrueCrypt.psm1',
               'en-US/PSTrueCrypt-help.xml',
-              'resx/Debugger.resx')
+              'resx/Error.resx',
+              'resx/Warning.resx',
+              'resx/Information.resx',
+              'resx/Verbose.resx')
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
@@ -118,7 +121,7 @@ PrivateData = @{
 } # End of PrivateData hashtable
 
 # HelpInfo URI of this module
-#HelpInfoURI = 'https://github.com/marckassay/PSTrueCrypt/tree/manifestandhelp/'
+HelpInfoURI = 'https://github.com/marckassay/PSTrueCrypt/blob/master'
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''

@@ -657,10 +657,6 @@ function Get-OSVerificationResults
 function Initialize
 {
     Add-Type -AssemblyName System.Windows.Forms 
-     
-    $ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Debugger.resx"
-
-    Write-Information -MessageData $ResourceSet.GetString('RemoteDebuggerNotSupported') -InformationAction Continue
 
     [int]$Results = 0;
 
@@ -730,3 +726,8 @@ Initialize
 Set-Alias -Name mt -Value Mount-TrueCrypt
 Set-Alias -Name dt -Value Dismount-TrueCrypt
 Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
+
+$ErrorRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Error.resx"
+$InformationRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Information.resx"
+$VerboseRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Verbose.resx"
+$WarningRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Warning.resx"
