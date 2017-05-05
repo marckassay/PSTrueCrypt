@@ -57,12 +57,12 @@ function Mount-TrueCrypt
     catch [System.NotSupportedException]
     {
         # The current computer is not running Windows 2000 Service Pack 3 or later.
-        Write-Error "The current computer is not running Windows 2000 Service Pack 3 or later."
+        Write-Message -Type ([MessageType]::Error) -Key 'NotSupportedException'
     }
     catch [System.OutOfMemoryException]
     {
         # OutOfMemoryException
-        Write-Error "Not enough memory for PSTrueCrypt to continue."
+        Write-Message -Type ([MessageType]::Error) -Key 'OutOfMemoryException'
     }
     finally
     {
@@ -76,7 +76,7 @@ function Mount-TrueCrypt
     }
     catch [System.Exception]
     {
-        Write-Error "An unkown issue occurred when TrueCrypt was executed.  Are keyfile(s) needed for this container?"
+        Write-Message -Type ([MessageType]::Error) -Key 'UnknownException' -Action ([System.Management.Automation.ActionPreference]::Continue) -RecommendedAction 'EnsureFileRecommendment'
     }
     finally
     {
@@ -187,7 +187,7 @@ function New-PSTrueCryptContainer
     catch [System.UnauthorizedAccessException]
     {
         # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
-        Write-Error "'UnauthorizedAccessException' has been thrown which prevents PSTrueCrypt from accessing your registry."
+        Write-Message -Type ([MessageType]::Error) -Key 'UnauthorizedAccessException'
     }
 
     $AccessControl = $SubKey.GetAccessControl()
@@ -211,7 +211,7 @@ function New-PSTrueCryptContainer
     }
     catch [System.UnauthorizedAccessException]
     {
-        Write-Error "'UnauthorizedAccessException' has been thrown which prevents PSTrueCrypt from accessing your registry."
+        Write-Message -Type ([MessageType]::Error) -Key 'UnauthorizedAccessException'
     }
 }
 
@@ -238,31 +238,28 @@ function Remove-PSTrueCryptContainer
     catch [System.ObjectDisposedException]
     {
         #The RegistryKey being manipulated is closed (closed keys cannot be accessed).
-        Write-Error "'ObjectDisposedException' has been thrown which prevents you from removing this PSTrueCryptContainer.  This may be due
-        to the key being 'closed'."
+        Write-Message -Type ([MessageType]::Error) -Key 'ObjectDisposedException'
     }
     catch [System.ArgumentException],[System.ArgumentNullException]
     {
         #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
         #subkey is null.
-        Write-Error "Unable to find a PSTrueCryptContainer that corresponds with $Name.  Are you sure the name is correct?  Use 
-        Show-PSTrueCryptContainers to view all container settings."
+        Write-Message -Type ([MessageType]::Error) -Key 'UnableToFindPSTrueCryptContainer' -Format {$Name}
     }
     catch [System.Security.SecurityException]
     {
         #The user does not have the permissions required to delete the key.
-        Write-Error "'SecurityException' has been thrown which prevents you from removing this container setting." -RecommendedAction "You can 
-        set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy"
+        Write-Message -Type ([MessageType]::Error) -Key 'SecurityException' -RecommendedAction 'SecurityRecommendment'
     }
     catch [System.InvalidOperationException]
     {
         # subkey has child subkeys.
-        Write-Error "Unable to remove PSTrueCryptContainer for unknown reason(s)."
+        Write-Message -Type ([MessageType]::Error) -Key 'InvalidOperationException'
     }
     catch [System.UnauthorizedAccessException]
     {
         #The user does not have the necessary registry rights.
-        Write-Error "'UnauthorizedAccessException' has been thrown which prevents PSTrueCrypt from accessing your registry."
+        Write-Message -Type ([MessageType]::Error) -Key 'UnauthorizedRegistryAccessException'
     }
 }
 
@@ -282,8 +279,7 @@ function Show-PSTrueCryptContainers
     catch [System.Security.SecurityException]
     {
         #The user does not have the permissions required to delete the key.
-        Write-Error "'SecurityException' has been thrown which prevents you from viewing container setting." -RecommendedAction "You can 
-        set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy"
+        Write-Message -Type ([MessageType]::Error) -Key 'SecurityException' -RecommendedAction 'SecurityRecommendment'
     }
 
     Pop-Location
@@ -342,7 +338,7 @@ function Set-EnvironmentPathVariable
                 }
                 catch
                 {
-                    Write-Error "An error has been thrown which prevents you from modifiying the PATH registry." -RecommendedAction "You can set the 'Set-ExecutionPolicy' to 'Bypass' and attempt again.  See the following link for more info: https://msdn.microsoft.com/en-us/powershell/reference/5.1/microsoft.powershell.security/set-executionpolicy" -ErrorAction Stop
+                    Write-Message -Type ([MessageType]::Error) -Key 'UnableToChangeEnvironmentVar' -Action ([System.Management.Automation.ActionPreference]::Stop) -RecommendedAction 'SecurityRecommendment'
                 }
             }
             else
@@ -385,8 +381,8 @@ function Edit-HistoryFile
     }
     catch
     {
-        Write-Error -Message "Unable to redact the history file!  When KeyfilePath is not null, PSTrueCrypt will make an attempt to remove the KeyfilePath value from the following file:"
-        Write-Error -Message $PSHistoryFilePath -ErrorAction Inquire
+        Write-Message -Type ([MessageType]::Error) -Key 'UnableToRedact'
+        Write-Message -Type ([MessageType]::Error) -Key 'Genaric' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PSHistoryFilePath} 
     }
 }
 
@@ -446,7 +442,7 @@ function Get-SubKeyPath
     catch 
     {
         # TODO: Need to throw specific error to calling method
-        Write-Error -Message "Unable to read registry for unknown reason(s)." 
+        Write-Message -Type ([MessageType]::Error) -Key 'UnableToReadRegistry'
     }
 
     Pop-Location
@@ -616,7 +612,7 @@ function Invoke-DismountAll
         }
         else 
         {
-            Write-Error "Dismounting $Product containers has failed!"
+            Write-Message -Type ([MessageType]::Error) -Key 'DismountException' -Format {$Product} 
         }
     }
 }
@@ -667,8 +663,8 @@ function Write-Message
         [Parameter(Mandatory = $True, Position = 2)]
         [string]$Key,
 
-        [Parameter(Mandatory = $True, Position = 3)]
-        [System.Management.Automation.ActionPreference]$Action,
+        [Parameter(Mandatory = $False, Position = 3)]
+        [System.Management.Automation.ActionPreference]$Action = [System.Management.Automation.ActionPreference]::Continue,
 
         [Parameter(Mandatory = $False)]
         [string[]]$Format,
@@ -677,27 +673,32 @@ function Write-Message
         [string]$RecommendedAction
     )
 
-    $message
-    
+    $Message
+    $Recommendment
+
     switch ($Type) 
     {
-        'Error' { $message = $ErrorRes.GetString($Key); Break }
-        'Information' { $message = $InformationRes.GetString($Key); Break }
-        'Verbose' { $message = $VerboseRes.GetString($Key); Break }
-        'Warning' { $message = $WarningRes.GetString($Key); Break }
+        'Error' { 
+            $Message = $ErrorRes.GetString($Key);
+            $Recommendment = $ErrorRes.GetString($RecommendedAction)
+            Break;
+        }
+        'Information' { $Message = $InformationRes.GetString($Key); Break }
+        'Verbose' { $Message = $VerboseRes.GetString($Key); Break }
+        'Warning' { $Message = $WarningRes.GetString($Key); Break }
     }
 
     if($Format)
     {
-        $message = $message+" -f "+$Format
+        $Message = $Message+" -f "+$Format
     }
 
     switch ($Type) 
     {
-        'Error' {  Write-Error -Message $message -ErrorId (Get-ErrorId $Key) -ErrorAction $Action -RecommendedAction $RecommendedAction ; Break }
-        'Information' {  Write-Information -MessageData $message -InformationAction $Action -RecommendedAction $RecommendedAction ; Break }
-        'Verbose' {  Write-Verbose -Message $message ; Break }
-        'Warning' {  Write-Warning -Message $message -WarningAction $Action ; Break }
+        'Error' {  Write-Error -Message $Message -ErrorId (Get-ErrorId $Key) -ErrorAction $Action -RecommendedAction $RecommendedAction ; Break }
+        'Information' {  Write-Information -MessageData $Message -InformationAction $Action -RecommendedAction $RecommendedAction ; Break }
+        'Verbose' {  Write-Verbose -Message $Message ; Break }
+        'Warning' {  Write-Warning -Message $Message -WarningAction $Action ; Break }
     }
 }
 
