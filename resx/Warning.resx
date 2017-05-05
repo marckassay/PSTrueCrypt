@@ -117,7 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LineLessThanOne" xml:space="preserve">
-    <value>Line cannot be less than 1.</value>
+  <data name="NewContainerOperationCancelled" xml:space="preserve">
+    <value>New-PSTrueCryptContainer operation has been cancelled.</value>
+  </data>
+  <data name="NewEnvironmentVarCancelled" xml:space="preserve">
+    <value>You have selected 'No', no changes to 'PATH' environment variable has been made.</value>
+  </data>
+  <data name="InvalidEnvironmentVarAttempt" xml:space="preserve">
+    <value>{0} is not valid!  No changes to 'PATH' environment variable has been made.</value>
+  </data>
+  <data name="EnvironmentVarPathFailed" xml:space="preserve">
+    <value>The module PSTrueCrypt has detected the following PATH has failed: {0}</value>
+  </data>
+  <data name="EnvironmentVarRecommendation" xml:space="preserve">
+    <value>To reset {0}'s 'PATH' environment system variable, use the Set-{1}PathVariable function.</value>
+  </data>
+  <data name="EnvironmentVarRecommendationExample" xml:space="preserve">
+    <value>For an example: PS E:>Set-{0}PathVariable 'C:\Program Files\TrueCrypt\'</value>
+  </data>
+  <data name="EnvironmentVarRecommendation2" xml:space="preserve">
+    <value>Afterwards, restart Powershell.  Upon restart, if the original path is still being used logout and try again</value>
   </data>
 </root>

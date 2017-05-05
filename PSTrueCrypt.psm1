@@ -181,7 +181,7 @@ function New-PSTrueCryptContainer
         }
         else
         {
-             Write-Warning "New-PSTrueCryptContainer operation has been cancelled."
+            Write-Message -Type ([MessageType]::Warning) -Key 'NewContainerOperationCancelled'
         }
     }
     catch [System.UnauthorizedAccessException]
@@ -206,7 +206,7 @@ function New-PSTrueCryptContainer
         } 
         else
         {
-            Write-Warning "New-PSTrueCryptContainer operation has been cancelled."
+            Write-Message -Type ([MessageType]::Warning) -Key 'NewContainerOperationCancelled'
         }
     }
     catch [System.UnauthorizedAccessException]
@@ -343,17 +343,17 @@ function Set-EnvironmentPathVariable
             }
             else
             {
-                Write-Warning "You have selected 'No', no changes to 'PATH' environment variable has been made." -WarningAction Continue
+                Write-Message -Type ([MessageType]::Warning) -Key 'NewEnvironmentVarCancelled'
             }  
         }
         else 
         {
-            Write-Warning "$PathVar is not valid!  No changes to 'PATH' environment variable has been made." -WarningAction Inquire
+            Write-Message -Type ([MessageType]::Warning) -Key 'InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
         }
     }
     catch
     {
-        Write-Warning "$PathVar is not valid!  No changes to 'PATH' environment variable has been made." -WarningAction Inquire
+        Write-Message -Type ([MessageType]::Warning) -Key 'InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
     }
 }
 
@@ -769,12 +769,10 @@ function Initialize
             }
             else
             {
-                Write-Warning "The module PSTrueCrypt has detected the following PATH has failed: $_"
-                $message = "To reset $EnvPathName's 'PATH' environment system variable, use the Set-$EnvPathName{0}PathVariable function." -f ""
-                Write-Warning $message
-                $message = "For an example: PS E:>Set-$EnvPathName{0}PathVariable 'C:\Program Files\TrueCrypt\'" -f ""
-                Write-Warning $message
-                Write-Warning "Afterwards, restart Powershell.  Upon restart, if the original path is still being used logout and try again."
+                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarPathFailed' -Format {$_}
+                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
+                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarRecommendationExample' -Format {$EnvPathName}
+                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarRecommendation2'
             }
         }
     }
