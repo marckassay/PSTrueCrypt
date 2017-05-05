@@ -322,7 +322,7 @@ function Set-EnvironmentPathVariable
 
         if(Get-OSVerificationResults $EnvPathName $Results)
         {
-            Write-Message -Type [MessageType]::Verbose -Key 'ConfirmPathVarIsValid' -Format {$PathVar}
+            Write-Message -Type ([MessageType]::Verbose) -Key 'ConfirmPathVarIsValid' -Format {$PathVar}
 
             $Decision = Get-Confirmation -Message "$PathVar will be added to the 'PATH' environment variable."
 
@@ -330,7 +330,7 @@ function Set-EnvironmentPathVariable
             {
                 try
                 {
-                    Write-Message -Type [MessageType]::Verbose -Key 'PathVarSettingAttempt' -Format {$PathVar}
+                    Write-Message -Type ([MessageType]::Verbose) -Key 'PathVarSettingAttempt' -Format {$PathVar}
 
                     [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
 
@@ -746,7 +746,7 @@ function Initialize
 
             try
             {
-                Write-Message -Type [MessageType]::Verbose -Key 'EnvPathFoundAndWillBeTested' -Format {$EnvPathName}
+                Write-Message -Type ([MessageType]::Verbose) -Key 'EnvPathFoundAndWillBeTested' -Format {$EnvPathName}
                 
                 $IsValid = Test-Path $_ -IsValid
                 
@@ -765,14 +765,14 @@ function Initialize
 
             if(Get-OSVerificationResults $EnvPathName $Results)
             {
-                Write-Message -Type [MessageType]::Verbose -Key 'EnvPathSuccessfullyTested' -Format {$EnvPathName}
+                Write-Message -Type ([MessageType]::Verbose) -Key 'EnvPathSuccessfullyTested' -Format {$EnvPathName}
             }
             else
             {
-                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarPathFailed' -Format {$_}
-                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
-                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarRecommendationExample' -Format {$EnvPathName}
-                Write-Message -Type [MessageType]::Warning -Key 'EnvironmentVarRecommendation2'
+                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarPathFailed' -Format {$_}
+                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
+                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarRecommendationExample' -Format {$EnvPathName}
+                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarRecommendation2'
             }
         }
     }
@@ -799,13 +799,13 @@ enum MessageType {
     Warning     = 4
 }
 
-Initialize
-
 Set-Alias -Name mt -Value Mount-TrueCrypt
 Set-Alias -Name dt -Value Dismount-TrueCrypt
 Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
 
-$ErrorRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Error.resx"
-$InformationRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Information.resx"
-$VerboseRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Verbose.resx"
-$WarningRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Warning.resx"
+$ErrorRes =         New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Error.resx"
+$InformationRes =   New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Information.resx"
+$VerboseRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Verbose.resx"
+$WarningRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Warning.resx"
+
+Initialize

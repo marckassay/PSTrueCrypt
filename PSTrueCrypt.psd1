@@ -47,7 +47,9 @@ ProcessorArchitecture = 'None'
 # RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-# RequiredAssemblies = @()
+RequiredAssemblies = @( 
+    'System.Windows.Forms.dll'
+)
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 # ScriptsToProcess = @()
@@ -62,13 +64,15 @@ ProcessorArchitecture = 'None'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = @('Mount-TrueCrypt', 
-                      'Dismount-TrueCrypt', 
-                      'Dismount-TrueCryptForceAll', 
-                      'New-PSTrueCryptContainer', 
-                      'Remove-PSTrueCryptContainer', 
-                      'Show-PSTrueCryptContainers',
-                      'Set-EnvironmentPathVariable')
+FunctionsToExport = @(
+    'Mount-TrueCrypt', 
+    'Dismount-TrueCrypt', 
+    'Dismount-TrueCryptForceAll', 
+    'New-PSTrueCryptContainer', 
+    'Remove-PSTrueCryptContainer', 
+    'Show-PSTrueCryptContainers',
+    'Set-EnvironmentPathVariable'
+)
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
@@ -77,9 +81,11 @@ CmdletsToExport = @()
 VariablesToExport = '*'
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @('mt',
-                    'dt',
-                    'dtf')
+AliasesToExport = @(
+    'mt',
+    'dt',
+    'dtf'
+)
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -88,13 +94,15 @@ AliasesToExport = @('mt',
 ModuleList = @()
 
 # List of all files packaged with this module
-FileList = @( 'PSTrueCrypt.psd1',
-              'PSTrueCrypt.psm1',
-              'en-US/PSTrueCrypt-help.xml',
-              'resx/Error.resx',
-              'resx/Warning.resx',
-              'resx/Information.resx',
-              'resx/Verbose.resx')
+FileList = @( 
+    'PSTrueCrypt.psd1',
+    'PSTrueCrypt.psm1',
+    'en-US/PSTrueCrypt-help.xml',
+    'resx/Error.resx',
+    'resx/Warning.resx',
+    'resx/Information.resx',
+    'resx/Verbose.resx'
+)
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
