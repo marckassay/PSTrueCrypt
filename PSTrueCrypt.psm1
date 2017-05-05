@@ -233,7 +233,7 @@ function Remove-PSTrueCryptContainer
     {
         [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName", $True)
 
-        Write-Information -MessageData "Container settings has been deleted from registry." -InformationAction Continue
+        Write-Message -Type ([MessageType]::Information) -Key 'ContainerSettingsDeleted'
     }
     catch [System.ObjectDisposedException]
     {
@@ -334,7 +334,7 @@ function Set-EnvironmentPathVariable
 
                     [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
 
-                    Write-Information -MessageData "$PathVar has been set to 'PATH' environment variable." -InformationAction Continue
+                    Write-Message -Type ([MessageType]::Information) -Key 'ConfirmCreationOfEnvironmentVar' -Format {$PathVar}
                 }
                 catch
                 {
@@ -608,7 +608,7 @@ function Invoke-DismountAll
     {
         if($HasXCryptDismountFailed -eq $False)
         {
-            Write-Information -MessageData "All $Product containers have successfully dismounted.  Please verify." -InformationAction Continue
+            Write-Message -Type ([MessageType]::Information) -Key 'AllProductContainersDismounted' -Format {$Product}
         }
         else 
         {
