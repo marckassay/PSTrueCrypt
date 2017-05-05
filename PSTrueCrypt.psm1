@@ -22,7 +22,7 @@ function Mount-TrueCrypt
     }
     catch [System.Management.Automation.ItemNotFoundException]
     {
-         Out-Error 'NoPSTrueCryptContainerFound' -Action Inquire
+         Write-Message -Type ([MessageType]::Error) -Key 'NoPSTrueCryptContainerFound' -Action ([System.Management.Automation.ActionPreference]::Stop)
     }
 
     # construct arguments for expression and insert token in for password...
@@ -655,6 +655,77 @@ function Get-OSVerificationResults
     }
 }
 
+
+function Write-Message
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [MessageType]$Type,
+
+        [Parameter(Mandatory = $True, Position = 2)]
+        [string]$Key,
+
+        [Parameter(Mandatory = $True, Position = 3)]
+        [System.Management.Automation.ActionPreference]$Action,
+
+        [Parameter(Mandatory = $False)]
+        [string[]]$Format,
+
+        [Parameter(Mandatory = $False)]
+        [string]$RecommendedAction
+    )
+
+    $message
+    
+    switch ($Type) 
+    {
+        'Error' { $message = $ErrorRes.GetString($Key); Break }
+        'Information' { $message = $InformationRes.GetString($Key); Break }
+        'Verbose' { $message = $VerboseRes.GetString($Key); Break }
+        'Warning' { $message = $WarningRes.GetString($Key); Break }
+    }
+
+    if($Format)
+    {
+        $message = $message+" -f "+$Format
+    }
+
+    switch ($Type) 
+    {
+        'Error' {  Write-Error -Message $message -ErrorId (Get-ErrorId $Key) -ErrorAction $Action -RecommendedAction $RecommendedAction ; Break }
+        'Information' {  Write-Information -MessageData $message -InformationAction $Action -RecommendedAction $RecommendedAction ; Break }
+        'Verbose' {  Write-Verbose -Message $message ; Break }
+        'Warning' {  Write-Warning -Message $message -WarningAction $Action ; Break }
+    }
+}
+
+
+#http://jongurgul.com/blog/get-stringhash-get-filehash/ 
+function Get-ErrorId
+{
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [String]$Key,
+        
+        [Parameter(Mandatory = $False)]
+        [String]$HashName = "MD5"
+    )
+
+    $StringBuilder = New-Object System.Text.StringBuilder
+
+    [void]$StringBuilder.Append('E-')
+
+    [System.Security.Cryptography.HashAlgorithm]::Create($HashName).ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Key)) | ForEach-Object { 
+            [void]$StringBuilder.Append($_.ToString("x2")) 
+    } 
+
+    $StringBuilder.ToString(0,8).ToUpperInvariant()
+}
+
+
 function Initialize
 {
     Add-Type -AssemblyName System.Windows.Forms 
@@ -708,7 +779,6 @@ function Initialize
     }
 }
 
-
 enum OSVerification {
     TrueCryptFound = 1
     VeraCryptFound = 2
@@ -722,6 +792,14 @@ enum OSVerification {
     TrueCryptSuccess = 21
     VeraCryptSuccess = 42
 }
+
+enum MessageType {
+    Error       = 1
+    Information = 2
+    Verbose     = 3
+    Warning     = 4
+}
+
 Initialize
 
 Set-Alias -Name mt -Value Mount-TrueCrypt
@@ -732,61 +810,3 @@ $ErrorRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentLis
 $InformationRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Information.resx"
 $VerboseRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Verbose.resx"
 $WarningRes = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Warning.resx"
-
-function Out-Error
-{
-    [CmdletBinding()]
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [string]$Key,
-
-        [Parameter(Mandatory = $False)]
-        [string[]]$Format,
-
-        [Parameter(Mandatory = $False)]
-        [string]$RecommendedAction = "",
-
-        [Parameter(Mandatory = $False)]
-        [System.Management.Automation.ActionPreference]$Action
-    )
-
-    $message = $ErrorRes.GetString($Key)
-
-    if($Action -eq "")
-    {
-        $Action = [System.Management.Automation.ActionPreference]::Continue
-    }
-
-    if($Format)
-    {
-        $message = $message+" -f "+$Format
-    }
-
-    $Id = Get-ErrorId $Key
-
-    Write-Error -Message $message -ErrorId $Id -ErrorAction $Action -RecommendedAction $RecommendedAction
-}
-
-#http://jongurgul.com/blog/get-stringhash-get-filehash/ 
-function Get-ErrorId
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [String]$Key,
-        
-        [Parameter(Mandatory = $False)]
-        [String]$HashName = "MD5"
-    )
-
-    $StringBuilder = New-Object System.Text.StringBuilder
-
-    [void]$StringBuilder.Append('E-')
-
-    [System.Security.Cryptography.HashAlgorithm]::Create($HashName).ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Key)) | ForEach-Object { 
-            [void]$StringBuilder.Append($_.ToString("x2")) 
-    } 
-
-    $StringBuilder.ToString(0,8)
-}
