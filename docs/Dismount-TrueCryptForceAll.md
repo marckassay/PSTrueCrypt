@@ -25,18 +25,18 @@ The default Alias name is: dtf
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
 Dismounts all containers of TrueCrypt and VeraCrypt
 ```
-
 PS C:\\\>Dismount-TrueCryptForceAll
+```
+
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
 Equivalent as example above.
 ```
-
 PS C:\\\>dtf
+```
+
 
 ## PARAMETERS
 

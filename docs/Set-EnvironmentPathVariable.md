@@ -23,11 +23,11 @@ It will check ParVar parameter to make sure its valid before setting it as an en
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
 Setting TrueCrypt directory.
 ```
-
 PS C:\\\>Set-EnvironmentPathVariable 'C:\Program Files\TrueCrypt'
+```
+
 
 ## PARAMETERS
 

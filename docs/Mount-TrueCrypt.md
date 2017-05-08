@@ -25,28 +25,28 @@ The default Alias name is: mt
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
 Mounts a TrueCrypt container with name of 'Kryptos' must be in the registry.
 ```
-
 PS C:\\\>Mount-TrueCrypt -Name Kryptos
+```
+
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
 Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.
 ```
-
 PS C:\\\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
+```
+
 
 ### -------------------------- EXAMPLE 3 --------------------------
-```
 Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile and passes a secure password into the Password parameter.
-```
 
 This is usefull for background tasks that can't rely on user input.
-
+```
 PS C:\\\>$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
 PS C:\\\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword
+```
+
 
 ## PARAMETERS
 

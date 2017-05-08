@@ -24,18 +24,18 @@ The default Alias name is: dt
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
 Dismounts a TrueCrypt container with name of 'Kryptos' which must be in the container settings.
 ```
-
 PS C:\\\>Dismount-TrueCrypt -Name Kryptos
+```
+
 
 ### -------------------------- EXAMPLE 2 --------------------------
-```
 Dismounts all TrueCrypt containers
 ```
-
 PS C:\\\>Dismount-TrueCrypt -ForceAll
+```
+
 
 ## PARAMETERS
 

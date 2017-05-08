@@ -72,14 +72,14 @@
 </maml:alert>
 </maml:alertSet>
 <command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-<dev:code>Dismounts a TrueCrypt container with name of 'Kryptos' which must be in the container settings.</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;Dismount-TrueCrypt -Name Kryptos
+<dev:code>PS C:\\\&gt;Dismount-TrueCrypt -Name Kryptos</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
 <command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-<dev:code>Dismounts all TrueCrypt containers</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;Dismount-TrueCrypt -ForceAll
+<dev:code>PS C:\\\&gt;Dismount-TrueCrypt -ForceAll</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
@@ -125,14 +125,14 @@
 </maml:alert>
 </maml:alertSet>
 <command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-<dev:code>Dismounts all containers of TrueCrypt and VeraCrypt</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;Dismount-TrueCryptForceAll
+<dev:code>PS C:\\\&gt;Dismount-TrueCryptForceAll</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
 <command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-<dev:code>Equivalent as example above.</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;dtf
+<dev:code>PS C:\\\&gt;dtf</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
@@ -232,22 +232,21 @@
 </maml:alert>
 </maml:alertSet>
 <command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-<dev:code>Mounts a TrueCrypt container with name of 'Kryptos' must be in the registry.</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;Mount-TrueCrypt -Name Kryptos
+<dev:code>PS C:\\\&gt;Mount-TrueCrypt -Name Kryptos</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
 <command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-<dev:code>Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
+<dev:code>PS C:\\\&gt;Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
 <command:example><maml:title>-------------------------- EXAMPLE 3 --------------------------</maml:title>
-<dev:code>Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile and passes a secure password into the Password parameter.</dev:code>
-<dev:remarks><maml:para>This is usefull for background tasks that can't rely on user input.
-</maml:para>
-<maml:para>PS C:\&gt;$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force PS C:\&gt;Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword
+<dev:code>PS C:\\\&gt;$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
+PS C:\\\&gt;Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
@@ -380,8 +379,8 @@
 </maml:alert>
 </maml:alertSet>
 <command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-<dev:code>Adds settings for PSTrueCrypt.</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter F -Product TrueCrypt
+<dev:code>PS C:\\\&gt;New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter F -Product TrueCrypt</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
@@ -506,8 +505,8 @@
 </maml:alert>
 </maml:alertSet>
 <command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
-<dev:code>Setting TrueCrypt directory.</dev:code>
-<dev:remarks><maml:para>PS C:\&gt;Set-EnvironmentPathVariable 'C:\Program Files\TrueCrypt'
+<dev:code>PS C:\\\&gt;Set-EnvironmentPathVariable 'C:\Program Files\TrueCrypt'</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>
@@ -550,9 +549,17 @@
 </maml:para>
 </maml:alert>
 </maml:alertSet>
-<command:examples><command:example><maml:title>Example 1</maml:title>
-<dev:code>PS C:\&gt; {{ Add example code here }}</dev:code>
-<dev:remarks><maml:para>{{ Add example description here }}
+<command:examples><command:example><maml:title>-------------------------- EXAMPLE 1 --------------------------</maml:title>
+<dev:code>PS C:\&gt;Show-PSTrueCryptContainers
+ Name  Location                      MountLetter Product
+ ----  --------                      ----------- -------
+ brian C:\passwords                  X           VeraCrypt
+ verac D:\veracrypt                  V           VeraCrypt
+ lori  D:\Documents                  H           TrueCrypt
+ 1pw   F:\Google Drive\1pw           Z           TrueCrypt
+
+PS C:\&gt;</dev:code>
+<dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
 </command:example>

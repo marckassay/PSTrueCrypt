@@ -20,12 +20,20 @@ When this parameterless function is called, a list is displayed in the command-l
 
 ## EXAMPLES
 
-### Example 1
+### -------------------------- EXAMPLE 1 --------------------------
+Displays all added PSTrueCrypt containers.  These were added by the New-PSTrueCryptContainer
 ```
-PS C:\> {{ Add example code here }}
+PS C:\>Show-PSTrueCryptContainers
+ Name  Location                      MountLetter Product
+ ----  --------                      ----------- -------
+ brian C:\passwords                  X           VeraCrypt
+ verac D:\veracrypt                  V           VeraCrypt
+ lori  D:\Documents                  H           TrueCrypt
+ 1pw   F:\Google Drive\1pw           Z           TrueCrypt
+
+PS C:\>
 ```
 
-{{ Add example description here }}
 
 ## PARAMETERS
 
