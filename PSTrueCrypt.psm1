@@ -811,7 +811,6 @@ $WarningRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -Arg
 Initialize
 
 
-
 function Test-Writer
 {
     [Error]::out('SecurityException', 'SecurityRecommendment')
