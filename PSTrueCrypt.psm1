@@ -811,7 +811,12 @@ $WarningRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -Arg
 Initialize
 
 
-function Test-Writer
+function Test-Error
 {
     [Error]::out('SecurityException', 'SecurityRecommendment')
+}
+
+function Test-Warning
+{
+    [Warning]::out('NewContainerOperationCancelled')
 }
