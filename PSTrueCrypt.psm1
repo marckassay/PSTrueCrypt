@@ -820,3 +820,8 @@ function Test-Warning
 {
     [Warning]::out('NewContainerOperationCancelled')
 }
+
+function Test-Information
+{
+    [Information]::out('ContainerSettingsDeleted')
+}

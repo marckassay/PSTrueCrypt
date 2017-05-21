@@ -55,6 +55,7 @@ RequiredAssemblies = @(
 ScriptsToProcess = @(
     'src/Error.ps1'
     'src/Warning.ps1'
+    'src/Information.ps1'
 )
 
 # Type files (.ps1xml) to be loaded when importing this module
@@ -78,6 +79,7 @@ FunctionsToExport = @(
 
     'Test-Error'
     'Test-Warning'
+    'Test-Information'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
