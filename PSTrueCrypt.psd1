@@ -52,7 +52,7 @@ RequiredAssemblies = @(
 )
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-# ScriptsToProcess = @()
+ScriptsToProcess = @('Error.ps1')
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -71,7 +71,9 @@ FunctionsToExport = @(
     'New-PSTrueCryptContainer', 
     'Remove-PSTrueCryptContainer', 
     'Show-PSTrueCryptContainers',
-    'Set-EnvironmentPathVariable'
+    'Set-EnvironmentPathVariable',
+
+    'Test-Writer'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -97,6 +99,7 @@ ModuleList = @()
 FileList = @( 
     'PSTrueCrypt.psd1',
     'PSTrueCrypt.psm1',
+    'Writer.ps1',
     'en-US/PSTrueCrypt-help.xml',
     'resx/Error.resx',
     'resx/Warning.resx',

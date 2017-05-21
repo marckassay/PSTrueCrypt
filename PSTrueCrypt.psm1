@@ -809,3 +809,10 @@ $VerboseRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -Arg
 $WarningRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Warning.resx"
 
 Initialize
+
+
+
+function Test-Writer
+{
+    [Error]::out('SecurityException', 'SecurityRecommendment')
+}
