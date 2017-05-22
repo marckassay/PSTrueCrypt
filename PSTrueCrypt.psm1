@@ -183,7 +183,7 @@ function New-PSTrueCryptContainer
         }
         else
         {
-            [Warning]::out('NewContainerOperationCancelled'
+            [Warning]::out('NewContainerOperationCancelled')
         }
     }
     catch [System.UnauthorizedAccessException]
@@ -345,17 +345,17 @@ function Set-EnvironmentPathVariable
             }
             else
             {
-                [Warning]::out('NewEnvironmentVarCancelled'
+                [Warning]::out('NewEnvironmentVarCancelled')
             }  
         }
         else 
         {
-            [Warning]::out('InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
+            [Warning]::out('InvalidEnvironmentVarAttempt', {$PathVar}, [ActionPreference]::Inquire)
         }
     }
     catch
     {
-        [Warning]::out('InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
+        [Warning]::out('InvalidEnvironmentVarAttempt', {$PathVar}, [ActionPreference]::Inquire)
     }
 }
 
@@ -696,10 +696,10 @@ function Initialize
             }
             else
             {
-                [Warning]::out('EnvironmentVarPathFailed' -Format {$_}
-                [Warning]::out('EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
-                [Warning]::out('EnvironmentVarRecommendationExample' -Format {$EnvPathName}
-                [Warning]::out('EnvironmentVarRecommendation2'
+                [Warning]::out('EnvironmentVarPathFailed', {$_})
+                [Warning]::out('EnvironmentVarRecommendation', {$EnvPathName,$EnvPathName})
+                [Warning]::out('EnvironmentVarRecommendationExample', {$EnvPathName})
+                [Warning]::out('EnvironmentVarRecommendation2')
             }
         }
     }
