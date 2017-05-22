@@ -363,7 +363,6 @@ function Set-EnvironmentPathVariable
 #internal function
 function Edit-HistoryFile
 {
-    [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
@@ -388,10 +387,10 @@ function Edit-HistoryFile
     }
 }
 
+
 #internal function
 function Get-PSTrueCryptContainer 
 {
-    [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
@@ -422,7 +421,6 @@ function Get-PSTrueCryptContainer
 # internal function
 function Get-SubKeyPath
 {
-    [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $True)]
@@ -654,6 +652,7 @@ function Get-OSVerificationResults
 }
 
 
+# internal function
 function Initialize
 {
     Add-Type -AssemblyName System.Windows.Forms 
