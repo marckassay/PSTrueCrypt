@@ -14,24 +14,24 @@ class Resource
         return [Resource]::instance
     }
 
-    [System.Resources.ResXResourceSet]$ErrorResourceSet
+    [System.Resources.ResXResourceSet]$ResourceSet
 
-    ErrorMessage(
+    Message(
         [string]$Key, 
         [string]$Recommendments, 
         [string[]]$Format, 
         [System.Management.Automation.ActionPreference]$Action, 
         [string]$ErrorId)
     {
-        if(!$this.ErrorResourceSet) {
-            $this.ErrorResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\resx\Error.resx"
+        if(!$this.ResourceSet) {
+            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\resx\Error.resx"
         }
         
-        $Message = $this.ErrorResourceSet.GetString($Key)
+        $Message = $this.ResourceSet.GetString($Key)
         
         $Recommendment = ''
         if($Recommendments) {
-            $Recommendment = $this.ErrorResourceSet.GetString($Recommendments)
+            $Recommendment = $this.ResourceSet.GetString($Recommendments)
         }
 
         if($Format) {

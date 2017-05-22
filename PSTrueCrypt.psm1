@@ -1,3 +1,5 @@
+using namespace 'System.Management.Automation'
+
 #.ExternalHelp PSTrueCrypt-help.xml
 function Mount-TrueCrypt
 {
@@ -22,7 +24,7 @@ function Mount-TrueCrypt
     }
     catch [System.Management.Automation.ItemNotFoundException]
     {
-         Write-Message -Type ([MessageType]::Error) -Key 'NoPSTrueCryptContainerFound' -Action ([System.Management.Automation.ActionPreference]::Stop)
+         [Error]::out('NoPSTrueCryptContainerFound', $null, $null, [ActionPreference]::Stop)
     }
 
     # construct arguments for expression and insert token in for password...
@@ -57,12 +59,12 @@ function Mount-TrueCrypt
     catch [System.NotSupportedException]
     {
         # The current computer is not running Windows 2000 Service Pack 3 or later.
-        Write-Message -Type ([MessageType]::Error) -Key 'NotSupportedException'
+        [Error]::out('NotSupportedException')
     }
     catch [System.OutOfMemoryException]
     {
         # OutOfMemoryException
-        Write-Message -Type ([MessageType]::Error) -Key 'OutOfMemoryException'
+        [Error]::out('OutOfMemoryException')
     }
     finally
     {
@@ -76,7 +78,7 @@ function Mount-TrueCrypt
     }
     catch [System.Exception]
     {
-        Write-Message -Type ([MessageType]::Error) -Key 'UnknownException' -Action ([System.Management.Automation.ActionPreference]::Continue) -RecommendedAction 'EnsureFileRecommendment'
+        [Error]::out('UnknownException', 'EnsureFileRecommendment')
     }
     finally
     {
@@ -181,13 +183,13 @@ function New-PSTrueCryptContainer
         }
         else
         {
-            Write-Message -Type ([MessageType]::Warning) -Key 'NewContainerOperationCancelled'
+            [Warning]::out('NewContainerOperationCancelled'
         }
     }
     catch [System.UnauthorizedAccessException]
     {
         # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
-        Write-Message -Type ([MessageType]::Error) -Key 'UnauthorizedAccessException'
+        [Error]::out('UnauthorizedAccessException')
     }
 
     $AccessControl = $SubKey.GetAccessControl()
@@ -206,12 +208,12 @@ function New-PSTrueCryptContainer
         } 
         else
         {
-            Write-Message -Type ([MessageType]::Warning) -Key 'NewContainerOperationCancelled'
+            [Warning]::out('NewContainerOperationCancelled')
         }
     }
     catch [System.UnauthorizedAccessException]
     {
-        Write-Message -Type ([MessageType]::Error) -Key 'UnauthorizedAccessException'
+        [Error]::out('UnauthorizedAccessException')
     }
 }
 
@@ -233,33 +235,33 @@ function Remove-PSTrueCryptContainer
     {
         [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName", $True)
 
-        Write-Message -Type ([MessageType]::Information) -Key 'ContainerSettingsDeleted'
+        [Information]::out('ContainerSettingsDeleted')
     }
     catch [System.ObjectDisposedException]
     {
         #The RegistryKey being manipulated is closed (closed keys cannot be accessed).
-        Write-Message -Type ([MessageType]::Error) -Key 'ObjectDisposedException'
+        [Error]::out('ObjectDisposedException')
     }
     catch [System.ArgumentException],[System.ArgumentNullException]
     {
         #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
         #subkey is null.
-        Write-Message -Type ([MessageType]::Error) -Key 'UnableToFindPSTrueCryptContainer' -Format {$Name}
+        [Error]::out('UnableToFindPSTrueCryptContainer', $null, {$Name})
     }
     catch [System.Security.SecurityException]
     {
         #The user does not have the permissions required to delete the key.
-        Write-Message -Type ([MessageType]::Error) -Key 'SecurityException' -RecommendedAction 'SecurityRecommendment'
+        [Error]::out('SecurityException', 'SecurityRecommendment')
     }
     catch [System.InvalidOperationException]
     {
         # subkey has child subkeys.
-        Write-Message -Type ([MessageType]::Error) -Key 'InvalidOperationException'
+        [Error]::out('InvalidOperationException')
     }
     catch [System.UnauthorizedAccessException]
     {
         #The user does not have the necessary registry rights.
-        Write-Message -Type ([MessageType]::Error) -Key 'UnauthorizedRegistryAccessException'
+        [Error]::out('UnauthorizedRegistryAccessException')
     }
 }
 
@@ -279,7 +281,7 @@ function Show-PSTrueCryptContainers
     catch [System.Security.SecurityException]
     {
         #The user does not have the permissions required to delete the key.
-        Write-Message -Type ([MessageType]::Error) -Key 'SecurityException' -RecommendedAction 'SecurityRecommendment'
+        [Error]::out('SecurityException', 'SecurityRecommendment')
     }
 
     Pop-Location
@@ -322,7 +324,7 @@ function Set-EnvironmentPathVariable
 
         if(Get-OSVerificationResults $EnvPathName $Results)
         {
-            Write-Message -Type ([MessageType]::Verbose) -Key 'ConfirmPathVarIsValid' -Format {$PathVar}
+            [Verbose]::out('ConfirmPathVarIsValid' -Format {$PathVar}
 
             $Decision = Get-Confirmation -Message "$PathVar will be added to the 'PATH' environment variable."
 
@@ -330,30 +332,30 @@ function Set-EnvironmentPathVariable
             {
                 try
                 {
-                    Write-Message -Type ([MessageType]::Verbose) -Key 'PathVarSettingAttempt' -Format {$PathVar}
+                    [Verbose]::out('PathVarSettingAttempt' -Format {$PathVar}
 
                     [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
 
-                    Write-Message -Type ([MessageType]::Information) -Key 'ConfirmCreationOfEnvironmentVar' -Format {$PathVar}
+                    [Information]::out('ConfirmCreationOfEnvironmentVar' -Format {$PathVar}
                 }
                 catch
                 {
-                    Write-Message -Type ([MessageType]::Error) -Key 'UnableToChangeEnvironmentVar' -Action ([System.Management.Automation.ActionPreference]::Stop) -RecommendedAction 'SecurityRecommendment'
+                    [Error]::out('UnableToChangeEnvironmentVar', 'SecurityRecommendment', $null, [ActionPreference]::Stop)
                 }
             }
             else
             {
-                Write-Message -Type ([MessageType]::Warning) -Key 'NewEnvironmentVarCancelled'
+                [Warning]::out('NewEnvironmentVarCancelled'
             }  
         }
         else 
         {
-            Write-Message -Type ([MessageType]::Warning) -Key 'InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
+            [Warning]::out('InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
         }
     }
     catch
     {
-        Write-Message -Type ([MessageType]::Warning) -Key 'InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
+        [Warning]::out('InvalidEnvironmentVarAttempt' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PathVar}
     }
 }
 
@@ -381,8 +383,8 @@ function Edit-HistoryFile
     }
     catch
     {
-        Write-Message -Type ([MessageType]::Error) -Key 'UnableToRedact'
-        Write-Message -Type ([MessageType]::Error) -Key 'Genaric' -Action ([System.Management.Automation.ActionPreference]::Inquire) -Format {$PSHistoryFilePath} 
+        [Error]::out('UnableToRedact')
+        [Error]::out('Genaric', $null, {$PSHistoryFilePath}, [ActionPreference]::Inquire)
     }
 }
 
@@ -442,7 +444,7 @@ function Get-SubKeyPath
     catch 
     {
         # TODO: Need to throw specific error to calling method
-        Write-Message -Type ([MessageType]::Error) -Key 'UnableToReadRegistry'
+        [Error]::out('UnableToReadRegistry')
     }
 
     Pop-Location
@@ -608,11 +610,11 @@ function Invoke-DismountAll
     {
         if($HasXCryptDismountFailed -eq $False)
         {
-            Write-Message -Type ([MessageType]::Information) -Key 'AllProductContainersDismounted' -Format {$Product}
+            [Information]::out('AllProductContainersDismounted' -Format {$Product}
         }
         else 
         {
-            Write-Message -Type ([MessageType]::Error) -Key 'DismountException' -Format {$Product} 
+            [Error]::out('DismountException', $null, {$Product})
         }
     }
 }
@@ -652,81 +654,6 @@ function Get-OSVerificationResults
 }
 
 
-function Write-Message
-{
-    [CmdletBinding()]
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [MessageType]$Type,
-
-        [Parameter(Mandatory = $True, Position = 2)]
-        [string]$Key,
-
-        [Parameter(Mandatory = $False, Position = 3)]
-        [System.Management.Automation.ActionPreference]$Action = [System.Management.Automation.ActionPreference]::Continue,
-
-        [Parameter(Mandatory = $False)]
-        [string[]]$Format,
-
-        [Parameter(Mandatory = $False)]
-        [string]$RecommendedAction
-    )
-
-    $Message
-    $Recommendment
-
-    switch ($Type) 
-    {
-        'Error' { 
-            $Message = $ErrorRes.GetString($Key);
-            $Recommendment = $ErrorRes.GetString($RecommendedAction)
-            Break;
-        }
-        'Information' { $Message = $InformationRes.GetString($Key); Break }
-        'Verbose' { $Message = $VerboseRes.GetString($Key); Break }
-        'Warning' { $Message = $WarningRes.GetString($Key); Break }
-    }
-
-    if($Format)
-    {
-        $Message = $Message+" -f "+$Format
-    }
-
-    switch ($Type) 
-    {
-        'Error' {  Write-Error -Message $Message -ErrorId (Get-ErrorId $Key) -ErrorAction $Action -RecommendedAction $RecommendedAction ; Break }
-        'Information' {  Write-Information -MessageData $Message -InformationAction $Action -RecommendedAction $RecommendedAction ; Break }
-        'Verbose' {  Write-Verbose -Message $Message ; Break }
-        'Warning' {  Write-Warning -Message $Message -WarningAction $Action ; Break }
-    }
-}
-
-
-#http://jongurgul.com/blog/get-stringhash-get-filehash/ 
-function Get-ErrorId
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [String]$Key,
-        
-        [Parameter(Mandatory = $False)]
-        [String]$HashName = "MD5"
-    )
-
-    $StringBuilder = New-Object System.Text.StringBuilder
-
-    [void]$StringBuilder.Append('E-')
-
-    [System.Security.Cryptography.HashAlgorithm]::Create($HashName).ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Key)) | ForEach-Object { 
-            [void]$StringBuilder.Append($_.ToString("x2")) 
-    } 
-
-    $StringBuilder.ToString(0,8).ToUpperInvariant()
-}
-
-
 function Initialize
 {
     Add-Type -AssemblyName System.Windows.Forms 
@@ -746,7 +673,7 @@ function Initialize
 
             try
             {
-                Write-Message -Type ([MessageType]::Verbose) -Key 'EnvPathFoundAndWillBeTested' -Format {$EnvPathName}
+                [Verbose]::out('EnvPathFoundAndWillBeTested' -Format {$EnvPathName}
                 
                 $IsValid = Test-Path $_ -IsValid
                 
@@ -765,14 +692,14 @@ function Initialize
 
             if(Get-OSVerificationResults $EnvPathName $Results)
             {
-                Write-Message -Type ([MessageType]::Verbose) -Key 'EnvPathSuccessfullyTested' -Format {$EnvPathName}
+                [Verbose]::out('EnvPathSuccessfullyTested' -Format {$EnvPathName}
             }
             else
             {
-                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarPathFailed' -Format {$_}
-                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
-                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarRecommendationExample' -Format {$EnvPathName}
-                Write-Message -Type ([MessageType]::Warning) -Key 'EnvironmentVarRecommendation2'
+                [Warning]::out('EnvironmentVarPathFailed' -Format {$_}
+                [Warning]::out('EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
+                [Warning]::out('EnvironmentVarRecommendationExample' -Format {$EnvPathName}
+                [Warning]::out('EnvironmentVarRecommendation2'
             }
         }
     }
@@ -792,36 +719,8 @@ enum OSVerification {
     VeraCryptSuccess = 42
 }
 
-enum MessageType {
-    Error       = 1
-    Information = 2
-    Verbose     = 3
-    Warning     = 4
-}
-
 Set-Alias -Name mt -Value Mount-TrueCrypt
 Set-Alias -Name dt -Value Dismount-TrueCrypt
 Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
 
-$ErrorRes =         New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Error.resx"
-$InformationRes =   New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Information.resx"
-$VerboseRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Verbose.resx"
-$WarningRes =       New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\resx\Warning.resx"
-
 Initialize
-
-
-function Test-Error
-{
-    [Error]::out('SecurityException', 'SecurityRecommendment')
-}
-
-function Test-Warning
-{
-    [Warning]::out('NewContainerOperationCancelled')
-}
-
-function Test-Information
-{
-    [Information]::out('ContainerSettingsDeleted')
-}
