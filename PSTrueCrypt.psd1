@@ -53,10 +53,11 @@ RequiredAssemblies = @(
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 ScriptsToProcess = @(
-    'src/Error.ps1',
-    'src/Information.ps1',
-    'src/Verbose.ps1',
-    'src/Warning.ps1'
+    'src/writer/Error.ps1',
+    'src/writer/Information.ps1',
+    'src/writer/Verbose.ps1',
+    'src/writer/Warning.ps1',
+    'src/enums.ps1'
 )
 
 # Type files (.ps1xml) to be loaded when importing this module
@@ -80,10 +81,10 @@ FunctionsToExport = @(
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-CmdletsToExport = @()
+# CmdletsToExport = @()
 
 # Variables to export from this module
-VariablesToExport = '*'
+# VariablesToExport = '*'
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
 AliasesToExport = @(
@@ -96,13 +97,13 @@ AliasesToExport = @(
 # DscResourcesToExport = @()
 
 # List of all modules packaged with this module
-ModuleList = @()
+# ModuleList = @()
 
 # List of all files packaged with this module
 FileList = @( 
     'PSTrueCrypt.psd1',
     'PSTrueCrypt.psm1',
-    'Writer.ps1',
+    'src/',
     'en-US/PSTrueCrypt-help.xml',
     'resx/Error.resx',
     'resx/Warning.resx',
@@ -116,13 +117,13 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('TrueCrypt', 'PowerShell', 'VeraCrypt', 'Mount', 'Encryption')
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/marckassay/PSTrueCrypt/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/marckassay/PSTrueCrypt'
 
         # A URL to an icon representing this module.
         # IconUri = ''

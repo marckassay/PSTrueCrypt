@@ -20,7 +20,7 @@ class Resource
         [string[]]$Format)
     {
         if(!$this.ResourceSet) {
-            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\resx\Verbose.resx"
+            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\..\resx\Verbose.resx"
         }
         
         $Message = $this.ResourceSet.GetString($Key)

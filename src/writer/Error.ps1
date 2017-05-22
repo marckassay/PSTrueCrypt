@@ -24,7 +24,7 @@ class Resource
         [string]$ErrorId)
     {
         if(!$this.ResourceSet) {
-            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\resx\Error.resx"
+            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\..\resx\Error.resx"
         }
         
         $Message = $this.ResourceSet.GetString($Key)

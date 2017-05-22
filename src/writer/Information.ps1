@@ -23,7 +23,7 @@ class Resource
         [System.Management.Automation.ActionPreference]$Action)
     {
         if(!$this.ResourceSet) {
-            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\resx\Information.resx"
+            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\..\resx\Information.resx"
         }
         
         $Message = $this.ResourceSet.GetString($Key)

@@ -705,20 +705,6 @@ function Initialize
     }
 }
 
-enum OSVerification {
-    TrueCryptFound = 1
-    VeraCryptFound = 2
-                
-    TrueCryptValid = 4
-    VeraCryptValid = 8
-     
-    TrueCryptVerified = 16
-    VeraCryptVerified = 32
-
-    TrueCryptSuccess = 21
-    VeraCryptSuccess = 42
-}
-
 Set-Alias -Name mt -Value Mount-TrueCrypt
 Set-Alias -Name dt -Value Dismount-TrueCrypt
 Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
