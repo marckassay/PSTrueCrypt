@@ -336,7 +336,7 @@ function Set-EnvironmentPathVariable
 
                     [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
 
-                    [Information]::out('ConfirmCreationOfEnvironmentVar' -Format {$PathVar}
+                    [Information]::out('ConfirmCreationOfEnvironmentVar', {$PathVar})
                 }
                 catch
                 {
@@ -610,7 +610,7 @@ function Invoke-DismountAll
     {
         if($HasXCryptDismountFailed -eq $False)
         {
-            [Information]::out('AllProductContainersDismounted' -Format {$Product}
+            [Information]::out('AllProductContainersDismounted', {$Product})
         }
         else 
         {
