@@ -324,7 +324,7 @@ function Set-EnvironmentPathVariable
 
         if(Get-OSVerificationResults $EnvPathName $Results)
         {
-            [Verbose]::out('ConfirmPathVarIsValid' -Format {$PathVar}
+            [Verbose]::out('ConfirmPathVarIsValid', {$PathVar})
 
             $Decision = Get-Confirmation -Message "$PathVar will be added to the 'PATH' environment variable."
 
@@ -332,7 +332,7 @@ function Set-EnvironmentPathVariable
             {
                 try
                 {
-                    [Verbose]::out('PathVarSettingAttempt' -Format {$PathVar}
+                    [Verbose]::out('PathVarSettingAttempt', {$PathVar})
 
                     [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
 
@@ -673,7 +673,7 @@ function Initialize
 
             try
             {
-                [Verbose]::out('EnvPathFoundAndWillBeTested' -Format {$EnvPathName}
+                [Verbose]::out('EnvPathFoundAndWillBeTested', {$EnvPathName})
                 
                 $IsValid = Test-Path $_ -IsValid
                 
@@ -692,7 +692,7 @@ function Initialize
 
             if(Get-OSVerificationResults $EnvPathName $Results)
             {
-                [Verbose]::out('EnvPathSuccessfullyTested' -Format {$EnvPathName}
+                [Verbose]::out('EnvPathSuccessfullyTested', {$EnvPathName})
             }
             else
             {
