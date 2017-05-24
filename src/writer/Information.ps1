@@ -34,7 +34,7 @@ class Resource
         }
 
         if($Format) {
-            $Message = ($Message+" -f "+$Format)
+            $Message = ($Message -f $Format)
         }
 
         if(!$Action) {

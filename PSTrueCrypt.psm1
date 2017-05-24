@@ -289,34 +289,6 @@ function Show-PSTrueCryptContainers
 
 
 #internal function
-function Edit-HistoryFile
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [array]$KeyfilePath
-    )
-
-    try
-    {
-        $PSHistoryFilePath = (Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath)
-        $PSHistoryTempFilePath = $PSHistoryFilePath+".tmp"
-
-        Get-Content -Path $PSHistoryFilePath | ForEach-Object { $_ -replace "-KeyfilePath.*(?<!Mount\-TrueCrypt|mt)", "-KeyfilePath X:\XXXXX\XXXXX\XXXXX"} | Set-Content -Path $PSHistoryTempFilePath
-
-        Copy-Item -Path $PSHistoryTempFilePath -Destination $PSHistoryFilePath -Force
-
-        Remove-Item -Path $PSHistoryTempFilePath -Force
-    }
-    catch
-    {
-        [Error]::out('UnableToRedact')
-        [Error]::out('Genaric', $null, {$PSHistoryFilePath}, [ActionPreference]::Inquire)
-    }
-}
-
-
-#internal function
 function Get-PSTrueCryptContainer 
 {
     Param
@@ -490,28 +462,6 @@ function Get-TrueCryptDismountParams
 
 
 # internal function
-# ref: http://stackoverflow.com/a/24649481
-function Get-Confirmation
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [string]$Message
-    )
-    
-    $Question = 'Are you sure you want to proceed?'
-
-    $Choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
-    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&Yes"))
-    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&No"))
-
-    $Decision = $Host.UI.PromptForChoice($Message, $Question, $Choices, 1)
-
-    $Decision -eq 0
-}
-
-
-# internal function
 function Invoke-DismountAll
 {
     Param
@@ -546,94 +496,59 @@ function Invoke-DismountAll
 }
 
 
+#internal function
+function Edit-HistoryFile
+{
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [array]$KeyfilePath
+    )
+
+    try
+    {
+        $PSHistoryFilePath = (Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath)
+        $PSHistoryTempFilePath = $PSHistoryFilePath+".tmp"
+
+        Get-Content -Path $PSHistoryFilePath | ForEach-Object { $_ -replace "-KeyfilePath.*(?<!Mount\-TrueCrypt|mt)", "-KeyfilePath X:\XXXXX\XXXXX\XXXXX"} | Set-Content -Path $PSHistoryTempFilePath
+
+        Copy-Item -Path $PSHistoryTempFilePath -Destination $PSHistoryFilePath -Force
+
+        Remove-Item -Path $PSHistoryTempFilePath -Force
+    }
+    catch
+    {
+        [Error]::out('UnableToRedact')
+        [Error]::out('Genaric', $null, {$PSHistoryFilePath}, [ActionPreference]::Inquire)
+    }
+}
+
+
+# internal function
+# ref: http://stackoverflow.com/a/24649481
+function Get-Confirmation
+{
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$Message
+    )
+    
+    $Question = 'Are you sure you want to proceed?'
+
+    $Choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
+    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&Yes"))
+    $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&No"))
+
+    $Decision = $Host.UI.PromptForChoice($Message, $Question, $Choices, 1)
+
+    $Decision -eq 0
+}
+
+
 # internal function
 # ref: http://www.jonathanmedd.net/2014/01/testing-for-admin-privileges-in-powershell.html
 function Test-IsAdmin 
 {
     ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
-
-
-# internal function
-function Get-OSVerificationResults
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [string]$EnvPathName,
-
-        [Parameter(Mandatory = $True, Position = 2)]
-        [int]$Results,
-
-        [ValidateSet("Found", "Valid", "Verified", "Success")]
-        [string]$ResultStep = "Success"
-    )
-
-    try 
-    {
-        ([OSVerification]::($EnvPathName+$ResultStep) -band $Results)/[OSVerification]::($EnvPathName+$ResultStep) -eq $True
-    }
-    catch
-    {
-        $False
-    }
-}
-
-
-# internal function
-function Initialize
-{
-    Add-Type -AssemblyName System.Windows.Forms 
-
-    [int]$Results = 0;
-
-    $Regex = "(\w+)\\?$"
-
-    ($Env:Path).Split(';') | ForEach-Object {
-
-        ($_ -match $Regex)
-        $EnvPathName = $Matches[1]
-        
-        if(($EnvPathName -eq "TrueCrypt") -or ($EnvPathName -eq "VeraCrypt"))
-        {
-            $Results += [OSVerification]::($EnvPathName+"Found")
-
-            try
-            {
-                [Verbose]::out('EnvPathFoundAndWillBeTested', {$EnvPathName})
-                
-                $IsValid = Test-Path $_ -IsValid
-                
-                if($IsValid -eq $True) {
-                     $Results += [OSVerification]::($EnvPathName+"Valid")
-
-                    $IsVerified = Test-Path $_
-                    
-                    if($IsVerified -eq $True) {
-                        $Results += [OSVerification]::($EnvPathName+"Verified")
-                    }
-                }
-            }
-            # should be safe to swallow.  any discrepanceis will result in the Get-OSVerificationResults call...
-            catch{ }
-
-            if(Get-OSVerificationResults $EnvPathName $Results)
-            {
-                [Verbose]::out('EnvPathSuccessfullyTested', {$EnvPathName})
-            }
-            else
-            {
-                [Warning]::out('EnvironmentVarPathFailed', {$_})
-                [Warning]::out('EnvironmentVarRecommendation', {$EnvPathName,$EnvPathName})
-                [Warning]::out('EnvironmentVarRecommendationExample', {$EnvPathName})
-                [Warning]::out('EnvironmentVarRecommendation2')
-            }
-        }
-    }
-}
-
-Set-Alias -Name mt -Value Mount-TrueCrypt
-Set-Alias -Name dt -Value Dismount-TrueCrypt
-Set-Alias -Name dtf -Value Dismount-TrueCryptForceAll
-
-Initialize

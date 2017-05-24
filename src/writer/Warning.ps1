@@ -22,17 +22,13 @@ class Resource
         [System.Management.Automation.ActionPreference]$Action)
     {
         if(!$this.ResourceSet) {
-            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\..\Sresx\Warning.resx"
+            $this.ResourceSet = New-Object -TypeName 'System.Resources.ResXResourceSet' -ArgumentList $PSScriptRoot"\..\..\resx\Warning.resx"
         }
         
         $Message = $this.ResourceSet.GetString($Key)
 
         if($Format) {
-            $Message = ($Message+" -f "+$Format)
-        }
-
-        if(!$Action) {
-            $Action = [ActionPreference]::Continue
+            $Message = ($Message -f $Format)
         }
 
         Write-Warning -Message $Message -WarningAction $Action

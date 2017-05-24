@@ -57,8 +57,9 @@ ScriptsToProcess = @(
     'src/writer/Information.ps1',
     'src/writer/Verbose.ps1',
     'src/writer/Warning.ps1',
+    'src/systemcheck.ps1',
     'src/enums.ps1',
-    'src/Set-EnvironmentPathVariable'
+    'src/initialize.ps1'
 )
 
 # Type files (.ps1xml) to be loaded when importing this module
@@ -78,7 +79,7 @@ FunctionsToExport = @(
     'New-PSTrueCryptContainer', 
     'Remove-PSTrueCryptContainer', 
     'Show-PSTrueCryptContainers',
-    'Set-EnvironmentPathVariable'
+    'Set-CryptEnvironmentVariable'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -102,14 +103,14 @@ AliasesToExport = @(
 
 # List of all files packaged with this module
 FileList = @( 
-    'PSTrueCrypt.psd1',
     'PSTrueCrypt.psm1',
-    'src/',
-    'en-US/PSTrueCrypt-help.xml',
-    'resx/Error.resx',
-    'resx/Warning.resx',
-    'resx/Information.resx',
-    'resx/Verbose.resx'
+    'src/writer/Error.ps1',
+    'src/writer/Information.ps1',
+    'src/writer/Verbose.ps1',
+    'src/writer/Warning.ps1',
+    'src/enums.ps1',
+    'src/systemcheck.ps1',
+    'src/initialze.ps1'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.

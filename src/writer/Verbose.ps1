@@ -26,7 +26,7 @@ class Resource
         $Message = $this.ResourceSet.GetString($Key)
 
         if($Format) {
-            $Message = ($Message+" -f "+$Format)
+            $Message = ($Message -f $Format)
         }
 
         Write-Verbose -Message $Message

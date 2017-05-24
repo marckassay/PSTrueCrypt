@@ -35,11 +35,7 @@ class Resource
         }
 
         if($Format) {
-            $Message = ($Message+" -f "+$Format)
-        }
-
-        if(!$Action) {
-            $Action = [System.Management.Automation.ActionPreference]::Continue
+            $Message = ($Message -f $Format)
         }
 
         Write-Error -Message $Message -ErrorId $ErrorId -ErrorAction $Action -RecommendedAction $Recommendment
