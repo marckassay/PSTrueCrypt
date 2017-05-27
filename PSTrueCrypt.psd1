@@ -53,11 +53,13 @@ RequiredAssemblies = @(
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 ScriptsToProcess = @(
+    'src/utils/common.ps1',
+    'src/utils/systemcheck.ps1',
     'src/writer/Error.ps1',
+    'src/writer/Information.ps1',
     'src/writer/Information.ps1',
     'src/writer/Verbose.ps1',
     'src/writer/Warning.ps1',
-    'src/systemcheck.ps1',
     'src/enums.ps1',
     'src/initialize.ps1'
 )
@@ -104,12 +106,13 @@ AliasesToExport = @(
 # List of all files packaged with this module
 FileList = @( 
     'PSTrueCrypt.psm1',
+    'src/utils/common.ps1',
+    'src/utils/systemcheck.ps1',
     'src/writer/Error.ps1',
     'src/writer/Information.ps1',
     'src/writer/Verbose.ps1',
     'src/writer/Warning.ps1',
     'src/enums.ps1',
-    'src/systemcheck.ps1',
     'src/initialze.ps1'
 )
 
