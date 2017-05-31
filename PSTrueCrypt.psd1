@@ -57,7 +57,6 @@ ScriptsToProcess = @(
     'src/utils/systemcheck.ps1',
     'src/writer/Error.ps1',
     'src/writer/Information.ps1',
-    'src/writer/Information.ps1',
     'src/writer/Verbose.ps1',
     'src/writer/Warning.ps1',
     'src/enums.ps1',

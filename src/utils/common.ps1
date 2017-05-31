@@ -42,9 +42,9 @@ function Get-Confirmation
     $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&Yes"))
     $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&No"))
 
-    $Decision = $Host.UI.PromptForChoice($Message, $Question, $Choices, 1)
-
-    $Decision -eq 0
+    [bool]$Decision = !($Host.UI.PromptForChoice($Message, $Question, $Choices, 1))
+    
+    $Decision
 }
 
 

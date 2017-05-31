@@ -164,22 +164,31 @@ function New-PSTrueCryptContainer
         [switch]$Timestamp
     )
 
-    $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
-        [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
-        [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
-        [System.Security.AccessControl.PropagationFlags]"None",
-        [System.Security.AccessControl.AccessControlType]"Allow")
-
-    [System.String]$SubKeyName = New-Guid
+    $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
 
     try
     {
-        $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
-
-        if ($Decision -eq $True) 
+        if ($Decision -eq $True)
         {
+            [System.String]$SubKeyName = New-Guid
+            $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
+                [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
+                [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
+                [System.Security.AccessControl.PropagationFlags]"None",
+                [System.Security.AccessControl.AccessControlType]"Allow")
+
             $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
                     [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+
+            $AccessControl = $SubKey.GetAccessControl()
+            $AccessControl.SetAccessRule($AccessRule) 
+            $SubKey.SetAccessControl($AccessControl)
+
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product
+            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode()
         }
         else
         {
@@ -189,30 +198,6 @@ function New-PSTrueCryptContainer
     catch [System.UnauthorizedAccessException]
     {
         # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
-        [Error]::out('UnauthorizedAccessException')
-    }
-
-    $AccessControl = $SubKey.GetAccessControl()
-    $AccessControl.SetAccessRule($AccessRule)
-    $SubKey.SetAccessControl($AccessControl)
-
-    try 
-    {
-        if ($Decision -eq 0) 
-        {
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name       
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location   
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode()
-        } 
-        else
-        {
-            [Warning]::out('NewContainerOperationCancelled')
-        }
-    }
-    catch [System.UnauthorizedAccessException]
-    {
         [Error]::out('UnauthorizedAccessException')
     }
 }

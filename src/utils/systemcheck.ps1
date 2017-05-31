@@ -71,6 +71,9 @@ function Set-CryptEnvironmentVariable
 
 function Start-SystemCheck
 {
+    [CmdletBinding()]
+    Param()
+    
     [int]$Results = 0;
 
     $Regex = "(\w+)\\?$"
@@ -121,6 +124,7 @@ function Start-SystemCheck
 # internal function
 function Get-OSVerificationResults
 {
+    [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory = $True, Position = 1)]
