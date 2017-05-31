@@ -45,20 +45,20 @@ class Resource
 class Error
 {
     static [void] out([string]$ResourceKey) {
-        [Resource]::GetInstance().ErrorMessage($ResourceKey, $null, $null, [ActionPreference]::Continue, [Error]::GetErrorId($ResourceKey))
+        [Resource]::GetInstance().Message($ResourceKey, $null, $null, [ActionPreference]::Continue, [Error]::GetErrorId($ResourceKey))
     }
     
     static [void] out([string]$ResourceKey, [string]$Recommendment) {
-        [Resource]::GetInstance().ErrorMessage($ResourceKey, $Recommendment, $null, [ActionPreference]::Continue, [Error]::GetErrorId($ResourceKey))
+        [Resource]::GetInstance().Message($ResourceKey, $Recommendment, $null, [ActionPreference]::Continue, [Error]::GetErrorId($ResourceKey))
     }
 
     static [void] out([string]$ResourceKey, [string]$Recommendment, [string[]]$Format) {
-        [Resource]::GetInstance().ErrorMessage($ResourceKey, $Recommendment, $Format, [ActionPreference]::Continue, [Error]::GetErrorId($ResourceKey))
+        [Resource]::GetInstance().Message($ResourceKey, $Recommendment, $Format, [ActionPreference]::Continue, [Error]::GetErrorId($ResourceKey))
     }
 
     static [void] out([string]$ResourceKey, [string]$Recommendment, [string[]]$Format, [ActionPreference]$Action)
     {
-        [Resource]::GetInstance().ErrorMessage($ResourceKey, $Recommendment, $Format, $Action, [Error]::GetErrorId($ResourceKey))
+        [Resource]::GetInstance().Message($ResourceKey, $Recommendment, $Format, $Action, [Error]::GetErrorId($ResourceKey))
     }
 
     #http://jongurgul.com/blog/get-stringhash-get-filehash/ 

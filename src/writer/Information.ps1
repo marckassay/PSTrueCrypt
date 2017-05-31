@@ -28,6 +28,7 @@ class Resource
         
         $Message = $this.ResourceSet.GetString($Key)
 
+        # TODO: this is just hanging.  was I to ammend this to Message?
         $Recommendment = ''
         if($Recommendments) {
             $Recommendment = $this.ResourceSet.GetString($Recommendments)
@@ -41,7 +42,7 @@ class Resource
             $Action = [ActionPreference]::Continue
         }
 
-        Write-Information -MessageData $Message -InformationAction $Action -RecommendedAction $Recommendments
+        Write-Information -MessageData $Message -InformationAction $Action
     }
 }
 

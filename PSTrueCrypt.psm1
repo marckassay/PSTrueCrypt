@@ -213,11 +213,11 @@ function Remove-PSTrueCryptContainer
         [ValidateNotNullOrEmpty()]
         [string]$Name
     )
-
-    [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
-
+    
     try
     {
+        [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
+
         [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName", $True)
 
         [Information]::out('ContainerSettingsDeleted')
@@ -261,7 +261,7 @@ function Show-PSTrueCryptContainers
     {
         Get-ChildItem . -Recurse | ForEach-Object {
             Get-ItemProperty $_.PsPath
-        }| Format-Table Name, Location, MountLetter, Product, Timestamp -AutoSize
+        }| Sort-Object Name | Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}} -AutoSize
     }
     catch [System.Security.SecurityException]
     {
