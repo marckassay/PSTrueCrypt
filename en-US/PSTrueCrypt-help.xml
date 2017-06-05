@@ -9,9 +9,9 @@
 </maml:para>
 </maml:description>
 </command:details>
-<maml:description><maml:para>In order to use this function, you must provide container settings that will be added to the local registry.  You can add container  settings via New-PSTrueCryptContainer.
+<maml:description><maml:para>In order to use this function, you must provide container settings that will be added to the local registry.  You can add container settings via New-PSTrueCryptContainer.
 </maml:para>
-<maml:para>The default Alias name is: dt
+<maml:para>The default Alias name is: dmt
 </maml:para>
 </maml:description>
 <command:syntax><command:syntaxItem><maml:name>Dismount-TrueCrypt</maml:name>
@@ -24,14 +24,6 @@
 <maml:uri /></dev:type>
 <dev:defaultValue>None</dev:defaultValue>
 </command:parameter>
-<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>ForceAll</maml:name>
-<maml:Description><maml:para>If method is invoked with this switch (flag) parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
-</maml:para>
-</maml:Description>
-<dev:type><maml:name>SwitchParameter</maml:name>
-<maml:uri /></dev:type>
-<dev:defaultValue>False</dev:defaultValue>
-</command:parameter>
 </command:syntaxItem>
 </command:syntax>
 <command:parameters><command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="2" aliases="none"><maml:name>Name</maml:name>
@@ -42,15 +34,6 @@
 <dev:type><maml:name>String</maml:name>
 <maml:uri /></dev:type>
 <dev:defaultValue>None</dev:defaultValue>
-</command:parameter>
-<command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="none"><maml:name>ForceAll</maml:name>
-<maml:Description><maml:para>If method is invoked with this switch (flag) parameter, TrueCrypt will force (discard any unsaved changes) dismount of all TrueCrypt containers.
-</maml:para>
-</maml:Description>
-<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
-<dev:type><maml:name>SwitchParameter</maml:name>
-<maml:uri /></dev:type>
-<dev:defaultValue>False</dev:defaultValue>
 </command:parameter>
 </command:parameters>
 <command:inputTypes><command:inputType><dev:type><maml:name>None</maml:name>
@@ -77,12 +60,6 @@
 </maml:para>
 </dev:remarks>
 </command:example>
-<command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-<dev:code>PS C:\\\&gt;Dismount-TrueCrypt -ForceAll</dev:code>
-<dev:remarks><maml:para>
-</maml:para>
-</dev:remarks>
-</command:example>
 </command:examples>
 <command:relatedLinks><maml:navigationLink><maml:linkText>Online Version:</maml:linkText>
 <maml:uri>https://github.com/marckassay/PSTrueCrypt</maml:uri>
@@ -93,13 +70,13 @@
 <command:details><command:name>Dismount-TrueCryptForceAll</command:name>
 <command:verb>Dismount</command:verb>
 <command:noun>TrueCryptForceAll</command:noun>
-<maml:description><maml:para>Dismounts a TrueCrypt container.  .
+<maml:description><maml:para>Dismounts all TrueCrypt and VeraCrypt containers.
 </maml:para>
 </maml:description>
 </command:details>
-<maml:description><maml:para>This method simply wraps Dismount-TrueCrypt.  This method isn't intended to be used directly.
+<maml:description><maml:para>Immediately dismounts all container(s) of TrueCrypt and VeraCrypt by invoking their exeutable with dismount parameter using no specified mount letter.
 </maml:para>
-<maml:para>The default Alias name is: dtf
+<maml:para>The default Alias name is: dmt*
 </maml:para>
 </maml:description>
 <command:syntax><command:syntaxItem><maml:name>Dismount-TrueCryptForceAll</maml:name>
@@ -131,7 +108,7 @@
 </dev:remarks>
 </command:example>
 <command:example><maml:title>-------------------------- EXAMPLE 2 --------------------------</maml:title>
-<dev:code>PS C:\\\&gt;dtf</dev:code>
+<dev:code>PS C:\\\&gt;dmt*</dev:code>
 <dev:remarks><maml:para>
 </maml:para>
 </dev:remarks>
