@@ -106,38 +106,61 @@ function Dismount-TrueCrypt
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $False, Position = 1)]
+        [Parameter(Mandatory = $True, Position = 1)]
         [ValidateNotNullOrEmpty()]
-        [string]$Name,
-
-        [switch]$ForceAll
+        [string]$Name
     )
 
-    # is Dismount-TrueCrypt has been invoked with the -Force flag, then it will have a value of true..
-    if ($ForceAll -eq $False)
-    {
-        $Settings = Get-PSTrueCryptContainer -Name $Name
-        
-        # construct arguments and execute expression...
-        [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
+    $Settings = Get-PSTrueCryptContainer -Name $Name
+    
+    # construct arguments and execute expression...
+    [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
 
-        Invoke-Expression $Expression
-    }
-    else
-    {
-        Invoke-DismountAll -Product TrueCrypt
-        
-        Invoke-DismountAll -Product VeraCrypt
-    }
+    Invoke-Expression $Expression
 }
 
 
 #.ExternalHelp PSTrueCrypt-help.xml
 function Dismount-TrueCryptForceAll
 {
-    Dismount-TrueCrypt -ForceAll
+    Invoke-DismountAll -Product TrueCrypt
+    Invoke-DismountAll -Product VeraCrypt
 }
 
+# internal function
+function Invoke-DismountAll
+{
+    [CmdletBinding()]
+    Param
+    (
+        [ValidateSet("TrueCrypt", "VeraCrypt")]
+        [string]$Product
+    )
+
+    # construct arguments for Force dismount(s)...
+    [string]$Expression = Get-TrueCryptDismountParams -Product $Product
+
+    try
+    {
+        Invoke-Expression $Expression
+        $HasXCryptDismountFailed = $False
+    }
+    catch 
+    {
+        $HasXCryptDismountFailed = $True
+    }
+    finally
+    {
+        if($HasXCryptDismountFailed -eq $False)
+        {
+            [Information]::out('AllProductContainersDismounted', $Product)
+        }
+        else 
+        {
+            [Error]::out('DismountException', $null, $Product)
+        }
+    }
+}
 
 #.ExternalHelp PSTrueCrypt-help.xml
 function New-PSTrueCryptContainer
@@ -184,11 +207,14 @@ function New-PSTrueCryptContainer
             $AccessControl.SetAccessRule($AccessRule) 
             $SubKey.SetAccessControl($AccessControl)
 
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product
-            New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode()
+            # slient out-put using '[void](...)'
+            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name)
+            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location)
+            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter)
+            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product)
+            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
+
+            [Information]::out('NewContainerOperationSucceeded', $Name)
         }
         else
         {
@@ -231,7 +257,8 @@ function Remove-PSTrueCryptContainer
     {
         #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
         #subkey is null.
-        [Error]::out('UnableToFindPSTrueCryptContainer', $null, {$Name})
+        [Error]::out('UnableToFindPSTrueCryptContainer', $null, $Name, [ActionPreference]::Stop)
+
     }
     catch [System.Security.SecurityException]
     {
@@ -296,7 +323,7 @@ function Get-PSTrueCryptContainer
     }
     else
     {
-        Throw New-Object System.Management.Automation.ItemNotFoundException
+        [Error]::out('UnableToFindPSTrueCryptContainer', $null, $Name, [ActionPreference]::Stop)
     }
 
     $Settings
@@ -443,39 +470,4 @@ function Get-TrueCryptDismountParams
     }
     
     return $ParamsString.ToString().TrimEnd(" ");
-}
-
-
-# internal function
-function Invoke-DismountAll
-{
-    Param
-    (
-        [ValidateSet("TrueCrypt", "VeraCrypt")]
-        [string]$Product
-    )
-
-    # construct arguments for Force dismount(s)...
-    [string]$Expression = Get-TrueCryptDismountParams -Product $Product
-
-    try
-    {
-        Invoke-Expression $Expression
-        $HasXCryptDismountFailed = $False
-    }
-    catch 
-    {
-        $HasXCryptDismountFailed = $True
-    }
-    finally
-    {
-        if($HasXCryptDismountFailed -eq $False)
-        {
-            [Information]::out('AllProductContainersDismounted', {$Product})
-        }
-        else 
-        {
-            [Error]::out('DismountException', $null, {$Product})
-        }
-    }
 }

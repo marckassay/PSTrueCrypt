@@ -126,4 +126,7 @@
   <data name="AllProductContainersDismounted" xml:space="preserve">
     <value>All {0} containers have successfully dismounted.  Please verify.</value>
   </data>
+  <data name="NewContainerOperationSucceeded" xml:space="preserve">
+    <value>'{0}' PSTrueCrypt container has been created!</value>
+  </data>
 </root>
