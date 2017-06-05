@@ -7,8 +7,8 @@ schema: 2.0.0
 # Dismount-TrueCryptForceAll
 
 ## SYNOPSIS
-Dismounts a TrueCrypt container. 
-.
+Dismounts all TrueCrypt and VeraCrypt containers. 
+
 
 ## SYNTAX
 
@@ -17,10 +17,9 @@ Dismount-TrueCryptForceAll
 ```
 
 ## DESCRIPTION
-This method simply wraps Dismount-TrueCrypt. 
-This method isn't intended to be used directly.
+Immediately dismounts all container(s) of TrueCrypt and VeraCrypt by invoking their exeutable with dismount parameter using no specified mount letter.
 
-The default Alias name is: dtf
+The default Alias name is: dmt*
 
 ## EXAMPLES
 
@@ -34,7 +33,7 @@ PS C:\\\>Dismount-TrueCryptForceAll
 ### -------------------------- EXAMPLE 2 --------------------------
 Equivalent as example above.
 ```
-PS C:\\\>dtf
+PS C:\\\>dmt*
 ```
 
 
