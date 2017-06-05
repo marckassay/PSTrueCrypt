@@ -56,9 +56,9 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	E:\>
 	```
 
-	Dismounts all TrueCrypt and all VeraCrypt containers in sequential order.
+	Using the alias for Dismount-TrueCryptForceAll, dismounts all TrueCrypt and all VeraCrypt containers respectively.
 	```powershell
-	E:\> Dismount-TrueCrypt -ForceAll
+	E:\> dmt*
 	E:\>
 	```
 
