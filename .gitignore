@@ -19,3 +19,6 @@ $RECYCLE.BIN/
 
 # Visual Studio Code config
 .vscode/*.json
+
+# Test artifacts
+out/**

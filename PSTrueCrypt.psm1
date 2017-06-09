@@ -471,3 +471,6 @@ function Get-TrueCryptDismountParams
     
     return $ParamsString.ToString().TrimEnd(" ");
 }
+
+function Test-IsAdmin{} 
+function Edit-HistoryFile{}
