@@ -1,11 +1,4 @@
-Get-Module -Name PSTrueCryptMockModule | Remove-Module
-New-Module -Name PSTrueCryptMockModule  -ScriptBlock {
-    function Test-IsAdmin{} 
-    function Edit-HistoryFile{}
-    function Get-Confirmation{}
-
-    Export-ModuleMember -Function Test-IsAdmin, Edit-HistoryFile, Get-Confirmation
-} | Import-Module -Force
+Import-Module -Name .\StubModule
 
 Describe "Test Mount-TrueCrypt when called..." {
     

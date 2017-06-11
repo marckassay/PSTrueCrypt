@@ -1,13 +1,9 @@
-Get-Module -Name PSTrueCryptMockModule | Remove-Module
-New-Module -Name PSTrueCryptMockModule  -ScriptBlock {
-    function Test-IsAdmin{} 
-    function Edit-HistoryFile{}
-    function Get-Confirmation{}
-
-    Export-ModuleMember -Function Test-IsAdmin, Edit-HistoryFile, Get-Confirmation
-} | Import-Module -Force
+using namespace 'System.Resources'
+Import-Module -Name .\StubModule
 
 Describe "Test New-PSTrueCryptContainer when called..." {
+
+    $OutTestPath = Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out/test/resources"
     
     Context "with valid entries without Timestamp" {
 
@@ -16,6 +12,8 @@ Describe "Test New-PSTrueCryptContainer when called..." {
             Mock Get-Confirmation { return $True } -Verifiable
 
             Mock New-Guid { return 'e03e195e-c069-4c6b-9d35-6b61cdf40aad' }
+
+            Mock Out-Information{} -Verifiable
 
             Mock New-ItemProperty {}
 
@@ -64,6 +62,8 @@ Describe "Test New-PSTrueCryptContainer when called..." {
             Mock Get-Confirmation { return $True } -Verifiable
 
             Mock New-Guid { return 'e03e195e-c069-4c6b-9d35-6b61cdf40aad' }
+
+            Mock Out-Information{} -Verifiable
 
             Mock New-ItemProperty {}
 

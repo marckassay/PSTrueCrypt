@@ -1,4 +1,8 @@
 using namespace 'System.Management.Automation'
+using module .\src\writer\Error.psm1
+using module .\src\writer\Information.psm1
+using module .\src\writer\Verbose.psm1
+using module .\src\writer\Warning.psm1
 
 #.ExternalHelp PSTrueCrypt-help.xml
 function Mount-TrueCrypt
@@ -24,7 +28,7 @@ function Mount-TrueCrypt
     }
     catch [System.Management.Automation.ItemNotFoundException]
     {
-         [Error]::out('NoPSTrueCryptContainerFound', $null, $null, [ActionPreference]::Stop)
+         Out-Error 'NoPSTrueCryptContainerFound' -Action Continue
     }
 
     # construct arguments for expression and insert token in for password...
@@ -59,12 +63,12 @@ function Mount-TrueCrypt
     catch [System.NotSupportedException]
     {
         # The current computer is not running Windows 2000 Service Pack 3 or later.
-        [Error]::out('NotSupportedException')
+        Out-Error 'NotSupportedException'
     }
     catch [System.OutOfMemoryException]
     {
         # OutOfMemoryException
-        [Error]::out('OutOfMemoryException')
+        Out-Error 'OutOfMemoryException'
     }
     finally
     {
@@ -78,7 +82,7 @@ function Mount-TrueCrypt
     }
     catch [System.Exception]
     {
-        [Error]::out('UnknownException', 'EnsureFileRecommendment')
+        Out-Error 'UnknownException', 'EnsureFileRecommendment'
     }
     finally
     {
@@ -153,11 +157,11 @@ function Invoke-DismountAll
     {
         if($HasXCryptDismountFailed -eq $False)
         {
-            [Information]::out('AllProductContainersDismounted', $Product)
+            Out-Information 'AllProductContainersDismounted' -Format $Product
         }
         else 
         {
-            [Error]::out('DismountException', $null, $Product)
+            Out-Error 'DismountException' -Format $Product
         }
     }
 }
@@ -204,7 +208,7 @@ function New-PSTrueCryptContainer
                     [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
 
             $AccessControl = $SubKey.GetAccessControl()
-            $AccessControl.SetAccessRule($AccessRule) 
+            $AccessControl.SetAccessRule($AccessRule)
             $SubKey.SetAccessControl($AccessControl)
 
             # slient out-put using '[void](...)'
@@ -214,17 +218,17 @@ function New-PSTrueCryptContainer
             [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product)
             [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
 
-            [Information]::out('NewContainerOperationSucceeded', $Name)
+            Out-Information 'NewContainerOperationSucceeded' -Format $Name
         }
         else
         {
-            [Warning]::out('NewContainerOperationCancelled')
+            Out-Warning 'NewContainerOperationCancelled'
         }
     }
     catch [System.UnauthorizedAccessException]
     {
         # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
-        [Error]::out('UnauthorizedAccessException')
+        Out-Error 'UnauthorizedAccessException'
     }
 }
 
@@ -246,34 +250,34 @@ function Remove-PSTrueCryptContainer
 
         [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName", $True)
 
-        [Information]::out('ContainerSettingsDeleted')
+        Out-Information 'ContainerSettingsDeleted'
     }
     catch [System.ObjectDisposedException]
     {
         #The RegistryKey being manipulated is closed (closed keys cannot be accessed).
-        [Error]::out('ObjectDisposedException')
+        Out-Error 'ObjectDisposedException'
     }
     catch [System.ArgumentException],[System.ArgumentNullException]
     {
         #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
         #subkey is null.
-        [Error]::out('UnableToFindPSTrueCryptContainer', $null, $Name, [ActionPreference]::Stop)
+        Out-Error 'UnableToFindPSTrueCryptContainer' -Product $Name -Action Stop
 
     }
     catch [System.Security.SecurityException]
     {
         #The user does not have the permissions required to delete the key.
-        [Error]::out('SecurityException', 'SecurityRecommendment')
+        Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
     }
     catch [System.InvalidOperationException]
     {
         # subkey has child subkeys.
-        [Error]::out('InvalidOperationException')
+        Out-Error 'InvalidOperationException'
     }
     catch [System.UnauthorizedAccessException]
     {
         #The user does not have the necessary registry rights.
-        [Error]::out('UnauthorizedRegistryAccessException')
+        Out-Error 'UnauthorizedRegistryAccessException'
     }
 }
 
@@ -293,7 +297,7 @@ function Show-PSTrueCryptContainers
     catch [System.Security.SecurityException]
     {
         #The user does not have the permissions required to delete the key.
-        [Error]::out('SecurityException', 'SecurityRecommendment')
+        Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
     }
 
     Pop-Location
@@ -323,7 +327,7 @@ function Get-PSTrueCryptContainer
     }
     else
     {
-        [Error]::out('UnableToFindPSTrueCryptContainer', $null, $Name, [ActionPreference]::Stop)
+        Out-Error 'UnableToFindPSTrueCryptContainer' -Format $Name -Action Stop
     }
 
     $Settings
@@ -354,7 +358,7 @@ function Get-SubKeyPath
     catch 
     {
         # TODO: Need to throw specific error to calling method
-        [Error]::out('UnableToReadRegistry')
+        Out-Error 'UnableToReadRegistry'
     }
 
     Pop-Location

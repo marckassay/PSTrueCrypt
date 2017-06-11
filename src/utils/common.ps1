@@ -1,3 +1,5 @@
+using module ..\writer\Error.psm1
+
 #internal function
 function Edit-HistoryFile
 {
@@ -20,8 +22,8 @@ function Edit-HistoryFile
     }
     catch
     {
-        [Error]::out('UnableToRedact')
-        [Error]::out('Genaric', $null, {$PSHistoryFilePath}, [ActionPreference]::Inquire)
+        Out-Error 'UnableToRedact'
+        Out-Error 'Genaric' -Format $PSHistoryFilePath -Action Inquire
     }
 }
 

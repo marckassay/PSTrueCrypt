@@ -1,3 +1,8 @@
+using module ..\writer\Error.psm1
+using module ..\writer\Information.psm1
+using module ..\writer\Verbose.psm1
+using module ..\writer\Warning.psm1
+
 #.ExternalHelp PSTrueCrypt-help.xml
 function Set-CryptEnvironmentVariable
 {
@@ -8,7 +13,7 @@ function Set-CryptEnvironmentVariable
         [ValidateNotNullOrEmpty()]
         [string]$PathVar
     )
-    [Warning]::out('InvalidEnvironmentVarAttempt', $PathVar, [ActionPreference]::Inquire)
+
     [int]$Results = 0
 
     $Regex = "(\w+)\\?$"
@@ -34,7 +39,7 @@ function Set-CryptEnvironmentVariable
 
         if(Get-OSVerificationResults $EnvPathName $Results)
         {
-            [Verbose]::out('ConfirmPathVarIsValid', {$PathVar})
+             Out-Verbose 'ConfirmPathVarIsValid' -Format $PathVar
 
             $Decision = Get-Confirmation -Message "$PathVar will be added to the 'PATH' environment variable."
 
@@ -42,30 +47,30 @@ function Set-CryptEnvironmentVariable
             {
                 try
                 {
-                    [Verbose]::out('PathVarSettingAttempt', {$PathVar})
+                     Out-Verbose 'PathVarSettingAttempt' -Format $PathVar
 
                     [System.Environment]::SetEnvironmentVariable("Path", $env:Path +";"+ $PathVar, [EnvironmentVariableTarget]::Machine)
 
-                    [Information]::out('ConfirmCreationOfEnvironmentVar', {$PathVar})
+                     Out-Information 'ConfirmCreationOfEnvironmentVar' -Format $PathVar
                 }
                 catch
                 {
-                    [Error]::out('UnableToChangeEnvironmentVar', 'SecurityRecommendment', $null, [ActionPreference]::Stop)
+                     Out-Error 'UnableToChangeEnvironmentVar' -Recommendment 'SecurityRecommendment' -Action Stop
                 }
             }
             else
             {
-                [Warning]::out('NewEnvironmentVarCancelled')
+                 Out-Warning 'NewEnvironmentVarCancelled'
             }  
         }
         else 
         {
-            [Warning]::out('InvalidEnvironmentVarAttempt', $PathVar, [ActionPreference]::Inquire)
+             Out-Warning 'InvalidEnvironmentVarAttempt' -Format $PathVar -Action Inquire
         }
     }
     catch
     {
-        [Warning]::out('InvalidEnvironmentVarAttempt', {$PathVar}, [ActionPreference]::Inquire)
+         Out-Warning 'InvalidEnvironmentVarAttempt' -Format $PathVar -Action Inquire
     }
 }
 
@@ -89,7 +94,7 @@ function Start-SystemCheck
 
             try
             {
-                [Verbose]::out('EnvPathFoundAndWillBeTested', {$EnvPathName})
+                 Out-Verbose 'EnvPathFoundAndWillBeTested' -Format $EnvPathName
                 
                 $IsValid = Test-Path $_ -IsValid
                 
@@ -108,14 +113,14 @@ function Start-SystemCheck
 
             if(Get-OSVerificationResults $EnvPathName $Results)
             {
-                [Verbose]::out('EnvPathSuccessfullyTested', {$EnvPathName})
+                 Out-Verbose 'EnvPathSuccessfullyTested' -Format $EnvPathName
             }
             else
             {
-                [Warning]::out('EnvironmentVarPathFailed', {$_})
-                [Warning]::out('EnvironmentVarRecommendation', {$EnvPathName,$EnvPathName})
-                [Warning]::out('EnvironmentVarRecommendationExample', {$EnvPathName})
-                [Warning]::out('EnvironmentVarRecommendation2')
+                 Out-Warning 'EnvironmentVarPathFailed' -Format {$_}
+                 Out-Warning 'EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
+                 Out-Warning 'EnvironmentVarRecommendationExample' -Format $EnvPathName
+                 Out-Warning 'EnvironmentVarRecommendation2'
             }
         }
     }
