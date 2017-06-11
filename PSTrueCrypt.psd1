@@ -52,6 +52,7 @@ RequiredAssemblies = @(
 )
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
+<#
 ScriptsToProcess = @(
     'src/utils/common.ps1',
     'src/utils/systemcheck.ps1',
@@ -62,7 +63,7 @@ ScriptsToProcess = @(
     'src/enums.ps1',
     'src/initialize.ps1'
 )
-
+#>
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
 
