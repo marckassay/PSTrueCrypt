@@ -469,5 +469,4 @@ function Get-TrueCryptDismountParams
         [void]$ParamsString.Append(" ")
     }
     
-    return $ParamsString.ToString().TrimEnd(" ");
-}
+    return $ParamsString.ToString().TrimEnd(" ")

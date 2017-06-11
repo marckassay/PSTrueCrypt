@@ -1,4 +1,4 @@
-﻿Get-Module -Name PSTrueCryptMockModule | Remove-Module
+Get-Module -Name PSTrueCryptMockModule | Remove-Module
 New-Module -Name PSTrueCryptMockModule  -ScriptBlock {
     function Test-IsAdmin{} 
     function Edit-HistoryFile{}
