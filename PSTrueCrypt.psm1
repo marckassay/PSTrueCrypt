@@ -214,7 +214,7 @@ function New-PSTrueCryptContainer
             [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product)
             [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
 
-            [Information]::out('NewContainerOperationSucceeded', $Name)
+           # [Information]::out('NewContainerOperationSucceeded', $Name)
         }
         else
         {
@@ -471,6 +471,3 @@ function Get-TrueCryptDismountParams
     
     return $ParamsString.ToString().TrimEnd(" ");
 }
-
-function Test-IsAdmin{} 
-function Edit-HistoryFile{}

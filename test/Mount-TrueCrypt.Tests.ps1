@@ -1,4 +1,13 @@
-﻿Describe "Test Mount-TrueCrypt when called with Name..." {
+﻿Get-Module -Name PSTrueCryptMockModule | Remove-Module
+New-Module -Name PSTrueCryptMockModule  -ScriptBlock {
+    function Test-IsAdmin{} 
+    function Edit-HistoryFile{}
+    function Get-Confirmation{}
+
+    Export-ModuleMember -Function Test-IsAdmin, Edit-HistoryFile, Get-Confirmation
+} | Import-Module -Force
+
+Describe "Test Mount-TrueCrypt when called..." {
     
     BeforeEach {
         $OutTestPath = Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out/test/resources"
@@ -12,7 +21,7 @@
         Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out" | Remove-Item -Recurse
     }
     
-    Context "called with no KeyfilePath..." {
+    Context "with no KeyfilePath..." {
         InModuleScope PSTrueCrypt {
             Mock Get-PSTrueCryptContainer { 
             @{
@@ -38,7 +47,7 @@
                 Assert-VerifiableMocks
             }
 
-            It "Should of called Invoke-Expression with value being used in this comparison operator..." {
+            It "Should of called Invoke-Expression with the value being used in this comparison operator..." {
                 Assert-MockCalled Invoke-Expression -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
                     $Command -eq "& TrueCrypt /explore /password '123abc' /volume '/test/resources/truecrypt' /quit /auto /letter 'T'"
                 }
@@ -46,7 +55,7 @@
         }
     }
     
-    Context "called with KeyfilePath..." {
+    Context "with KeyfilePath..." {
         InModuleScope PSTrueCrypt {
             Mock Get-PSTrueCryptContainer { 
             @{
@@ -72,7 +81,7 @@
                 Assert-VerifiableMocks
             }
 
-            It "Should of called Invoke-Expression with value being used in this comparison operator..." {
+            It "Should of called Invoke-Expression with the value being used in this comparison operator..." {
                 Assert-MockCalled Invoke-Expression -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
                     $Command -eq "& TrueCrypt /keyfile '/.AlicesTrueCryptKeyfile' /explore /password '123abc' /volume '/test/resources/truecrypt' /quit /auto /letter 'T'"
                 }
@@ -80,7 +89,7 @@
         }
     }
     
-    Context "called with SecureString..." {
+    Context "with SecureString..." {
         InModuleScope PSTrueCrypt {
             Mock Get-PSTrueCryptContainer { 
             @{
@@ -102,7 +111,7 @@
                 Assert-VerifiableMocks
             }
 
-            It "Should of called Invoke-Expression with value being used in this comparison operator..." {
+            It "Should of called Invoke-Expression with the value being used in this comparison operator..." {
                 Assert-MockCalled Invoke-Expression -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
                     $Command -eq "& TrueCrypt /keyfile '/.AlicesTrueCryptKeyfile' /explore /password '123abc' /volume '/test/resources/truecrypt' /quit /auto /letter 'T'"
                 }
