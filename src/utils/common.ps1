@@ -3,12 +3,6 @@ using module ..\writer\Error.psm1
 #internal function
 function Edit-HistoryFile
 {
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [array]$KeyfilePath
-    )
-
     try
     {
         $PSHistoryFilePath = (Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath)

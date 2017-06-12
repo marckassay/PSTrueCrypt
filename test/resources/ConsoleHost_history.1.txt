@@ -1,0 +1,24 @@
+git add .
+git commit -m "Added more unit-test cases."
+git push
+Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath
+gc Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath -Tail 100
+gc -Path (Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath) -Tail 100
+Get-PSReadlineOption | Select-Object -ExpandProperty HistorySavePath
+gc C:\Users\Alice\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt -Tail 10
+Get-Module
+clear
+sl E:\alice\vscode\
+git checkout master
+git diff
+git stash
+git checkout .
+git fetch upstream
+git merge upstream/master
+git push
+sl \
+Mount-TrueCrypt -Name AlicesContainer -KeyfilePath D:\.AlicesTrueCryptKeyfile
+sl .\alice\PSTrueCrypt\
+ls
+git diff
+gc C:\Users\Alice\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt -Tail 30
