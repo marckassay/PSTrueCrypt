@@ -339,6 +339,7 @@ function Get-PSTrueCryptContainer
 
 
 # internal function
+# returns the path to the subkey: 'HKCU:\SOFTWARE\PSTrueCrypt\e03e195e-c069-4c6b-9d35-6b61cdf40aad'
 function Get-SubKeyPath
 {
     Param
