@@ -253,7 +253,7 @@ function Remove-PSTrueCryptContainer
 
             Out-Information 'ContainerSettingsDeleted'
         } else {
-            throw New-Object System.ArgumentException('nada')
+            throw New-Object System.ArgumentException('UnableToFindPSTrueCryptContainer')
         }
     }
     catch [System.ObjectDisposedException]
@@ -283,17 +283,6 @@ function Remove-PSTrueCryptContainer
         #The user does not have the necessary registry rights.
         Out-Error 'UnauthorizedRegistryAccessException'
     }
-}
-
-# internal function: designed for Pester access
-function Remove-HKCUSubKey
-{
-    Param
-    (
-        [string]$FullPath
-    )
-    # the CurrentUser here indicates HKEY_CURRENT_USER hive...
-    [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey($FullPath, $True)
 }
 
 
@@ -489,4 +478,15 @@ function Get-TrueCryptDismountParams
     }
     
     return $ParamsString.ToString().TrimEnd(" ")
+}
+
+# internal function: designed for Pester access
+function Remove-HKCUSubKey
+{
+    Param
+    (
+        [string]$FullPath
+    )
+    # the CurrentUser here indicates HKEY_CURRENT_USER hive...
+    [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey($FullPath, $True)
 }
