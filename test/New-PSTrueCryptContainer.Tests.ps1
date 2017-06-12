@@ -1,4 +1,3 @@
-using namespace 'System.Resources'
 Import-Module -Name .\StubModule
 
 Describe "Test New-PSTrueCryptContainer when called..." {

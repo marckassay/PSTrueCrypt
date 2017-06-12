@@ -248,9 +248,13 @@ function Remove-PSTrueCryptContainer
     {
         [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
 
-        [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName", $True)
+        if($SubKeyName) {
+            Remove-HKCUSubKey "SOFTWARE\PSTrueCrypt\$SubKeyName"
 
-        Out-Information 'ContainerSettingsDeleted'
+            Out-Information 'ContainerSettingsDeleted'
+        } else {
+            throw New-Object System.ArgumentException('nada')
+        }
     }
     catch [System.ObjectDisposedException]
     {
@@ -261,7 +265,7 @@ function Remove-PSTrueCryptContainer
     {
         #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
         #subkey is null.
-        Out-Error 'UnableToFindPSTrueCryptContainer' -Product $Name -Action Stop
+        Out-Error 'UnableToFindPSTrueCryptContainer' -Format $Name
 
     }
     catch [System.Security.SecurityException]
@@ -279,6 +283,17 @@ function Remove-PSTrueCryptContainer
         #The user does not have the necessary registry rights.
         Out-Error 'UnauthorizedRegistryAccessException'
     }
+}
+
+# internal function: designed for Pester access
+function Remove-HKCUSubKey
+{
+    Param
+    (
+        [string]$FullPath
+    )
+    # the CurrentUser here indicates HKEY_CURRENT_USER hive...
+    [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey($FullPath, $True)
 }
 
 
