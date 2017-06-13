@@ -7,7 +7,7 @@ using module .\src\writer\Warning.psm1
 #.ExternalHelp PSTrueCrypt-help.xml
 function Mount-TrueCrypt
 {
-    [CmdletBinding()]
+    [CmdletBinding(PositionalBinding=$False)]
     Param
     (
         [Parameter(Mandatory = $False)]
@@ -23,7 +23,7 @@ function Mount-TrueCrypt
 
         $ParamAttrib = New-Object ParameterAttribute
         $ParamAttrib.Mandatory = $True
-        #$ParamAttrib.Position = 1
+        $ParamAttrib.Position = 0
 
         $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
@@ -136,7 +136,7 @@ function Dismount-TrueCrypt
 
         $ParamAttrib = New-Object ParameterAttribute
         $ParamAttrib.Mandatory = $True
-        #$ParamAttrib.Position = 1
+        $ParamAttrib.Position = 0
 
         $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
@@ -286,7 +286,7 @@ function Remove-PSTrueCryptContainer
 
         $ParamAttrib = New-Object ParameterAttribute
         $ParamAttrib.Mandatory = $True
-        #$ParamAttrib.Position = 1
+        $ParamAttrib.Position = 0
 
         $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
