@@ -10,96 +10,114 @@ function Mount-TrueCrypt
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name,
-
         [Parameter(Mandatory = $False)]
         [array]$KeyfilePath,
 
         [Parameter(Mandatory = $False)]
         [System.Security.SecureString]$Password
     )
-    
-    # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
-    try 
-    {
-        $Settings = Get-PSTrueCryptContainer -Name $Name
-    }
-    catch [System.Management.Automation.ItemNotFoundException]
-    {
-         Out-Error 'NoPSTrueCryptContainerFound' -Action Continue
-    }
 
-    # construct arguments for expression and insert token in for password...
-    [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
-
-    # if no password was given, then we need to start the process for of prompting for one...
-    if ([string]::IsNullOrEmpty($Password) -eq $True)
+    DynamicParam
     {
-        $WasConsolePromptingPrior
-        # check to see if session is in admin mode for console prompting...
-        if (Test-IsAdmin -eq $True)
+        $ContainerNames = Get-ContainerNames
+
+        $ParamAttrib = New-Object ParameterAttribute
+        $ParamAttrib.Mandatory = $True
+        #$ParamAttrib.Position = 1
+
+        $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
+        $AttribColl.Add($ParamAttrib)
+
+        $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
+        $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
+        $RuntimeParamDic.Add('Name', $RuntimeParam)
+
+        return $RuntimeParamDic
+    }
+    #$PSBoundParameters.Name
+    process
+    {
+        # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
+        try 
         {
-            $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
-
-            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+            $Settings = Get-PSTrueCryptContainer -Name $PSBoundParameters.Name
+        }
+        catch [ItemNotFoundException]
+        {
+            Out-Error 'NoPSTrueCryptContainerFound' -Action Continue
         }
 
-        [securestring]$Password = Read-Host -Prompt "Enter password" -AsSecureString
-    }
+        # construct arguments for expression and insert token in for password...
+        [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
 
-    # this method of handling password securely has been mentioned at the following links:
-    # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
-    # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
-    # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
-    # https://msdn.microsoft.com/en-us/library/ewyktcaa(v=vs.110).aspx
-    try
-    {
-        # Create IntPassword and dispose $Password...
+        # if no password was given, then we need to start the process for of prompting for one...
+        if ([string]::IsNullOrEmpty($Password) -eq $True)
+        {
+            $WasConsolePromptingPrior
+            # check to see if session is in admin mode for console prompting...
+            if (Test-IsAdmin -eq $True)
+            {
+                $WasConsolePromptingPrior = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" | Select-Object -ExpandProperty ConsolePrompting
 
-        [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
-    }
-    catch [System.NotSupportedException]
-    {
-        # The current computer is not running Windows 2000 Service Pack 3 or later.
-        Out-Error 'NotSupportedException'
-    }
-    catch [System.OutOfMemoryException]
-    {
-        # OutOfMemoryException
-        Out-Error 'OutOfMemoryException'
-    }
-    finally
-    {
-        $Password.Dispose()
-    }
+                Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $True
+            }
 
-    try
-    {
-        # Execute Expression
-        Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
-    }
-    catch [System.Exception]
-    {
-        Out-Error 'UnknownException', 'EnsureFileRecommendment'
-    }
-    finally
-    {
-    # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
-    # holding on to this pointer while container is open.
-    # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
-    }
+            [securestring]$Password = Read-Host -Prompt "Enter password" -AsSecureString
+        }
 
-    # if console prompting was set to false prior to this module, then set it back to false... 
-    if ($WasConsolePromptingPrior -eq $False)
-    {
-        Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
-    }
+        # this method of handling password securely has been mentioned at the following links:
+        # https://msdn.microsoft.com/en-us/library/system.security.securestring(v=vs.110).aspx
+        # https://msdn.microsoft.com/en-us/library/system.runtime.interopservices.marshal.securestringtobstr(v=vs.110).aspx
+        # https://msdn.microsoft.com/en-us/library/system.intptr(v=vs.110).aspx
+        # https://msdn.microsoft.com/en-us/library/ewyktcaa(v=vs.110).aspx
+        try
+        {
+            # Create IntPassword and dispose $Password...
 
-    if($KeyfilePath -ne $null)
-    {
-        Edit-HistoryFile -KeyfilePath $KeyfilePath
+            [System.IntPtr]$IntPassword = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Password)
+        }
+        catch [System.NotSupportedException]
+        {
+            # The current computer is not running Windows 2000 Service Pack 3 or later.
+            Out-Error 'NotSupportedException'
+        }
+        catch [System.OutOfMemoryException]
+        {
+            # OutOfMemoryException
+            Out-Error 'OutOfMemoryException'
+        }
+        finally
+        {
+            $Password.Dispose()
+        }
+
+        try
+        {
+            # Execute Expression
+            Invoke-Expression ($Expression -f [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($IntPassword))
+        }
+        catch [System.Exception]
+        {
+            Out-Error 'UnknownException', 'EnsureFileRecommendment'
+        }
+        finally
+        {
+        # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
+        # holding on to this pointer while container is open.
+        # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
+        }
+
+        # if console prompting was set to false prior to this module, then set it back to false... 
+        if ($WasConsolePromptingPrior -eq $False)
+        {
+            Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\PowerShell\1\ShellIds" -Name ConsolePrompting -Value $False
+        }
+
+        if($KeyfilePath -ne $null)
+        {
+            Edit-HistoryFile -KeyfilePath $KeyfilePath
+        }
     }
 }
 
@@ -110,17 +128,36 @@ function Dismount-TrueCrypt
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name
     )
 
-    $Settings = Get-PSTrueCryptContainer -Name $Name
-    
-    # construct arguments and execute expression...
-    [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
+    DynamicParam
+    {
+        $ContainerNames = Get-ContainerNames
 
-    Invoke-Expression $Expression
+        $ParamAttrib = New-Object ParameterAttribute
+        $ParamAttrib.Mandatory = $True
+        #$ParamAttrib.Position = 1
+
+        $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
+        $AttribColl.Add($ParamAttrib)
+
+        $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
+        $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
+        $RuntimeParamDic.Add('Name', $RuntimeParam)
+
+        return $RuntimeParamDic
+    }
+    
+    process
+    {
+        $Settings = Get-PSTrueCryptContainer -Name $PSBoundParameters.Name
+        
+        # construct arguments and execute expression...
+        [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
+
+        Invoke-Expression $Expression
+    }
 }
 
 
@@ -182,6 +219,8 @@ function New-PSTrueCryptContainer
 
         [Parameter(Mandatory = $True, Position = 3)]
         [ValidateNotNullOrEmpty()]
+        [ValidateLength(1)]
+        [ValidatePattern("[A-Z]")]
         [string]$MountLetter,
 
         [Parameter(Mandatory = $True, Position = 4)]
@@ -239,49 +278,68 @@ function Remove-PSTrueCryptContainer
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name
     )
+
+    DynamicParam
+    {
+        $ContainerNames = Get-ContainerNames
+
+        $ParamAttrib = New-Object ParameterAttribute
+        $ParamAttrib.Mandatory = $True
+        #$ParamAttrib.Position = 1
+
+        $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
+        $AttribColl.Add($ParamAttrib)
+
+        $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
+        $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
+        $RuntimeParamDic.Add('Name', $RuntimeParam)
+
+        return $RuntimeParamDic
+    }
     
-    try
+    process
     {
-        [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
+        try
+        {
+            [System.String]$SubKeyName = Get-SubKeyPath -Name $PSBoundParameters.Name
 
-        if($SubKeyName) {
-            Remove-HKCUSubKey "SOFTWARE\PSTrueCrypt\$SubKeyName"
+            if($SubKeyName) {
+                Remove-HKCUSubKey "SOFTWARE\PSTrueCrypt\$SubKeyName"
 
-            Out-Information 'ContainerSettingsDeleted'
-        } else {
-            throw New-Object System.ArgumentException('UnableToFindPSTrueCryptContainer')
+                Out-Information 'ContainerSettingsDeleted'
+            } else {
+                throw New-Object System.ArgumentException('UnableToFindPSTrueCryptContainer')
+            }
         }
-    }
-    catch [System.ObjectDisposedException]
-    {
-        #The RegistryKey being manipulated is closed (closed keys cannot be accessed).
-        Out-Error 'ObjectDisposedException'
-    }
-    catch [System.ArgumentException],[System.ArgumentNullException]
-    {
-        #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
-        #subkey is null.
-        Out-Error 'UnableToFindPSTrueCryptContainer' -Format $Name
+        catch [System.ObjectDisposedException]
+        {
+            #The RegistryKey being manipulated is closed (closed keys cannot be accessed).
+            Out-Error 'ObjectDisposedException'
+        }
+        catch [System.ArgumentException],[System.ArgumentNullException]
+        {
+            #subkey does not specify a valid registry key, and throwOnMissingSubKey is true.
+            #subkey is null.
+            Out-Error 'UnableToFindPSTrueCryptContainer' -Format $PSBoundParameters.Name
 
-    }
-    catch [System.Security.SecurityException]
-    {
-        #The user does not have the permissions required to delete the key.
-        Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
-    }
-    catch [System.InvalidOperationException]
-    {
-        # subkey has child subkeys.
-        Out-Error 'InvalidOperationException'
-    }
-    catch [System.UnauthorizedAccessException]
-    {
-        #The user does not have the necessary registry rights.
-        Out-Error 'UnauthorizedRegistryAccessException'
+        }
+        catch [System.Security.SecurityException]
+        {
+            #The user does not have the permissions required to delete the key.
+            Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
+        }
+        catch [System.InvalidOperationException]
+        {
+            # subkey has child subkeys.
+            Out-Error 'InvalidOperationException'
+        }
+        catch [System.UnauthorizedAccessException]
+        {
+            #The user does not have the necessary registry rights.
+            Out-Error 'UnauthorizedRegistryAccessException'
+        }
     }
 }
 
@@ -490,4 +548,25 @@ function Remove-HKCUSubKey
     )
     # the CurrentUser here indicates HKEY_CURRENT_USER hive...
     [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey($FullPath, $True)
+}
+
+function Get-ContainerNames
+{
+    Push-Location
+    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+
+    try 
+    {
+        $ContainerNames = Get-ChildItem . -Recurse | ForEach-Object {
+            Get-ItemProperty $_.PsPath
+        }| Sort-Object Name | Select-Object -ExpandProperty Name
+    }
+    catch [System.Security.SecurityException]
+    {
+        #The user does not have the permissions required to delete the key.
+        Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
+    }
+
+    $ContainerNames
+    Pop-Location
 }
