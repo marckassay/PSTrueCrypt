@@ -9,13 +9,6 @@ Import-Module -Name .\StubModule
 Describe "Test Edit-HistoryFile when called..." {
 
     #Copy-Item "$PSScriptRoot\resources\ConsoleHost_history.1.txt" -Destination $TestDrive
-
-    BeforeEach {
-        
-    }
-
-    AfterEach {
-    }
     
     Context "With full function name..." {
 

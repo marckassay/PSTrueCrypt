@@ -12,7 +12,7 @@ Describe "Remove-PSTrueCryptContainer when called..." {
 
             Mock Remove-HKCUSubKey{}
 
-            Remove-PSTrueCryptContainer AlicesPSTrueCryptContainer
+            Remove-PSTrueCryptContainer AlicesTaxDocs
 
             It "Should of called Remove-HKCUSubKey with correct FullPath value..." {
                 Assert-MockCalled Remove-HKCUSubKey -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
@@ -38,7 +38,7 @@ Describe "Remove-PSTrueCryptContainer when called..." {
 
             Mock Remove-HKCUSubKey{}
 
-            Remove-PSTrueCryptContainer AlicesContainer 
+            Remove-PSTrueCryptContainer AlicesDaxTocs 
 
             It "Should of called Out-Error with 'UnableToFindPSTrueCryptContainer' value..." {
                 Assert-MockCalled Out-Error -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {

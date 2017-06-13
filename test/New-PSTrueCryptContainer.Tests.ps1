@@ -2,7 +2,7 @@ Import-Module -Name .\StubModule
 
 Describe "Test New-PSTrueCryptContainer when called..." {
 
-    $OutTestPath = Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out/test/resources"
+    #$OutTestPath = Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out/test/resources"
     
     Context "with valid entries without Timestamp" {
 
@@ -16,7 +16,7 @@ Describe "Test New-PSTrueCryptContainer when called..." {
 
             Mock New-ItemProperty {}
 
-            New-PSTrueCryptContainer -Name 'AlicesPSTrueCryptContainer' -Location "$OutTestPath/AlicesTrueCryptContainerFile" -MountLetter 'T' -Product 'TrueCrypt'
+            New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V' -Product 'VeraCrypt'
 
             It "Should of called internal functions..." {
                 Assert-VerifiableMocks
@@ -24,25 +24,25 @@ Describe "Test New-PSTrueCryptContainer when called..." {
 
             It "Should of called New-ItemProperty by setting the Path and Name property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq 'AlicesPSTrueCryptContainer')
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq 'AlicesTaxDocs')
                 }
             }
 
             It "Should of called New-ItemProperty setting the Location property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "$OutTestPath/AlicesTrueCryptContainerFile")
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "C:\Users\Alice\Documents\AlicesContainer")
                 }
             }
 
             It "Should of called New-ItemProperty setting the MountLetter property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "T")
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "V")
                 }
             }
 
             It "Should of called New-ItemProperty setting the Product property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "TrueCrypt")
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "VeraCrypt")
                 }
             }
 
@@ -66,7 +66,7 @@ Describe "Test New-PSTrueCryptContainer when called..." {
 
             Mock New-ItemProperty {}
 
-            New-PSTrueCryptContainer -Name 'AlicesPSTrueCryptContainer' -Location "$OutTestPath/AlicesTrueCryptContainerFile" -MountLetter 'T' -Product 'TrueCrypt' -Timestamp
+            New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V' -Product 'VeraCrypt' -Timestamp
 
             It "Should of called internal functions..." {
                 Assert-VerifiableMocks
@@ -74,25 +74,25 @@ Describe "Test New-PSTrueCryptContainer when called..." {
 
             It "Should of called New-ItemProperty by setting the Path and Name property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq 'AlicesPSTrueCryptContainer')
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq 'AlicesTaxDocs')
                 }
             }
 
             It "Should of called New-ItemProperty setting the Location property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "$OutTestPath/AlicesTrueCryptContainerFile")
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "C:\Users\Alice\Documents\AlicesContainer")
                 }
             }
 
             It "Should of called New-ItemProperty setting the MountLetter property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "T")
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "V")
                 }
             }
 
             It "Should of called New-ItemProperty setting the Product property of this subkey..." {
                 Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "TrueCrypt")
+                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "VeraCrypt")
                 }
             }
 

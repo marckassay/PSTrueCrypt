@@ -9,9 +9,9 @@ Describe "Test Get-PSTrueCryptContainer when called..." {
             $SubKeyPath = "HKCU:\SOFTWARE\PSTrueCrypt\e03e195e-c069-4c6b-9d35-6b61cdf40aad"
 
             $ExpectedResults = [PSCustomObject]@{
-                Name            = 'AlicesContainer'
-                Location        = 'D:\Google Drive\Documents\veracrypt'
-                MountLetter     = 'H'
+                Name            = 'AlicesTaxDoc'
+                Location        = 'C:\Users\Alice\Documents\AlicesContainer'
+                MountLetter     = 'V'
                 Product         = 'VeraCrypt'
                 Timestamp       = 1
                 PSPath          = 'noop'
@@ -25,18 +25,18 @@ Describe "Test Get-PSTrueCryptContainer when called..." {
 
             Mock Get-ItemProperty { return $ExpectedResults }
 
-            $FixtureResults = Get-PSTrueCryptContainer -Name 'AlicesContainer'
+            $FixtureResults = Get-PSTrueCryptContainer -Name 'AlicesTaxDocs'
 
             It "Should of called internal functions..." {
                 Assert-VerifiableMocks
             }
 
             It "Should return its Settings object with expected Location value..." {
-                $FixtureResults.TrueCryptContainerPath | Should BeExactly 'D:\Google Drive\Documents\veracrypt'
+                $FixtureResults.TrueCryptContainerPath | Should BeExactly 'C:\Users\Alice\Documents\AlicesContainer'
             }
 
             It "Should return its Settings object with expected MountLetter value..." {
-                $FixtureResults.PreferredMountDrive | Should BeExactly 'H'
+                $FixtureResults.PreferredMountDrive | Should BeExactly 'V'
             }
 
             It "Should return its Settings object with expected Product value..." {
@@ -57,7 +57,7 @@ Describe "Test Get-PSTrueCryptContainer when called..." {
 
             Mock Out-Error {}
 
-            Get-PSTrueCryptContainer -Name 'AlicesContainer'
+            Get-PSTrueCryptContainer -Name 'AlicesDaxTocs'
 
             It "Should of called internal functions..." {
                 Assert-VerifiableMocks
