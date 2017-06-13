@@ -105,8 +105,8 @@ FileList = @(
     'src/utils/systemcheck.ps1',
     'src/writer/Error.psm1',
     'src/writer/Information.psm1',
-    'src/writer/Verbose.ps1',
-    'src/writer/Warning.ps1',
+    'src/writer/Verbose.psm1',
+    'src/writer/Warning.psm1',
     'src/enums.ps1',
     'src/initialze.ps1'
 )
