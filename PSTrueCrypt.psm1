@@ -35,7 +35,7 @@ function Mount-TrueCrypt
 
         return $RuntimeParamDic
     }
-    #$PSBoundParameters.Name
+    
     process
     {
         # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
@@ -126,9 +126,7 @@ function Mount-TrueCrypt
 function Dismount-TrueCrypt
 {
     [CmdletBinding()]
-    Param
-    (
-    )
+    Param()
 
     DynamicParam
     {
@@ -219,7 +217,7 @@ function New-PSTrueCryptContainer
 
         [Parameter(Mandatory = $True, Position = 3)]
         [ValidateNotNullOrEmpty()]
-        [ValidateLength(1)]
+        [ValidateScript( {$_.Length -eq 1} )]
         [ValidatePattern("[A-Z]")]
         [string]$MountLetter,
 
@@ -276,9 +274,7 @@ function New-PSTrueCryptContainer
 function Remove-PSTrueCryptContainer 
 {
     [CmdletBinding()]
-    Param
-    (
-    )
+    Param ()
 
     DynamicParam
     {
@@ -539,7 +535,7 @@ function Get-TrueCryptDismountParams
     return $ParamsString.ToString().TrimEnd(" ")
 }
 
-# internal function: designed for Pester access
+# internal function: designed for Pester access ()
 function Remove-HKCUSubKey
 {
     Param
