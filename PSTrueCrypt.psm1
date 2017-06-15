@@ -3,6 +3,7 @@ using module .\src\writer\Error.psm1
 using module .\src\writer\Information.psm1
 using module .\src\writer\Verbose.psm1
 using module .\src\writer\Warning.psm1
+using module .\src\utils\common.ps1
 
 #.ExternalHelp PSTrueCrypt-help.xml
 function Mount-TrueCrypt
@@ -216,9 +217,7 @@ function New-PSTrueCryptContainer
         [string]$Location,
 
         [Parameter(Mandatory = $True, Position = 3)]
-        [ValidateNotNullOrEmpty()]
-        [ValidateScript( {$_.Length -eq 1} )]
-        [ValidatePattern("[A-Z]")]
+        [ValidatePattern("^[a-zA-Z]$")]
         [string]$MountLetter,
 
         [Parameter(Mandatory = $True, Position = 4)]
@@ -228,44 +227,51 @@ function New-PSTrueCryptContainer
         [switch]$Timestamp
     )
 
-    $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
+    $SubKeyName = Get-SubKeyPath -Name $Name
 
-    try
+    if(-not ($SubKeyName) )
     {
-        if ($Decision -eq $True)
+        $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
+
+        try
         {
-            [System.String]$SubKeyName = New-Guid
-            $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
-                [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
-                [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
-                [System.Security.AccessControl.PropagationFlags]"None",
-                [System.Security.AccessControl.AccessControlType]"Allow")
+            if ($Decision -eq $True)
+            {
+                [System.String]$NewSubKeyName = New-Guid
+                $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
+                    [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
+                    [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
+                    [System.Security.AccessControl.PropagationFlags]"None",
+                    [System.Security.AccessControl.AccessControlType]"Allow")
 
-            $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$SubKeyName",
-                    [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+                $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$NewSubKeyName",
+                        [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
 
-            $AccessControl = $SubKey.GetAccessControl()
-            $AccessControl.SetAccessRule($AccessRule)
-            $SubKey.SetAccessControl($AccessControl)
+                $AccessControl = $SubKey.GetAccessControl()
+                $AccessControl.SetAccessRule($AccessRule)
+                $SubKey.SetAccessControl($AccessControl)
 
-            # slient out-put using '[void](...)'
-            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Name        -PropertyType String -Value $Name)
-            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Location    -PropertyType String -Value $Location)
-            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter)
-            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Product     -PropertyType String -Value $Product)
-            [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
+                # slient out-put using '[void](...)'
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Name        -PropertyType String -Value $Name)
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Location    -PropertyType String -Value $Location)
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter)
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Product     -PropertyType String -Value $Product)
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
 
-            Out-Information 'NewContainerOperationSucceeded' -Format $Name
+                Out-Information 'NewContainerOperationSucceeded' -Format $Name
+            }
+            else
+            {
+                Out-Warning 'NewContainerOperationCancelled'
+            }
         }
-        else
+        catch [System.UnauthorizedAccessException]
         {
-            Out-Warning 'NewContainerOperationCancelled'
+            # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
+            Out-Error 'UnauthorizedAccessException'
         }
-    }
-    catch [System.UnauthorizedAccessException]
-    {
-        # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
-        Out-Error 'UnauthorizedAccessException'
+    } else {
+         Out-Warning 'ContainerNameAlreadyExists' -Format $Name
     }
 }
 
@@ -299,13 +305,25 @@ function Remove-PSTrueCryptContainer
     {
         try
         {
-            [System.String]$SubKeyName = Get-SubKeyPath -Name $PSBoundParameters.Name
+            $SubKeyName = Get-SubKeyPath -Name $PSBoundParameters.Name
 
-            if($SubKeyName) {
-                Remove-HKCUSubKey "SOFTWARE\PSTrueCrypt\$SubKeyName"
+            if($SubKeyName)
+            {
+                $Decision = Get-Confirmation -Message "Remove-PSTrueCryptContainer will remove a subkey from your registry: HKCU:\SOFTWARE\PSTrueCrypt"
 
-                Out-Information 'ContainerSettingsDeleted'
-            } else {
+                if ($Decision -eq $True)
+                {
+                    Remove-HKCUSubKey $SubKeyName
+
+                    Out-Information 'ContainerSettingsDeleted'
+                } 
+                else 
+                {
+                    Out-Information 'RemoveContainerOperationCancelled'
+                }
+            }
+            else
+            {
                 throw New-Object System.ArgumentException('UnableToFindPSTrueCryptContainer')
             }
         }
@@ -335,6 +353,10 @@ function Remove-PSTrueCryptContainer
         {
             #The user does not have the necessary registry rights.
             Out-Error 'UnauthorizedRegistryAccessException'
+        }
+        catch
+        {
+            Out-Error 'UnknownException'
         }
     }
 }
@@ -372,15 +394,15 @@ function Get-PSTrueCryptContainer
         [string]$Name
     )
 
-    [System.String]$SubKeyName = Get-SubKeyPath -Name $Name
+    $SubKeyName = Get-SubKeyPath -Name $Name | Select-Object -ExpandProperty PSChildName
 
-    if($SubKeyName -ne "")
+    if($SubKeyName)
     {
         $Settings = @{
-            TrueCryptContainerPath  = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
-            PreferredMountDrive     = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
-            Product                 = Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
-            Timestamp               = (Get-ItemProperty "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp) -eq 1
+            TrueCryptContainerPath  = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
+            PreferredMountDrive     = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
+            Product                 = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
+            Timestamp               = (Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp) -eq 1
         }
     }
     else
@@ -389,40 +411,6 @@ function Get-PSTrueCryptContainer
     }
 
     $Settings
-}
-
-
-# internal function
-# returns the path to the subkey: 'HKCU:\SOFTWARE\PSTrueCrypt\e03e195e-c069-4c6b-9d35-6b61cdf40aad'
-function Get-SubKeyPath
-{
-    Param
-    (
-        [Parameter(Mandatory = $True)]
-        [string]$Name
-    )
-
-    Push-Location
-    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-
-    try 
-    {
-        Get-ChildItem . -Recurse | ForEach-Object {
-            if ($Name -eq (Get-ItemProperty $_.PsPath).Name) 
-            {
-                $PSChildName = $_.PSChildName
-            }
-        }
-    }
-    catch 
-    {
-        # TODO: Need to throw specific error to calling method
-        Out-Error 'UnableToReadRegistry'
-    }
-
-    Pop-Location
-
-    Write-Output $PSChildName
 }
 
 
@@ -535,15 +523,48 @@ function Get-TrueCryptDismountParams
     return $ParamsString.ToString().TrimEnd(" ")
 }
 
-# internal function: designed for Pester access ()
+# TODO:  since the interals of this have changed, we remove this. if so, update tests.
+# internal function: designed for Pester access
 function Remove-HKCUSubKey
 {
     Param
     (
-        [string]$FullPath
+        [object]$FullPath
     )
     # the CurrentUser here indicates HKEY_CURRENT_USER hive...
-    [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKey($FullPath, $True)
+    Remove-Item $FullPath.PSPath -Recurse
+}
+
+# internal function
+# returns the path to the subkey: 'HKCU:\SOFTWARE\PSTrueCrypt\e03e195e-c069-4c6b-9d35-6b61cdf40aad'
+function Get-SubKeyPath
+{
+    Param
+    (
+        [Parameter(Mandatory = $True)]
+        [string]$Name
+    )
+
+    Push-Location
+    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+
+    try 
+    {
+        Get-ChildItem . -Recurse | ForEach-Object {if($Name -eq (Get-ItemProperty $_.PsPath).Name){
+            $PSChildName = $_
+        }}
+    }
+    catch 
+    {
+        # TODO: Need to throw specific error to calling method
+        Out-Error 'UnableToReadRegistry'
+    }
+    finally
+    {
+        Pop-Location
+
+        $PSChildName
+    }
 }
 
 function Get-ContainerNames
@@ -559,10 +580,13 @@ function Get-ContainerNames
     }
     catch [System.Security.SecurityException]
     {
-        #The user does not have the permissions required to delete the key.
-        Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
+        # TODO: Need to throw specific error to calling method
+        Out-Error 'UnableToReadRegistry'
     }
+    finally
+    {
+        Pop-Location
 
-    $ContainerNames
-    Pop-Location
+        $ContainerNames
+    }
 }

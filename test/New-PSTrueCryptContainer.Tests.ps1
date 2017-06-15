@@ -103,4 +103,21 @@ Describe "Test New-PSTrueCryptContainer when called..." {
             }
         }
     }
+
+    Context "with invalid and valid MountLetter values" {
+
+        InModuleScope PSTrueCrypt {
+
+            It "Should of expected an exception from MountLetter attribute..." {
+                {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'VV' -Product 'VeraCrypt' -Timestamp} | Should Throw "Cannot validate argument on parameter 'MountLetter'"
+            }
+            It "Should of expected an exception from MountLetter attribute..." {
+                {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V ' -Product 'VeraCrypt' -Timestamp} | Should Throw "Cannot validate argument on parameter 'MountLetter'"
+            }
+
+            It "Should of not expected an exception from MountLetter attribute..." {
+                {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V' -Product 'VeraCrypt' -Timestamp} | Should Not Throw "Cannot validate argument on parameter 'MountLetter'"
+            }
+        }
+    }
 }

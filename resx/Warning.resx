@@ -120,6 +120,9 @@
   <data name="NewContainerOperationCancelled" xml:space="preserve">
     <value>New-PSTrueCryptContainer operation has been cancelled.</value>
   </data>
+  <data name="ContainerNameAlreadyExists" xml:space="preserve">
+    <value>There is a container with the same name of {0} in the registry.  Call the Show-PSTrueCryptContainer to view all containers in the registry.  Call the Remove-PSTrueCryptContainer to delete a container if needed.</value>
+  </data>
   <data name="NewEnvironmentVarCancelled" xml:space="preserve">
     <value>You have selected 'No', no changes to 'PATH' environment variable has been made.</value>
   </data>
