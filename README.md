@@ -3,7 +3,7 @@ PSTrueCrypt is a PowerShell module for mounting TrueCrypt and VeraCrypt containe
 
 ### Features:
 * No configuration files are needed.  Registry is used to store non-sensitive data for the container.
-* Option to update container's last write time upon dismount for cloud storage services will detect a change
+* Option to update container's last write time upon dismount. This allows cloud storage services to detect a change for upload.
 * Uses SecureString and binary string (BSTR) to handle password securely
 * Supports the use of keyfiles
 * On PowerShell startup, a test will be made to ensure that TrueCrypt and/or VeraCrypt are set in the 
@@ -35,7 +35,7 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	```
 	
 	Although not recommended, due to plain-text password variable, this demostrates passing a variable into the 
-	Mount-TrueCrypt cmdlet. 
+	Mount-TrueCrypt function. 
 	```powershell
 	E:\> $SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
 	E:\> Mount-TrueCrypt -Name Kryptos -Password $SecurePassword
@@ -59,6 +59,8 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	Using the alias for Dismount-TrueCryptForceAll, dismounts all TrueCrypt and all VeraCrypt containers respectively.
 	```powershell
 	E:\> dmt*
+	All TrueCrypt containers have successfully dismounted.  Please verify.
+	All VeraCrypt containers have successfully dismounted.  Please verify.
 	E:\>
 	```
 
@@ -73,7 +75,7 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
 	Are you sure you want to proceed?
 	[Y] Yes  [N] No  [?] Help (default is "N"): Y
-
+	'Krytos' PSTrueCrypt container has been created!
 	E:\>
 	```
 	
@@ -86,7 +88,7 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt
 	Are you sure you want to proceed?
 	[Y] Yes  [N] No  [?] Help (default is "N"): Y
-
+	'Krytos' PSTrueCrypt container has been created!
 	E:\>
 	```
 
@@ -104,12 +106,10 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	```powershell
 	E:\> Show-PSTrueCryptContainers
 
-	Name  Location                      MountLetter Product
-	----  --------                      ----------- -------
-	brian C:\passwords                  X           VeraCrypt
-	verac D:\veracrypt                  V           VeraCrypt
-	lori  D:\Documents                  H           TrueCrypt
-	1pw   F:\Google Drive\1pw           Z           TrueCrypt
+	Name   Location                            MountLetter Product   Timestamp
+	----   --------                            ----------- -------   ---------
+	1pw    D:\Google Drive\Documents\1pw       Y           TrueCrypt      True
+	Krytos D:\Google Drive\                    D           TrueCrypt      True
 
 	E:\>
 	```
