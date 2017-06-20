@@ -384,7 +384,11 @@ function Show-PSTrueCryptContainers
             Get-ItemProperty $_.PsPath -UseTransaction
         } | Sort-Object Name
         
-        Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}} -AutoSize -InputObject $OutVar
+        if($OutVar) {
+            Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}} -AutoSize -InputObject $OutVar
+        } else {
+            Out-Information 'NoPSTrueCryptContainerFound'
+        }
     }
     catch [System.Security.SecurityException]
     {

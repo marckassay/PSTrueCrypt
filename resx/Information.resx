@@ -132,4 +132,7 @@
   <data name="RemoveContainerOperationCancelled" xml:space="preserve">
     <value>You have decided to cancel removal of container.</value>
   </data> 
+  <data name="NoPSTrueCryptContainerFound" xml:space="preserve">
+    <value>No subkey of HKCU:\SOFTWARE\PSTrueCrypt exists.  Use New-PSTrueCryptContainer to add a subkey.</value>
+  </data> 
 </root>
