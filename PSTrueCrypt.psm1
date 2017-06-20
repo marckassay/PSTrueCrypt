@@ -5,6 +5,8 @@ using module .\src\writer\Verbose.psm1
 using module .\src\writer\Warning.psm1
 using module .\src\utils\common.ps1
 
+$SUT = $False
+
 #.ExternalHelp PSTrueCrypt-help.xml
 function Mount-TrueCrypt
 {
@@ -365,14 +367,24 @@ function Remove-PSTrueCryptContainer
 #.ExternalHelp PSTrueCrypt-help.xml
 function Show-PSTrueCryptContainers 
 {
-    Push-Location
-    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+    [CmdletBinding()]
+    Param ()
+
+    if($SUT -eq $False) {
+        Push-Location
+        
+        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+        
+        Start-Transaction
+    }
 
     try 
     {
-        Get-ChildItem . -Recurse | ForEach-Object {
-            Get-ItemProperty $_.PsPath
-        }| Sort-Object Name | Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}} -AutoSize
+        $OutVar = Get-ChildItem . -Recurse -UseTransaction | ForEach-Object {
+            Get-ItemProperty $_.PsPath -UseTransaction
+        } | Sort-Object Name
+        
+        Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}} -AutoSize -InputObject $OutVar
     }
     catch [System.Security.SecurityException]
     {
@@ -380,7 +392,12 @@ function Show-PSTrueCryptContainers
         Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
     }
 
-    Pop-Location
+    if($SUT -eq $False) {
+        Complete-Transaction
+        Pop-Location
+    } else {
+        $OutVar
+    }
 }
 
 
