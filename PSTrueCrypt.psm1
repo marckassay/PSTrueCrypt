@@ -3,6 +3,7 @@ using module .\src\writer\Error.psm1
 using module .\src\writer\Information.psm1
 using module .\src\writer\Verbose.psm1
 using module .\src\writer\Warning.psm1
+using module .\src\utils\CIMLogicalDiskWatcher.ps1
 using module .\src\utils\common.ps1
 
 $SUT = $False
