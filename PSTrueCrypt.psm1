@@ -42,14 +42,13 @@ function Mount-TrueCrypt
     
     process
     {
-        # TODO: need a better way to check for a subkey.  all keys may have been deleted but PSTrueCrypt still exists
         try 
         {
             $Settings = Get-PSTrueCryptContainer -Name $PSBoundParameters.Name
         }
         catch [ItemNotFoundException]
         {
-            Out-Error 'NoPSTrueCryptContainerFound' -Action Continue
+            Out-Error 'NoPSTrueCryptContainerFound' -Action Stop
         }
 
         # construct arguments for expression and insert token in for password...
@@ -96,6 +95,8 @@ function Mount-TrueCrypt
             $Password.Dispose()
         }
 
+        Start-CIMLogicalDiskWatch -SubKeyName $Settings.KeyId
+
         try
         {
             # Execute Expression
@@ -106,7 +107,7 @@ function Mount-TrueCrypt
             Out-Error 'UnknownException', 'EnsureFileRecommendment'
         }
         finally
-        {
+        { 
         # TODO: this is crashing CLS.  Is this to be called when dismount is done?  Perhaps TrueCrypt is 
         # holding on to this pointer while container is open.
         # [System.Runtime.InteropServices.Marshal]::ZeroFreeCoTaskMemAnsi($IntPassword)
@@ -260,6 +261,7 @@ function New-PSTrueCryptContainer
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter)
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Product     -PropertyType String -Value $Product)
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name IsMounted   -PropertyType DWord -Value $False.GetHashCode())
 
                 Out-Information 'NewContainerOperationSucceeded' -Format $Name
             }
@@ -386,7 +388,7 @@ function Show-PSTrueCryptContainers
         } | Sort-Object Name
         
         if($OutVar) {
-            Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}} -AutoSize -InputObject $OutVar
+            Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}}, @{Label="IsMounted";Expression={[bool]($_.IsMounted)}} -AutoSize -InputObject $OutVar
         } else {
             Out-Information 'NoPSTrueCryptContainerFound'
         }
@@ -421,6 +423,7 @@ function Get-PSTrueCryptContainer
     if($SubKeyName)
     {
         $Settings = @{
+            KeyId                   = $SubKeyName
             TrueCryptContainerPath  = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
             PreferredMountDrive     = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
             Product                 = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
@@ -435,6 +438,31 @@ function Get-PSTrueCryptContainer
     $Settings
 }
 
+
+#internal function
+function Set-PSTrueCryptContainer 
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$SubKeyName,
+
+        [Parameter(Mandatory = $False)]
+        [ValidateNotNull()]
+        [bool]$IsMounted = $False
+    )
+Write-Host " ---->>> "$KeyId
+    if($SubKeyName)
+    {
+        [void](Set-ItemProperty -Path "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name IsMounted -Value $IsMounted.GetHashCode())
+    }
+    else
+    {
+        Out-Error 'UnableToFindPSTrueCryptContainer' -Format $Name -Action Stop
+    }
+}
 
 # internal function
 function Get-TrueCryptMountParams 

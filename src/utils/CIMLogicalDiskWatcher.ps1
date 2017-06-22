@@ -1,4 +1,4 @@
-function Start-Watch
+function Start-CIMLogicalDiskWatch
 {
     Param
     (
@@ -6,45 +6,29 @@ function Start-Watch
         [ValidateNotNullOrEmpty()]
         [string]$SubKeyName
     )
-
+    
     $CreationFilter = "SELECT * FROM CIM_InstCreation WITHIN 1 WHERE TargetInstance ISA 'CIM_LogicalDisk'"
 
     Register-CimIndicationEvent -Query $CreationFilter -Action { 
 
-        Write-Host "Creation >>>  <<<"
-        Write-Host "  -"$Event.toString() # System.Management.Automation.PSEventArgs
-        Write-Host "  -"$Event.EventIdentifier # 1
-        Write-Host "  -"$Event.MessageData.Container # f9910b39-dc58-4a34-be4b-c4b61df3799b
-        Write-Host "  -"$Event.RunspaceId # 20079932-97f3-424c-aeb3-bf33a3926de2
+        $Event.MessageData.KeyId # f9910b39-dc58-4a34-be4b-c4b61df3799b
+        $Event.SourceIdentifier # PSTrueCrypt_Creation_Watcher
+        $Event.TimeGenerated # 6/21/2017 5:10:15 PM
 
-        Write-Host "  -"$Event.SourceIdentifier # PSTrueCrypt_Creation_Watcher
-        Write-Host "  -"$Event.TimeGenerated # 6/21/2017 5:10:15 PM
+        $KeyId = $Event.MessageData.KeyId
 
-        Write-Host "  -"$EventArgs.GetHashCode() # 52717909
+        Write-Host " ----> "$KeyId
+
+        Set-PSTrueCryptContainer -SubKeyName $KeyId -IsMounted $True
     
-    } -SourceIdentifier "PSTrueCrypt_Creation_Watcher" -MessageData @{ Container=$SubKeyName } -MaxTriggerCount {1} -OperationTimeoutSec 30
+    } -SourceIdentifier "PSTrueCrypt_Creation_Watcher" -MessageData @{ KeyId=$SubKeyName } -MaxTriggerCount 1 -OperationTimeoutSec 30
 
 
     $DeletionFilter = "SELECT * FROM CIM_InstDeletion WITHIN 3 WHERE TargetInstance ISA 'CIM_LogicalDisk'"
 
     Register-CimIndicationEvent -Query $DeletionFilter -Action { 
 
-        Write-Host "Deletion >>>  <<<"
-        Write-Host "  -"$Event.toString() # System.Management.Automation.PSEventArgs
-        Write-Host "  -"$Event.EventIdentifier # 1
-        Write-Host "  -"$Event.MessageData.Container # 
-        Write-Host "  -"$Event.RunspaceId # 20079932-97f3-424c-aeb3-bf33a3926de2
-
-        Write-Host "  -"$Event.SourceIdentifier # PSTrueCrypt_Creation_Watcher
-        Write-Host "  -"$Event.TimeGenerated # 6/21/2017 5:10:15 PM
-
-        Write-Host "  -"$EventArgs.GetHashCode() # 52717909
+        Set-PSTrueCryptContainer -SubKeyName $Event.MessageData.KeyId -IsMounted $False
     
-    } -SourceIdentifier "PSTrueCrypt_Deletion_Watcher" -MessageData @{ Container=$SubKeyName } -MaxTriggerCount {1} 
-}
-
-function Stop-Watch
-{
-    Unregister-Event -SourceIdentifier "PSTrueCrypt_Creation_Watcher" 
-    Unregister-Event -SourceIdentifier "PSTrueCrypt_Deletion_Watcher" 
+    } -SourceIdentifier "PSTrueCrypt_Deletion_Watcher" -MessageData @{ KeyId=$SubKeyName } -MaxTriggerCount 1 
 }
