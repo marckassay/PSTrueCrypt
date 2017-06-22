@@ -160,12 +160,12 @@
    </data> 
    <data name="UnableToRedact" xml:space="preserve">
     <value>Unable to redact the history file!  When KeyfilePath is not null, PSTrueCrypt will make an attempt to remove the KeyfilePath value from the following file:</value>
-   </data> 
-   <data name="Genaric" xml:space="preserve">
-    <value>{0}</value>
-   </data> 
+   </data>
    <data name="UnableToReadRegistry" xml:space="preserve">
     <value>Unable to read registry for unknown reason(s).</value>
+   </data> 
+   <data name="UnableToWriteRegistry" xml:space="preserve">
+    <value>Unable to write registry for unknown reason(s).</value>
    </data> 
    <data name="DismountException" xml:space="preserve">
     <value>Dismounting {0} containers has failed!</value>

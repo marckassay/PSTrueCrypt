@@ -237,6 +237,8 @@ function New-PSTrueCryptContainer
     {
         $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
 
+        $LookingTo=Get-Date # :/
+
         try
         {
             if ($Decision -eq $True)
@@ -262,6 +264,7 @@ function New-PSTrueCryptContainer
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Product     -PropertyType String -Value $Product)
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name IsMounted   -PropertyType DWord -Value $False.GetHashCode())
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name LastActivity -PropertyType QWord -Value $LookingTo)
 
                 Out-Information 'NewContainerOperationSucceeded' -Format $Name
             }
@@ -388,7 +391,7 @@ function Show-PSTrueCryptContainers
         } | Sort-Object Name
         
         if($OutVar) {
-            Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}}, @{Label="IsMounted";Expression={[bool]($_.IsMounted)}} -AutoSize -InputObject $OutVar
+            Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}}, @{Label="IsMounted";Expression={[bool]($_.IsMounted)}}, @{Label="Last Activity";Expression={[DateTime]($_.LastActivity)}} -AutoSize -InputObject $OutVar
         } else {
             Out-Information 'NoPSTrueCryptContainerFound'
         }
@@ -401,6 +404,7 @@ function Show-PSTrueCryptContainers
 
     if($SUT -eq $False) {
         Complete-Transaction
+
         Pop-Location
     } else {
         $OutVar
@@ -428,6 +432,7 @@ function Get-PSTrueCryptContainer
             PreferredMountDrive     = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
             Product                 = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
             Timestamp               = (Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp) -eq 1
+            IsMounted               = (Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty IsMounted) -eq 1
         }
     }
     else
@@ -438,8 +443,6 @@ function Get-PSTrueCryptContainer
     $Settings
 }
 
-
-#internal function
 function Set-PSTrueCryptContainer 
 {
     [CmdletBinding()]
@@ -450,17 +453,36 @@ function Set-PSTrueCryptContainer
         [string]$SubKeyName,
 
         [Parameter(Mandatory = $False)]
+        [ValidateNotNullOrEmpty()]
+        [DateTime]$LastActivity,
+
+        [Parameter(Mandatory = $False)]
         [ValidateNotNull()]
         [bool]$IsMounted = $False
     )
-Write-Host " ---->>> "$KeyId
-    if($SubKeyName)
-    {
-        [void](Set-ItemProperty -Path "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" -Name IsMounted -Value $IsMounted.GetHashCode())
+
+    if($SUT -eq $False) {
+        Push-Location
+        
+        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+        
+        Start-Transaction
     }
-    else
+
+    try
     {
-        Out-Error 'UnableToFindPSTrueCryptContainer' -Format $Name -Action Stop
+        [void](Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction)
+        [void](Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction)
+    }
+    catch
+    {
+        Out-Error 'UnableToWriteRegistry' -Format $Name -Action Stop
+    }
+
+    if($SUT -eq $False) {
+        Complete-Transaction
+
+        Pop-Location
     }
 }
 
