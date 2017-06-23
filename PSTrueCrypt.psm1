@@ -95,7 +95,7 @@ function Mount-TrueCrypt
             $Password.Dispose()
         }
 
-        Start-CIMLogicalDiskWatch -SubKeyName $Settings.KeyId
+        Start-CIMLogicalDiskWatch -SubKeyName $Settings.KeyId -InstanceType 'Creation'
 
         try
         {
@@ -156,6 +156,8 @@ function Dismount-TrueCrypt
     {
         $Settings = Get-PSTrueCryptContainer -Name $PSBoundParameters.Name
         
+        Start-CIMLogicalDiskWatch $Settings.KeyId -InstanceType 'Deletion'
+
         # construct arguments and execute expression...
         [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
 
@@ -237,7 +239,7 @@ function New-PSTrueCryptContainer
     {
         $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
 
-        $LookingTo=Get-Date # :/
+        $CreationDate = Get-Date
 
         try
         {
@@ -264,7 +266,7 @@ function New-PSTrueCryptContainer
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Product     -PropertyType String -Value $Product)
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
                 [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name IsMounted   -PropertyType DWord -Value $False.GetHashCode())
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name LastActivity -PropertyType QWord -Value $LookingTo)
+                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name LastActivity -PropertyType String -Value $CreationDate)
 
                 Out-Information 'NewContainerOperationSucceeded' -Format $Name
             }
@@ -431,6 +433,7 @@ function Get-PSTrueCryptContainer
             TrueCryptContainerPath  = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
             PreferredMountDrive     = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
             Product                 = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
+            LastActivity            = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty LastActivity
             Timestamp               = (Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp) -eq 1
             IsMounted               = (Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty IsMounted) -eq 1
         }
@@ -471,8 +474,8 @@ function Set-PSTrueCryptContainer
 
     try
     {
-        [void](Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction)
-        [void](Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction)
+        (Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction)
+        (Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction)
     }
     catch
     {
@@ -595,7 +598,8 @@ function Get-TrueCryptDismountParams
     return $ParamsString.ToString().TrimEnd(" ")
 }
 
-# TODO:  since the interals of this have changed, we remove this. if so, update tests.
+# TODO:  since the interals of this have changed, can we remove this now? if so,
+# update tests. 
 # internal function: designed for Pester access
 function Remove-HKCUSubKey
 {
@@ -603,7 +607,7 @@ function Remove-HKCUSubKey
     (
         [object]$FullPath
     )
-    # the CurrentUser here indicates HKEY_CURRENT_USER hive...
+
     Remove-Item $FullPath.PSPath -Recurse
 }
 
@@ -646,9 +650,7 @@ function Get-ContainerNames
 
     try 
     {
-        $ContainerNames = Get-ChildItem . -Recurse | ForEach-Object {
-            Get-ItemProperty $_.PsPath
-        }| Sort-Object Name | Select-Object -ExpandProperty Name
+        $ContainerNames = Get-ChildItem . -Recurse | Get-ItemProperty -Name Name | Sort-Object Name | Select-Object -ExpandProperty Name
     }
     catch [System.Security.SecurityException]
     {
@@ -660,5 +662,46 @@ function Get-ContainerNames
         Pop-Location
 
         $ContainerNames
+    }
+}
+
+function Get-MountedContainers
+{
+    [CmdletBinding()]
+    [OutputType([Microsoft.Win32.RegistryKey])]
+    Param
+    (
+        [Parameter(Mandatory = $True)]
+        [ScriptBlock]$FilterScript
+    )
+
+    begin
+    {
+        Push-Location
+        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+    }
+
+    process
+    {
+        try 
+        {
+            $MountedContainers = Get-ChildItem . -Recurse | Where-Object -FilterScript $FilterScript
+        }
+        catch [System.Security.SecurityException]
+        {
+            # TODO: Need to throw specific error to calling method
+            Out-Error 'UnableToReadRegistry'
+        }
+        finally
+        {
+
+        }
+    }
+
+    end
+    {
+        Pop-Location
+
+        $MountedContainers
     }
 }
