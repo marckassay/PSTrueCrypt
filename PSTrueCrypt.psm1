@@ -95,7 +95,7 @@ function Mount-TrueCrypt
             $Password.Dispose()
         }
 
-        Start-CIMLogicalDiskWatch -SubKeyName $Settings.KeyId -InstanceType 'Creation'
+        Start-CIMLogicalDiskWatch $Settings.KeyId -InstanceType 'Creation'
 
         try
         {
@@ -683,6 +683,7 @@ function Get-MountedContainers
 
     process
     {
+        Write-Host "Get-MountedContainers >>> "
         try 
         {
             $MountedContainers = Get-ChildItem . -Recurse | Where-Object -FilterScript $FilterScript

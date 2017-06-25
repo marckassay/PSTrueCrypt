@@ -105,6 +105,7 @@ FileList = @(
     'src/utils/CIMLogicalDiskWatcher.ps1',
     'src/utils/common.ps1',
     'src/utils/systemcheck.ps1',
+    'src/utils/UtilTimer.psm1',
     'src/writer/Error.psm1',
     'src/writer/Information.psm1',
     'src/writer/Verbose.psm1',
