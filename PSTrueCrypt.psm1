@@ -95,7 +95,7 @@ function Mount-TrueCrypt
             $Password.Dispose()
         }
 
-        Start-CIMLogicalDiskWatch $Settings.KeyId -InstanceType 'Creation'
+        Start-CimLogicalDiskWatch $Settings.KeyId -InstanceType 'Creation'
 
         try
         {
@@ -461,7 +461,11 @@ function Set-PSTrueCryptContainer
 
         [Parameter(Mandatory = $False)]
         [ValidateNotNull()]
-        [bool]$IsMounted = $False
+        [bool]$IsMounted = $False,
+
+        [Parameter(Mandatory = $False)]
+        [ValidateNotNullOrEmpty()]
+        [string]$LastMountedUri
     )
 
     if($SUT -eq $False) {
@@ -474,8 +478,11 @@ function Set-PSTrueCryptContainer
 
     try
     {
-        (Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction)
-        (Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction)
+        Write-Host "SETPS START"
+        Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction
+        Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction
+        Set-ItemProperty -Path $SubKeyName -Name LastMountedUri -Value $LastMountedUri -UseTransaction
+        Write-Host "SETPS END"
     }
     catch
     {

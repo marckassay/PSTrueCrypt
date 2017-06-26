@@ -83,7 +83,7 @@ function Start-SystemCheck
 
     $Regex = "(\w+)\\?$"
 
-    Restart-CIMLogicalDiskWatch
+    Restart-LogicalDiskCheck
 
     ($Env:Path).Split(';') | ForEach-Object {
 
