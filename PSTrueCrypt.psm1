@@ -3,7 +3,7 @@ using module .\src\writer\Error.psm1
 using module .\src\writer\Information.psm1
 using module .\src\writer\Verbose.psm1
 using module .\src\writer\Warning.psm1
-using module .\src\utils\CIMLogicalDiskWatcher.ps1
+using module .\src\utils\CimLogicalDiskWatch.ps1
 using module .\src\utils\common.ps1
 
 $SUT = $False
@@ -388,6 +388,8 @@ function Show-PSTrueCryptContainers
 
     try 
     {
+        Restart-LogicalDiskCheck
+        
         $OutVar = Get-ChildItem . -Recurse -UseTransaction | ForEach-Object {
             Get-ItemProperty $_.PsPath -UseTransaction
         } | Sort-Object Name
@@ -478,11 +480,11 @@ function Set-PSTrueCryptContainer
 
     try
     {
-        Write-Host "SETPS START"
-        Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction
+        Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction 
         Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction
-        Set-ItemProperty -Path $SubKeyName -Name LastMountedUri -Value $LastMountedUri -UseTransaction
-        Write-Host "SETPS END"
+        if($LastMountedUri) {
+            Set-ItemProperty -Path $SubKeyName -Name LastMountedUri -Value $LastMountedUri -UseTransaction
+        }
     }
     catch
     {
@@ -672,7 +674,7 @@ function Get-ContainerNames
     }
 }
 
-function Get-MountedContainers
+function Get-PSTrueCryptContainers
 {
     [CmdletBinding()]
     [OutputType([Microsoft.Win32.RegistryKey])]
@@ -690,10 +692,9 @@ function Get-MountedContainers
 
     process
     {
-        Write-Host "Get-MountedContainers >>> "
         try 
         {
-            $MountedContainers = Get-ChildItem . -Recurse | Where-Object -FilterScript $FilterScript
+            $PSTrueCryptContainers = Get-ChildItem . -Recurse | Where-Object -FilterScript $FilterScript
         }
         catch [System.Security.SecurityException]
         {
@@ -710,6 +711,6 @@ function Get-MountedContainers
     {
         Pop-Location
 
-        $MountedContainers
+        $PSTrueCryptContainers
     }
-}
+} 

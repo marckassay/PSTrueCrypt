@@ -54,16 +54,7 @@ function Test-IsAdmin
 
 function Restart-LogicalDiskCheck
 {
-    Unregister-Event -SourceIdentifier LogicalDiskCheck.Timer -ErrorAction Ignore
-    Register-ObjectEvent -InputObject (New-Timer) -EventName Elapsed -SourceIdentifier 'LogicalDiskCheck.Timer' -Action {
-Write-Host ">>>pulse<<<"
-        # TODO: we should check for 'Deletion' instances too.  Perhaps add a passthru param 
-        # for Start-CIMLogicalDiskWatch and pipe another call to it.
-        # Get containers that have a 'mounted' status AND have been mounted more then 3 minutes...  -gt ((Get-Date) - (New-TimeSpan -Minutes 3))
-       PSTrueCrypt\Get-MountedContainers -FilterScript { ($_.GetValue('IsMounted') -eq $True) -AND (Get-Date $_.GetValue('LastActivity')) -lt ((Get-Date) - (New-TimeSpan -Minutes 3)) } | ForEach-Object {
-            $_.LastMountedUri 
-       }
+    Get-PSTrueCryptContainers -FilterScript { $_.getValue('IsMounted') -eq $True -and ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) } | ForEach-Object {
+        Set-PSTrueCryptContainer -SubKeyName $_.PSChildName -IsMounted $False -LastActivity (Get-Date)
     }
-    
-   # Start-Timer
 }

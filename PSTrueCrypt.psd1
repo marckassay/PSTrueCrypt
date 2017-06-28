@@ -53,7 +53,7 @@ RequiredAssemblies = @(
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 ScriptsToProcess = @(
-    'src/utils/CIMLogicalDiskWatcher.ps1',
+    'src/utils/CimLogicalDiskWatch.ps1',
     'src/utils/common.ps1',
     'src/utils/systemcheck.ps1',
     'src/enums.ps1',
@@ -78,7 +78,7 @@ FunctionsToExport = @(
     'Remove-PSTrueCryptContainer', 
     'Show-PSTrueCryptContainers',
     'Set-PSTrueCryptContainer',
-    'Get-MountedContainers'
+    'Get-PSTrueCryptContainers'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -103,7 +103,7 @@ AliasesToExport = @(
 # List of all files packaged with this module
 FileList = @( 
     'PSTrueCrypt.psm1',
-    'src/utils/CIMLogicalDiskWatcher.ps1',
+    'src/utils/CimLogicalDiskWatch.ps1',
     'src/utils/common.ps1',
     'src/utils/systemcheck.ps1',
     'src/utils/UtilTimer.psm1',
