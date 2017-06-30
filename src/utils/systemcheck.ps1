@@ -83,8 +83,6 @@ function Start-SystemCheck
 
     $Regex = "(\w+)\\?$"
 
-    Restart-LogicalDiskCheck
-
     ($Env:Path).Split(';') | ForEach-Object {
 
         [void]($_ -match $Regex)

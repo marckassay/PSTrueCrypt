@@ -135,7 +135,7 @@ function Dismount-TrueCrypt
 
     DynamicParam
     {
-        $ContainerNames = Get-ContainerNames
+        $ContainerNames = Get-PSTrueCryptContainers | Get-Names
 
         $ParamAttrib = New-Object ParameterAttribute
         $ParamAttrib.Mandatory = $True
@@ -152,9 +152,14 @@ function Dismount-TrueCrypt
         return $RuntimeParamDic
     }
     
+    begin
+    {
+
+    }
+
     process
     {
-        $Settings = Get-PSTrueCryptContainer -Name $PSBoundParameters.Name
+        $Settings = Get-PSTrueCryptContainers | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name
         
         Start-CIMLogicalDiskWatch $Settings.KeyId -InstanceType 'Deletion'
 
@@ -162,6 +167,11 @@ function Dismount-TrueCrypt
         [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
 
         Invoke-Expression $Expression
+    }
+
+    end
+    {
+
     }
 }
 
@@ -654,21 +664,37 @@ function Get-SubKeyPath
 
 function Get-ContainerNames
 {
-    Push-Location
-    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+    begin
+    {
+        if($SUT -eq $False) {
+            Push-Location
+            
+            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+            
+            Start-Transaction
+        }
+    }
 
-    try 
+    process
     {
-        $ContainerNames = Get-ChildItem . -Recurse | Get-ItemProperty -Name Name | Sort-Object Name | Select-Object -ExpandProperty Name
+        try 
+        {
+            $ContainerNames = Get-ChildItem . -Recurse | Get-ItemProperty -Name Name | Sort-Object Name | Select-Object -ExpandProperty Name
+        } 
+        catch [System.Security.SecurityException]
+        {
+            # TODO: Need to throw specific error to calling method
+            Out-Error 'UnableToReadRegistry'
+        }
     }
-    catch [System.Security.SecurityException]
+
+    end
     {
-        # TODO: Need to throw specific error to calling method
-        Out-Error 'UnableToReadRegistry'
-    }
-    finally
-    {
-        Pop-Location
+        if($SUT -eq $False) {
+            Pop-Location
+                        
+            Complete-Transaction
+        }
 
         $ContainerNames
     }
@@ -677,24 +703,33 @@ function Get-ContainerNames
 function Get-PSTrueCryptContainers
 {
     [CmdletBinding()]
-    [OutputType([Microsoft.Win32.RegistryKey])]
+    [OutputType([PsObject])]
     Param
     (
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $False)]
         [ScriptBlock]$FilterScript
     )
 
     begin
     {
-        Push-Location
-        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+        if($SUT -eq $False) {
+            Push-Location
+            
+            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+            
+            Start-Transaction
+        }
     }
 
     process
     {
         try 
         {
-            $PSTrueCryptContainers = Get-ChildItem . -Recurse | Where-Object -FilterScript $FilterScript
+            $RegistrySubKeys = Get-ChildItem . -Recurse -UseTransaction
+
+            if($FilterScript) {
+                $RegistrySubKeys = $RegistrySubKeys | Where-Object -FilterScript $FilterScript
+            }
         }
         catch [System.Security.SecurityException]
         {
@@ -709,8 +744,115 @@ function Get-PSTrueCryptContainers
 
     end
     {
-        Pop-Location
+        if($SUT -eq $False) {
+            Pop-Location
+                        
+            Complete-Transaction
+        }
 
-        $PSTrueCryptContainers
+        $RegistrySubKeys
     }
-} 
+}
+
+function Get-Names
+{
+    [CmdletBinding()]
+    [OutputType([String[]])]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1, ValueFromPipelineByPropertyName=$True)]
+        [AllowNull()]
+        [PsObject]$RegistrySubKeys
+    )
+
+    begin
+    {
+        if($SUT -eq $False) {
+            Push-Location
+            
+            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+            
+            Start-Transaction
+        }
+    }
+
+    process
+    {
+        try 
+        {
+            $RegistrySubKeys | Get-ItemPropertyValue -Name Name -UseTransaction -PipelineVariable $Names
+        }
+        catch [System.Security.SecurityException]
+        {
+            # TODO: Need to throw specific error to calling method
+            Out-Error 'UnableToReadRegistry'
+        }
+        finally
+        {
+
+        }
+    }
+
+    end
+    {
+        if($SUT -eq $False) {
+            Pop-Location
+        
+            Complete-Transaction
+        }
+    }
+}
+
+function Get-SubKeyByPropertyValue
+{
+    [CmdletBinding()]
+    [OutputType([PsObject])]
+    Param
+    (
+        [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName=$True)]
+        [AllowNull()]
+        [PsObject]$RegistrySubKeys,
+
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$Name
+    )
+
+    begin
+    {
+        if($SUT -eq $False) {
+            Push-Location
+            
+            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+            
+            Start-Transaction
+        }
+    }
+
+    process
+    {
+        try 
+        {
+            $RegistrySubKeys | Where-Object { 
+                (Get-ItemPropertyValue -Path $_.PSChildName -Name Name -UseTransaction) -eq $Name 
+            } -OutVariable $FoundSubKey
+        }
+        catch [System.Security.SecurityException]
+        {
+            # TODO: Need to throw specific error to calling method
+            Out-Error 'UnableToReadRegistry'
+        }
+        finally
+        {
+
+        }
+    }
+
+    end
+    {
+        if($SUT -eq $False) {
+            Pop-Location
+        
+            Complete-Transaction
+        }
+    }
+}

@@ -54,6 +54,8 @@ function Test-IsAdmin
 
 function Restart-LogicalDiskCheck
 {
+    # Enumerates thru all containers that have 'IsMounted' set to true and who's LastMountedUri drive is now
+    # not attached.  If so, this will set the container's IsMounted to false...
     Get-PSTrueCryptContainers -FilterScript { $_.getValue('IsMounted') -eq $True -and ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) } | ForEach-Object {
         Set-PSTrueCryptContainer -SubKeyName $_.PSChildName -IsMounted $False -LastActivity (Get-Date)
     }
