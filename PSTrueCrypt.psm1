@@ -446,8 +446,8 @@ function Get-PSTrueCryptContainer
             PreferredMountDrive     = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
             Product                 = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
             LastActivity            = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty LastActivity
-            Timestamp               = (Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp) -eq 1
-            IsMounted               = (Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty IsMounted) -eq 1
+            Timestamp               = [bool](Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp)
+            IsMounted               = [bool](Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty IsMounted)
         }
     }
     else
@@ -760,7 +760,8 @@ function Get-Names
     [OutputType([String[]])]
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1, ValueFromPipelineByPropertyName=$True)]
+        # TOOD: change to ValueFromPipelineByPropertyName
+        [Parameter(Mandatory = $True, Position = 1, ValueFromPipeline=$True)]
         [AllowNull()]
         [PsObject]$RegistrySubKeys
     )
@@ -809,7 +810,8 @@ function Get-SubKeyByPropertyValue
     [OutputType([PsObject])]
     Param
     (
-        [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName=$True)]
+        # TOOD: change to ValueFromPipelineByPropertyName
+        [Parameter(Mandatory = $True, ValueFromPipeline=$True)]
         [AllowNull()]
         [PsObject]$RegistrySubKeys,
 
