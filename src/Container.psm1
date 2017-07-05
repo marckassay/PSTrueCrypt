@@ -348,10 +348,35 @@ function Read-Container
         [PsObject]$RegistrySubKey
     )
 
-    $Insta = [Container]::GetInstance()
-    $Insta.SubKey = $RegistrySubKey
+    begin
+    {
+        if($SUT -eq $False) {
+            Push-Location
+            
+            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+            
+            Start-Transaction
+        }
+    }
 
-    return $Insta.GetHashTable()
+    process 
+    {
+        $Container = [Container]::GetInstance()
+        $Container.SubKey = $RegistrySubKey
+
+        $HashTable = $Container.GetHashTable()
+    }
+
+    end
+    {
+        if($SUT -eq $False) {
+            Pop-Location
+
+            Complete-Transaction
+        }
+
+        $HashTable
+    }
 }
 
 Export-ModuleMember -Function New-Container

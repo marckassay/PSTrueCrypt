@@ -22,7 +22,7 @@ function Start-CimLogicalDiskWatch
         if($SubKeyName) {
             $UniqueLabel = $SubKeyName.Substring(0,8)
         
-            Stop-CimLogicalDiskWatch $k $InstanceType
+            Stop-CimLogicalDiskWatch $UniqueLabel $InstanceType
 
             $SourceId = "PSTrueCrypt_"+$InstanceType+"_Watcher_"+$UniqueLabel
 

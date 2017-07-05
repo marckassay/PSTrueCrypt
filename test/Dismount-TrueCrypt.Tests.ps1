@@ -1,4 +1,4 @@
-Import-Module -Name .\StubModule
+Import-Module $PSScriptRoot\StubModule.psm1
 
 Describe "Test Dismount-TrueCrypt when called..." {
 
@@ -9,11 +9,8 @@ Describe "Test Dismount-TrueCrypt when called..." {
             Mock Invoke-Expression {}
 
             $SUT = $True
-
             Start-Transaction
-
             . .\resources\HKCU_Software_PSTrueCrypt_Test1.ps1
-
             Set-Location HKCU:\Software\PSTrueCrypt\Test -UseTransaction
 
             Dismount-TrueCrypt -Name 'AlicesTaxDocs'
@@ -30,8 +27,8 @@ Describe "Test Dismount-TrueCrypt when called..." {
                 }
             }
 
+            Pop-Location
             Undo-Transaction
-            
             $SUT = $False
         }
     }

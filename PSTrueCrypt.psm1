@@ -155,7 +155,13 @@ function Dismount-TrueCrypt
     
     begin
     {
-
+        if($SUT -eq $False) {
+            Push-Location
+            
+            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+            
+            Start-Transaction
+        }
     }
 
     process
@@ -172,7 +178,11 @@ function Dismount-TrueCrypt
 
     end
     {
+        if($SUT -eq $False) {
+            Pop-Location
 
+            Complete-Transaction
+        }
     }
 }
 

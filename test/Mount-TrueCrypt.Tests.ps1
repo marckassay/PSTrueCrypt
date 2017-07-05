@@ -1,4 +1,4 @@
-Import-Module -Name .\StubModule
+Import-Module $PSScriptRoot\StubModule.psm1
 
 Describe "Test Mount-TrueCrypt when called..." {
     
