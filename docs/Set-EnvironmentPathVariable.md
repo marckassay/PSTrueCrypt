@@ -4,7 +4,7 @@ online version: https://github.com/marckassay/PSTrueCrypt
 schema: 2.0.0
 ---
 
-# Set-EnvironmentPathVariable
+# Set-CryptEnvironmentVariable 
 
 ## SYNOPSIS
 Sets the TrueCrypt directory in the environment variable field.
@@ -12,7 +12,7 @@ Sets the TrueCrypt directory in the environment variable field.
 ## SYNTAX
 
 ```
-Set-EnvironmentPathVariable [-PathVar] <String>
+Set-CryptEnvironmentVariable [-PathVar] <String>
 ```
 
 ## DESCRIPTION
@@ -25,7 +25,7 @@ It will check ParVar parameter to make sure its valid before setting it as an en
 ### -------------------------- EXAMPLE 1 --------------------------
 Setting TrueCrypt directory.
 ```
-PS C:\\\>Set-EnvironmentPathVariable 'C:\Program Files\TrueCrypt'
+PS C:\\\>Set-CryptEnvironmentVariable 'C:\Program Files\TrueCrypt'
 ```
 
 

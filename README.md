@@ -44,7 +44,7 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 
 	Mounts a TrueCrypt container with name of 'Kryptos' that requires a Keyfile.
 	```powershell
-	E:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
+	E:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Outshined.mp3
 	Enter password: **********
 	E:\>
 	```
@@ -96,6 +96,9 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 
 	```powershell
 	E:\> Remove-PSTrueCryptContainer -Name Kryptos
+	Remove-PSTrueCryptContainer will remove a subkey from your registry: HKCU:\SOFTWARE\PSTrueCrypt
+	Are you sure you want to proceed?
+	[Y] Yes  [N] No  [?] Help (default is "N"): Y
 	Container settings has been deleted from registry.
 	
 	E:\>
@@ -106,10 +109,10 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	```powershell
 	E:\> Show-PSTrueCryptContainers
 
-	Name   Location                            MountLetter Product   Timestamp
-	----   --------                            ----------- -------   ---------
-	1pw    D:\Google Drive\Documents\1pw       Y           TrueCrypt      True
-	Krytos D:\Google Drive\                    D           TrueCrypt      True
+	Name   Location                       MountLetter Product   Timestamp IsMounted Last Activity
+	----   --------                       ----------- -------   --------- --------- ------------------
+	1pw    D:\Google Drive\Documents\1pw  Y           TrueCrypt      True      True 7/04/2017 06:12:23
+	Krytos D:\Google Drive\               D           TrueCrypt      True     False 5/10/2017 10:10:30
 
 	E:\>
 	```

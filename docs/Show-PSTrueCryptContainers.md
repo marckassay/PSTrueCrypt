@@ -21,7 +21,6 @@ When this parameterless function is called, a list is displayed in the command-l
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-Displays all added PSTrueCrypt containers.  These were added by the New-PSTrueCryptContainer
 ```
 PS C:\>Show-PSTrueCryptContainers
  Name  Location                      MountLetter Product
@@ -33,7 +32,6 @@ PS C:\>Show-PSTrueCryptContainers
 
 PS C:\>
 ```
-
 
 ## PARAMETERS
 

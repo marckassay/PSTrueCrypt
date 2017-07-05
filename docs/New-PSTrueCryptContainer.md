@@ -23,11 +23,9 @@ If call for first time, PSTrueCrypt registry key will be created.
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-Adds settings for PSTrueCrypt.
 ```
 PS C:\\\>New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter F -Product TrueCrypt
 ```
-
 
 ## PARAMETERS
 

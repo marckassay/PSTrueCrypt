@@ -12,7 +12,7 @@ Dismounts a TrueCrypt container.
 ## SYNTAX
 
 ```
-Dismount-TrueCrypt [[-Name] <String>]
+Dismount-TrueCrypt [-Name] <String>
 ```
 
 ## DESCRIPTION
@@ -24,11 +24,9 @@ The default Alias name is: dmt
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-Dismounts a TrueCrypt container with name of 'Kryptos' which must be in the container settings.
 ```
 PS C:\\\>Dismount-TrueCrypt -Name Kryptos
 ```
-
 
 ## PARAMETERS
 
@@ -40,13 +38,12 @@ Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: False
+Required: True
 Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
 
 ## INPUTS
 
