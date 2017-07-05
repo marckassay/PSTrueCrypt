@@ -14,6 +14,8 @@ function New-SubKey
         [string]$Product,
         [Parameter(Mandatory = $True, Position = 6)]
         [string]$LastMountedUri,
+        [Parameter(Mandatory = $True, Position = 7)]
+        [string]$LastActivity,
         [Parameter(Mandatory = $False)]
         [switch]$Timestamp,
         [Parameter(Mandatory = $False)]
@@ -28,6 +30,7 @@ function New-SubKey
     New-ItemProperty -Path $SubKeyPath -Name MountLetter -PropertyType String -Value $MountLetter -UseTransaction
     New-ItemProperty -Path $SubKeyPath -Name Product     -PropertyType String -Value $Product -UseTransaction
     New-ItemProperty -Path $SubKeyPath -Name LastMountedUri -PropertyType String -Value $LastMountedUri -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name LastActivity -PropertyType String -Value $LastActivity -UseTransaction
     New-ItemProperty -Path $SubKeyPath -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode() -UseTransaction
     New-ItemProperty -Path $SubKeyPath -Name IsMounted   -PropertyType DWord -Value $IsMounted.GetHashCode() -UseTransaction
 }

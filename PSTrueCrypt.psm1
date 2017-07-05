@@ -4,6 +4,7 @@ using module .\src\writer\Information.psm1
 using module .\src\writer\Verbose.psm1
 using module .\src\writer\Warning.psm1
 using module .\src\utils\CimLogicalDiskWatch.ps1
+using module .\src\Container.psm1
 using module .\src\utils\common.ps1
 
 $SUT = $False
@@ -159,12 +160,12 @@ function Dismount-TrueCrypt
 
     process
     {
-        $Settings = Get-PSTrueCryptContainers | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name
+        $Container = Get-PSTrueCryptContainers | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
         
-        Start-CIMLogicalDiskWatch $Settings.KeyId -InstanceType 'Deletion'
+        Start-CIMLogicalDiskWatch $Container.Id -InstanceType 'Deletion'
 
         # construct arguments and execute expression...
-        [string]$Expression = Get-TrueCryptDismountParams -Drive $Settings.PreferredMountDrive -Product $Settings.Product
+        [string]$Expression = Get-TrueCryptDismountParams -Drive $Container.MountLetter -Product $Container.Product
 
         Invoke-Expression $Expression
     }
@@ -815,7 +816,10 @@ function Get-SubKeyByPropertyValue
         [AllowNull()]
         [PsObject]$RegistrySubKeys,
 
-        [Parameter(Mandatory = $True, Position = 1)]
+        [Parameter(Mandatory = $False)]
+        [string]$Id,
+
+        [Parameter(Mandatory = $False)]
         [string]$Name
     )
 
@@ -834,9 +838,17 @@ function Get-SubKeyByPropertyValue
     {
         try 
         {
-            $RegistrySubKeys | Where-Object { 
-                (Get-ItemPropertyValue -Path $_.PSChildName -Name Name -UseTransaction) -eq $Name 
-            } -OutVariable $FoundSubKey
+            if($Id) {
+                if((Get-ItemPropertyValue -Path $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
+                    $FoundKey = $_
+                }
+            } elseif($Name) {
+                if((Get-ItemPropertyValue -Path $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
+                    $FoundKey = $_
+                }
+            }
+
+            
         }
         catch [System.Security.SecurityException]
         {
@@ -856,5 +868,7 @@ function Get-SubKeyByPropertyValue
         
             Complete-Transaction
         }
+
+        $FoundKey
     }
 }

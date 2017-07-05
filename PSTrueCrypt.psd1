@@ -112,6 +112,7 @@ FileList = @(
     'src/writer/Verbose.psm1',
     'src/writer/Warning.psm1',
     'src/enums.ps1',
+    'src/Container.psm1',
     'src/initialze.ps1'
 )
 
