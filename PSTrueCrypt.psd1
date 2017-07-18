@@ -96,19 +96,13 @@ AliasesToExport = @(
 
 # List of all files packaged with this module
 FileList = @( 
-    'PSTrueCrypt.psm1',
-    'src/utils/CimLogicalDiskWatch.ps1',
-    'src/utils/common.ps1',
-    'src/utils/systemcheck.ps1',
-    'src/utils/UtilTimer.psm1',
-    'src/writer/PSTrueCrypt.Writer.psm1',
-    'src/writer/Error.ps1',
-    'src/writer/Information.ps1',
-    'src/writer/Verbose.ps1',
-    'src/writer/Warning.ps1',
-    'src/enums.ps1',
-    'src/Container.psm1',
-    'src/initialze.ps1'
+    'src/Utility/PSTrueCrypt.Utility.psm1',
+    'src/Utility/Container.ps1',
+    'src/Writer/PSTrueCrypt.Writer.psm1',
+    'src/Writer/Error.ps1',
+    'src/Writer/Information.ps1',
+    'src/Writer/Verbose.ps1',
+    'src/Writer/Warning.ps1'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
