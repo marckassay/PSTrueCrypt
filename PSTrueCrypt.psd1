@@ -103,7 +103,7 @@ FileList = @(
     'src/utils/UtilTimer.psm1',
     'src/writer/PSTrueCrypt.Writer.psm1',
     'src/writer/Error.ps1',
-    'src/writer/Information.psm1',
+    'src/writer/Information.ps1',
     'src/writer/Verbose.psm1',
     'src/writer/Warning.psm1',
     'src/enums.ps1',

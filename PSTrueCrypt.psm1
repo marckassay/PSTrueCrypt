@@ -1,6 +1,5 @@
 using namespace 'System.Management.Automation'
 using module .\src\writer\PSTrueCrypt.Writer.psm1
-using module .\src\writer\Information.psm1
 using module .\src\writer\Verbose.psm1
 using module .\src\writer\Warning.psm1
 using module .\src\utils\CimLogicalDiskWatch.ps1

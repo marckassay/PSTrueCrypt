@@ -1,5 +1,4 @@
 using module ..\writer\PSTrueCrypt.Writer.psm1
-using module ..\writer\Information.psm1
 using module ..\writer\Verbose.psm1
 using module ..\writer\Warning.psm1
 
