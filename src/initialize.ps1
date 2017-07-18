@@ -5,7 +5,7 @@ Set-Alias -Name dmt -Value Dismount-TrueCrypt
 Set-Alias -Name dmt* -Value Dismount-TrueCryptForceAll
 
 Get-ChildItem (Join-Path $PSScriptRoot *.ps1) -Exclude '*initialize.ps1' -Recurse | ForEach-Object {
-    . $_.FullName
+   #. $_.FullName
 }
 
 Start-SystemCheck

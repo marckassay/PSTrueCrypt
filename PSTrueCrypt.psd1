@@ -11,7 +11,7 @@
 RootModule = 'PSTrueCrypt.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.4'
+ModuleVersion = '0.0.5'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -52,13 +52,7 @@ RequiredAssemblies = @(
 )
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @(
-    'src/utils/CimLogicalDiskWatch.ps1',
-    'src/utils/common.ps1',
-    'src/utils/systemcheck.ps1',
-    'src/enums.ps1',
-    'src/initialize.ps1'
-)
+# ScriptsToProcess = @()
 
 # Type files (.ps1xml) to be loaded when importing this module
 # TypesToProcess = @()
@@ -107,7 +101,8 @@ FileList = @(
     'src/utils/common.ps1',
     'src/utils/systemcheck.ps1',
     'src/utils/UtilTimer.psm1',
-    'src/writer/Error.psm1',
+    'src/writer/PSTrueCrypt.Writer.psm1',
+    'src/writer/Error.ps1',
     'src/writer/Information.psm1',
     'src/writer/Verbose.psm1',
     'src/writer/Warning.psm1',

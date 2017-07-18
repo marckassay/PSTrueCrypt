@@ -1,4 +1,4 @@
-using module ..\writer\Error.psm1
+using module ..\writer\PSTrueCrypt.Writer.psm1
 using module .\UtilTimer.psm1
 
 #internal function
