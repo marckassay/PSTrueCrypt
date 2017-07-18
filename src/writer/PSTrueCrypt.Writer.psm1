@@ -58,6 +58,26 @@ function Out-Verbose
     [Verbose]::GetInstance().out($Key, $Format)
 }
 
+function Out-Warning
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Key,
+
+        [Parameter(Mandatory = $False, Position = 2)]
+        [string[]]$Format,
+
+        [Parameter(Mandatory = $False, Position = 3)]
+        [ActionPreference]$Action = [ActionPreference]::Continue
+    )
+
+    [Warning]::out($Key, $Format, $Action)
+}
+
 Export-ModuleMember -Function Out-Error
 Export-ModuleMember -Function Out-Information
 Export-ModuleMember -Function Out-Verbose
+Export-ModuleMember -Function Out-Warning
