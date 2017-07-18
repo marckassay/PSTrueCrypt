@@ -42,5 +42,22 @@ function Out-Information
     [Information]::GetInstance().out($Key, $Format, $Recommendments, $Action)
 }
 
+function Out-Verbose
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Key,
+
+        [Parameter(Mandatory = $False, Position = 2)]
+        [string[]]$Format
+    )
+
+    [Verbose]::GetInstance().out($Key, $Format)
+}
+
 Export-ModuleMember -Function Out-Error
 Export-ModuleMember -Function Out-Information
+Export-ModuleMember -Function Out-Verbose
