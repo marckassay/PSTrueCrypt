@@ -15,6 +15,65 @@ enum OSVerification {
     VeraCryptSuccess = 42
 }
 
+function Start-SystemCheck
+{
+    [CmdletBinding()]
+    Param()
+    
+    Add-Type -AssemblyName System.Windows.Forms
+
+    Set-Alias -Name mt -Value Mount-TrueCrypt
+    Set-Alias -Name dmt -Value Dismount-TrueCrypt
+    Set-Alias -Name dmt* -Value Dismount-TrueCryptForceAll
+
+    [int]$Results = 0;
+
+    $Regex = "(\w+)\\?$"
+
+    ($Env:Path).Split(';') | ForEach-Object {
+
+        [void]($_ -match $Regex)
+        $EnvPathName = $Matches[1]
+        
+        if(($EnvPathName -eq "TrueCrypt") -or ($EnvPathName -eq "VeraCrypt"))
+        {
+            $Results += [OSVerification]::($EnvPathName+"Found")
+
+            try
+            {
+                 Out-Verbose 'EnvPathFoundAndWillBeTested' -Format $EnvPathName
+                
+                $IsValid = Test-Path $_ -IsValid
+                
+                if($IsValid -eq $True) {
+                        $Results += [OSVerification]::($EnvPathName+"Valid")
+
+                    $IsVerified = Test-Path $_
+                    
+                    if($IsVerified -eq $True) {
+                        $Results += [OSVerification]::($EnvPathName+"Verified")
+                    }
+                }
+            }
+            # should be safe to swallow.  any discrepanceis will result in the Get-OSVerificationResults call...
+            catch{ }
+
+            if(Get-OSVerificationResults $EnvPathName $Results)
+            {
+                 Out-Verbose 'EnvPathSuccessfullyTested' -Format $EnvPathName
+            }
+            else
+            {
+                 Out-Warning 'EnvironmentVarPathFailed' -Format {$_}
+                 Out-Warning 'EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
+                 Out-Warning 'EnvironmentVarRecommendationExample' -Format $EnvPathName
+                 Out-Warning 'EnvironmentVarRecommendation2'
+            }
+        }
+    }
+}
+Export-ModuleMember -Function Start-SystemCheck
+
 #.ExternalHelp PSTrueCrypt-help.xml
 function Set-CryptEnvironmentVariable
 {
@@ -86,65 +145,6 @@ function Set-CryptEnvironmentVariable
     }
 }
 Export-ModuleMember -Function Set-CryptEnvironmentVariable
-
-function Start-SystemCheck
-{
-    [CmdletBinding()]
-    Param()
-    
-    Add-Type -AssemblyName System.Windows.Forms
-
-    Set-Alias -Name mt -Value Mount-TrueCrypt
-    Set-Alias -Name dmt -Value Dismount-TrueCrypt
-    Set-Alias -Name dmt* -Value Dismount-TrueCryptForceAll
-
-    [int]$Results = 0;
-
-    $Regex = "(\w+)\\?$"
-
-    ($Env:Path).Split(';') | ForEach-Object {
-
-        [void]($_ -match $Regex)
-        $EnvPathName = $Matches[1]
-        
-        if(($EnvPathName -eq "TrueCrypt") -or ($EnvPathName -eq "VeraCrypt"))
-        {
-            $Results += [OSVerification]::($EnvPathName+"Found")
-
-            try
-            {
-                 Out-Verbose 'EnvPathFoundAndWillBeTested' -Format $EnvPathName
-                
-                $IsValid = Test-Path $_ -IsValid
-                
-                if($IsValid -eq $True) {
-                        $Results += [OSVerification]::($EnvPathName+"Valid")
-
-                    $IsVerified = Test-Path $_
-                    
-                    if($IsVerified -eq $True) {
-                        $Results += [OSVerification]::($EnvPathName+"Verified")
-                    }
-                }
-            }
-            # should be safe to swallow.  any discrepanceis will result in the Get-OSVerificationResults call...
-            catch{ }
-
-            if(Get-OSVerificationResults $EnvPathName $Results)
-            {
-                 Out-Verbose 'EnvPathSuccessfullyTested' -Format $EnvPathName
-            }
-            else
-            {
-                 Out-Warning 'EnvironmentVarPathFailed' -Format {$_}
-                 Out-Warning 'EnvironmentVarRecommendation' -Format {$EnvPathName,$EnvPathName}
-                 Out-Warning 'EnvironmentVarRecommendationExample' -Format $EnvPathName
-                 Out-Warning 'EnvironmentVarRecommendation2'
-            }
-        }
-    }
-}
-Export-ModuleMember -Function Start-SystemCheck
 
 # internal function
 function Get-OSVerificationResults
@@ -394,97 +394,3 @@ function Read-Container
     }
 }
 Export-ModuleMember -Function Read-Container
-
-function Start-CimLogicalDiskWatch
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1, ValueFromPipelineByPropertyName=$True)]
-        [AllowNull()]
-        [Alias("PSChildName")]
-        [String]$SubKeyName,
-
-        [ValidateSet("Creation","Deletion")]
-        [Parameter(Mandatory = $True, Position = 2)]
-        [String]$InstanceType
-    )
-    
-    begin
-    {
-
-    }
-
-    process
-    {
-        if($SubKeyName) {
-            $UniqueLabel = $SubKeyName.Substring(0,8)
-        
-            Stop-CimLogicalDiskWatch $UniqueLabel $InstanceType
-
-            $SourceId = "PSTrueCrypt_"+$InstanceType+"_Watcher_"+$UniqueLabel
-
-            $Filter = "SELECT * FROM CIM_Inst"+$InstanceType+" WITHIN 1 WHERE TargetInstance ISA 'CIM_LogicalDisk'"
-
-            # TODO: temp hack until I can retrieve DeviceID inside the Action block for Register-CimIndicationEvent.  this
-            # problematic if the mounting executing changes uri from MountedLetter.  For instance if MountedLetter is already
-            # in use and it changes uri.
-            $PredeterminedDeviceId = (Get-PSTrueCryptContainers -FilterScript {$_.PSChildName -eq $SubKeyName} | Get-ItemProperty -Name MountLetter).MountLetter
-
-            $void = Register-CimIndicationEvent -Query $Filter -Action { 
-                $KeyId = $Event.MessageData.KeyId # f9910b39-dc58-4a34-be4b-c4b61df3799b
-                $DeviceId = $Event.MessageData.LastMountedUri
-                $IsMounted = $Event.SourceIdentifier.Contains('Creation') # PSTrueCrypt_Creation_Watcher_f9910b39
-                $LastActivity = $Event.TimeGenerated # 6/21/2017 5:10:15 PM
-                #TODO:  I no longer seem to be able to have the debugger break in this block.
-                # I would like to get the DeviceId (Get-CimInstance -ClassName CIM_LogicalDisk) from this instance
-                <#
-                $a= $Event
-                $b= $EventSubscriber
-                $c= $Sender
-                $d= $SourceEventArgs
-                $e= $SourceArgs 
-                Write-Host ($a | Format-List -Force | Out-String)
-                Write-Host ($b | Format-List -Force | Out-String)
-                Write-Host ($c | Format-List -Force | Out-String)
-                Write-Host ($d | Format-List -Force | Out-String)
-                Write-Host ($e | Format-List -Force | Out-String)
-                #>
-                Set-PSTrueCryptContainer -SubKeyName $KeyId -IsMounted $IsMounted -LastActivity $LastActivity -LastMountedUri $DeviceId
-            } -SourceIdentifier $SourceId -MessageData @{ KeyId=$SubKeyName; LastMountedUri=$PredeterminedDeviceId } -MaxTriggerCount 1 -OperationTimeoutSec 35
-        }
-    }
-
-    end
-    {
-
-    }
-}
-Export-ModuleMember -Function Start-CimLogicalDiskWatch
-
-function Stop-CimLogicalDiskWatch
-{
-    Param
-    (
-        [Parameter(Mandatory = $False, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$SubKeyName,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [string]$UniqueLabel,
-
-        [ValidateSet("Creation","Deletion")]
-        [Parameter(Mandatory = $True, Position = 2)]
-        [String]$InstanceType
-    )
-
-    if($SubKeyName) {
-        $UniqueLabel = $SubKeyName.Substring(0,8)
-    }
-    
-    $SourceId = "PSTrueCrypt_"+$InstanceType+"_Watcher_"+$UniqueLabel
-
-    Unregister-Event -SourceIdentifier $SourceId -ErrorAction Ignore
-    Remove-Event -SourceIdentifier $SourceId -ErrorAction Ignore
-}
-Export-ModuleMember -Function Stop-CimLogicalDiskWatch

@@ -96,6 +96,7 @@ AliasesToExport = @(
 
 # List of all files packaged with this module
 FileList = @( 
+    'src/CIM/PSTrueCrypt.CIM.psm1',
     'src/Utility/PSTrueCrypt.Utility.psm1',
     'src/Utility/Container.psm1',
     'src/Writer/PSTrueCrypt.Writer.psm1',

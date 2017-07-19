@@ -1,4 +1,5 @@
 using namespace 'System.Management.Automation'
+using module .\src\CIM\PSTrueCrypt.CIM.psm1
 using module .\src\Utility\PSTrueCrypt.Utility.psm1
 using module .\src\Writer\PSTrueCrypt.Writer.psm1
 
