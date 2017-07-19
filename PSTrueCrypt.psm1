@@ -879,4 +879,8 @@ function Get-SubKeyByPropertyValue
     }
 }
 
+Set-Alias -Name mt -Value Mount-TrueCrypt
+Set-Alias -Name dmt -Value Dismount-TrueCrypt
+Set-Alias -Name dmt* -Value Dismount-TrueCryptForceAll
+
 Start-SystemCheck

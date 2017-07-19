@@ -22,10 +22,6 @@ function Start-SystemCheck
     
     Add-Type -AssemblyName System.Windows.Forms
 
-    Set-Alias -Name mt -Value Mount-TrueCrypt
-    Set-Alias -Name dmt -Value Dismount-TrueCrypt
-    Set-Alias -Name dmt* -Value Dismount-TrueCryptForceAll
-
     [int]$Results = 0;
 
     $Regex = "(\w+)\\?$"
