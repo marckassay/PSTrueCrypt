@@ -1,8 +1,6 @@
 using namespace 'System.Management.Automation'
-using module .\src\writer\PSTrueCrypt.Writer.psm1
-using module .\src\utils\CimLogicalDiskWatch.ps1
-using module .\src\Container.psm1
-using module .\src\utils\common.ps1
+using module .\src\Utility\PSTrueCrypt.Utility.psm1
+using module .\src\Writer\PSTrueCrypt.Writer.psm1
 
 $SUT = $False
 

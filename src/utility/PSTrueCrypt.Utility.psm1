@@ -1,4 +1,5 @@
-using module ..\writer\PSTrueCrypt.Writer.psm1
+using module ..\Writer\PSTrueCrypt.Writer.psm1
+using module .\Container.psm1
 
 enum OSVerification {
     TrueCryptFound = 1
@@ -84,6 +85,7 @@ function Set-CryptEnvironmentVariable
          Out-Warning 'InvalidEnvironmentVarAttempt' -Format $PathVar -Action Inquire
     }
 }
+Export-ModuleMember -Function Set-CryptEnvironmentVariable
 
 function Start-SystemCheck
 {
@@ -142,6 +144,7 @@ function Start-SystemCheck
         }
     }
 }
+Export-ModuleMember -Function Start-SystemCheck
 
 # internal function
 function Get-OSVerificationResults
@@ -169,7 +172,6 @@ function Get-OSVerificationResults
     }
 }
 
-#internal function
 function Edit-HistoryFile
 {
     try
@@ -189,9 +191,8 @@ function Edit-HistoryFile
         Out-Error 'Genaric' -Format $PSHistoryFilePath -Action Inquire
     }
 }
+Export-ModuleMember -Function Edit-HistoryFile
 
-
-# internal function
 # ref: http://stackoverflow.com/a/24649481
 function Get-Confirmation
 {
@@ -211,6 +212,7 @@ function Get-Confirmation
     
     $Decision
 }
+Export-ModuleMember -Function Get-Confirmation
 
 
 # internal function
@@ -219,6 +221,7 @@ function Test-IsAdmin
 {
     ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
+Export-ModuleMember -Function Test-IsAdmin 
 
 function Restart-LogicalDiskCheck
 {
@@ -228,6 +231,8 @@ function Restart-LogicalDiskCheck
         Set-PSTrueCryptContainer -SubKeyName $_.PSChildName -IsMounted $False -LastActivity (Get-Date)
     }
 }
+Export-ModuleMember -Function Restart-LogicalDiskCheck
+
 
 function New-Container
 {
@@ -265,6 +270,7 @@ function New-Container
     $Container.Timestamp($Timestamp)
     $Container.Complete()
 }
+Export-ModuleMember -Function New-Container
 
 function Write-Container
 {
@@ -344,6 +350,7 @@ function Write-Container
         $Container.Complete()
     }
 }
+Export-ModuleMember -Function Write-Container
 
 function Read-Container
 {
@@ -386,9 +393,6 @@ function Read-Container
         $HashTable
     }
 }
-
-Export-ModuleMember -Function New-Container
-Export-ModuleMember -Function Write-Container
 Export-ModuleMember -Function Read-Container
 
 function Start-CimLogicalDiskWatch
@@ -455,6 +459,8 @@ function Start-CimLogicalDiskWatch
 
     }
 }
+Export-ModuleMember -Function Start-CimLogicalDiskWatch
+
 function Stop-CimLogicalDiskWatch
 {
     Param
@@ -481,3 +487,4 @@ function Stop-CimLogicalDiskWatch
     Unregister-Event -SourceIdentifier $SourceId -ErrorAction Ignore
     Remove-Event -SourceIdentifier $SourceId -ErrorAction Ignore
 }
+Export-ModuleMember -Function Stop-CimLogicalDiskWatch

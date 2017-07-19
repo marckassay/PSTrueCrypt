@@ -1,3 +1,9 @@
+using namespace 'System.Management.Automation'
+using module .\Error.psm1
+using module .\Information.psm1
+using module .\Verbose.psm1
+using module .\Warning.psm1
+
 function Out-Error
 {
     [CmdletBinding()]
@@ -74,7 +80,7 @@ function Out-Warning
         [ActionPreference]$Action = [ActionPreference]::Continue
     )
 
-    [Warning]::out($Key, $Format, $Action)
+    [Warning]::GetInstance().out($Key, $Format, $Action)
 }
 
 Export-ModuleMember -Function Out-Error
