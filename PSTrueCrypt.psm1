@@ -1,7 +1,9 @@
 using namespace 'System.Management.Automation'
 using module .\src\CIM\PSTrueCrypt.CIM.psm1
+using module .\src\Storage\PSTrueCrypt.Storage.psm1
 using module .\src\Utility\PSTrueCrypt.Utility.psm1
 using module .\src\Writer\PSTrueCrypt.Writer.psm1
+using module .\src\PSTrueCrypt.CommandLine.psm1
 
 $SUT = $False
 
@@ -20,7 +22,7 @@ function Mount-TrueCrypt
 
     DynamicParam
     {
-        return Get-DynamicParameters
+        return Get-DynamicParameterValues
     }
     
     process
@@ -117,7 +119,7 @@ function Dismount-TrueCrypt
 
     DynamicParam
     {
-        return Get-DynamicParameters
+        return Get-DynamicParameterValues
     }
     
     begin
@@ -133,7 +135,7 @@ function Dismount-TrueCrypt
 
     process
     {
-        $Container = Get-PSTrueCryptContainers | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
+        $Container = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
         
         Start-CIMLogicalDiskWatch $Container.Id -InstanceType 'Deletion'
 
@@ -278,37 +280,28 @@ function New-PSTrueCryptContainer
 function Remove-PSTrueCryptContainer 
 {
     [CmdletBinding()]
-    Param ()
+    Param () # value is selected from DynamicParam block
 
     DynamicParam
     {
-        return Get-DynamicParameters
+        return Get-DynamicParameterValues
     }
     
     process
     {
         try
         {
-            $SubKeyName = Get-SubKeyPath -Name $PSBoundParameters.Name
+            $Decision = Get-Confirmation -Message "Remove-PSTrueCryptContainer will remove the $PSBoundParameters.Name"+" from your registry: HKCU:\SOFTWARE\PSTrueCrypt"
 
-            if($SubKeyName)
+            if ($Decision -eq $True)
             {
-                $Decision = Get-Confirmation -Message "Remove-PSTrueCryptContainer will remove a subkey from your registry: HKCU:\SOFTWARE\PSTrueCrypt"
+                Remove-SubKeyByPropertyValue -Name $PSBoundParameters.Name
 
-                if ($Decision -eq $True)
-                {
-                    Remove-HKCUSubKey $SubKeyName
-
-                    Out-Information 'ContainerSettingsDeleted'
-                } 
-                else 
-                {
-                    Out-Information 'RemoveContainerOperationCancelled'
-                }
-            }
-            else
+                Out-Information 'ContainerSettingsDeleted'
+            } 
+            else 
             {
-                throw New-Object System.ArgumentException('UnableToFindPSTrueCryptContainer')
+                Out-Information 'RemoveContainerOperationCancelled'
             }
         }
         catch [System.ObjectDisposedException]
@@ -387,472 +380,6 @@ function Show-PSTrueCryptContainers
     } else {
         $OutVar
     }
-}
-
-
-#internal function
-function Get-PSTrueCryptContainer 
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name
-    )
-
-    $SubKeyName = Get-SubKeyPath -Name $Name | Select-Object -ExpandProperty PSChildName
-
-    if($SubKeyName)
-    {
-        $Settings = @{
-            KeyId                   = $SubKeyName
-            TrueCryptContainerPath  = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
-            PreferredMountDrive     = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
-            Product                 = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
-            LastActivity            = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty LastActivity
-            Timestamp               = [bool](Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp)
-            IsMounted               = [bool](Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty IsMounted)
-        }
-    }
-    else
-    {
-        Out-Error 'UnableToFindPSTrueCryptContainer' -Format $Name -Action Stop
-    }
-
-    $Settings
-}
-
-function Set-PSTrueCryptContainer 
-{
-    [CmdletBinding()]
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$SubKeyName,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [DateTime]$LastActivity,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNull()]
-        [bool]$IsMounted = $False,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [string]$LastMountedUri
-    )
-
-    if($SUT -eq $False) {
-        Push-Location
-        
-        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-        
-        Start-Transaction
-    }
-
-    try
-    {
-        Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction 
-        Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction
-        if($LastMountedUri) {
-            Set-ItemProperty -Path $SubKeyName -Name LastMountedUri -Value $LastMountedUri -UseTransaction
-        }
-    }
-    catch
-    {
-        Out-Error 'UnableToWriteRegistry' -Format $Name -Action Stop
-    }
-
-    if($SUT -eq $False) {
-        Complete-Transaction
-
-        Pop-Location
-    }
-}
-
-# internal function
-function Get-TrueCryptMountParams 
-{
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [string]$TrueCryptContainerPath,
-
-        [Parameter(Mandatory = $True, Position = 2)]
-        [string]$PreferredMountDrive,
-
-        [Parameter(Mandatory = $True, Position = 3)]
-        [string]$Product,
-
-        [Parameter(Mandatory = $False, Position = 4)]
-        [array]$KeyfilePath,
-
-        [Parameter(Mandatory = $False, Position = 5)]
-        [bool]$Timestamp
-    )
-
-    $ParamsHash = @{
-                        "/quit" = "";
-                        "/volume" = "'$TrueCryptContainerPath'";
-                        "/letter" = "'$PreferredMountDrive'";
-                        "/auto" = "";
-                        "/password" = "'{0}'";
-                        "/explore" = "";
-                    }
-
-    $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
-
-    [void]$ParamsString.Insert(0, "& "+$Product+" ")
-
-    if ($Timestamp) 
-    {
-        $ParamsHash.Add("/mountoption", "timestamp")
-    }
-
-    # add keyfile(s) if any to ParamsHash...
-    if ($KeyfilePath.count -gt 0) 
-    {
-        $KeyfilePath | ForEach-Object { 
-            $ParamsHash.Add("/keyfile", "'$_'")
-        }
-    }
-    
-    # populate ParamsString with ParamsHash data...
-    $ParamsHash.GetEnumerator() | ForEach-Object {
-        # if no value assigned to this TrueCrypt attribute, then just append attribute to ParamsString...
-        if ($_.Value.Equals(""))
-        {
-            [void]$ParamsString.AppendFormat("{0}", $_.Key)
-        }
-        else
-        {
-            [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
-        }
-
-        [void]$ParamsString.Append(" ")
-    }
-    
-    $ParamsString.ToString().TrimEnd(" ");
-}
-
-
-# internal function
-function Get-TrueCryptDismountParams
-{
-    Param
-    (
-        [Parameter(Mandatory = $False)]
-        [string]$Drive,
-
-        [Parameter(Mandatory = $True)]
-        [string]$Product
-    )
-
-    $ParamsHash = @{
-                    "/quit" = "";
-                    "/dismount" = $Drive
-                }
-    
-    # Force dismount for all TrueCrypt volumes? ...
-    if($Drive -eq "")
-    {
-        $ParamsHash.Add("/force", "")
-    }
-
-    $ParamsString = New-Object -TypeName "System.Text.StringBuilder";
-
-    [void]$ParamsString.Insert(0, "& "+$Product+" ")
-
-    $ParamsHash.GetEnumerator() | ForEach-Object {
-        if ($_.Value.Equals("")) 
-        {
-            [void]$ParamsString.AppendFormat("{0}", $_.Key)
-        }
-        else
-        {
-            [void]$ParamsString.AppendFormat("{0} {1}", $_.Key, $_.Value)
-        }
-
-        [void]$ParamsString.Append(" ")
-    }
-    
-    return $ParamsString.ToString().TrimEnd(" ")
-}
-
-# TODO:  since the interals of this have changed, can we remove this now? if so,
-# update tests. 
-# internal function: designed for Pester access
-function Remove-HKCUSubKey
-{
-    Param
-    (
-        [object]$FullPath
-    )
-
-    Remove-Item $FullPath.PSPath -Recurse
-}
-
-# internal function
-# returns the path to the subkey: 'HKCU:\SOFTWARE\PSTrueCrypt\e03e195e-c069-4c6b-9d35-6b61cdf40aad'
-function Get-SubKeyPath
-{
-    Param
-    (
-        [Parameter(Mandatory = $True)]
-        [string]$Name
-    )
-
-    Push-Location
-    Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-
-    try 
-    {
-        Get-ChildItem . -Recurse | ForEach-Object {if($Name -eq (Get-ItemProperty $_.PsPath).Name){
-            $PSChildName = $_
-        }}
-    }
-    catch 
-    {
-        # TODO: Need to throw specific error to calling method
-        Out-Error 'UnableToReadRegistry'
-    }
-    finally
-    {
-        Pop-Location
-
-        $PSChildName
-    }
-}
-
-function Get-ContainerNames
-{
-    begin
-    {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
-    }
-
-    process
-    {
-        try 
-        {
-            $ContainerNames = Get-ChildItem . -Recurse | Get-ItemProperty -Name Name | Sort-Object Name | Select-Object -ExpandProperty Name
-        } 
-        catch [System.Security.SecurityException]
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-    }
-
-    end
-    {
-        if($SUT -eq $False) {
-            Pop-Location
-                        
-            Complete-Transaction
-        }
-
-        $ContainerNames
-    }
-}
-
-function Get-PSTrueCryptContainers
-{
-    [CmdletBinding()]
-    [OutputType([PsObject])]
-    Param
-    (
-        [Parameter(Mandatory = $False)]
-        [ScriptBlock]$FilterScript
-    )
-
-    begin
-    {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
-    }
-
-    process
-    {
-        try 
-        {
-            $RegistrySubKeys = Get-ChildItem . -Recurse -UseTransaction
-
-            if($FilterScript) {
-                $RegistrySubKeys = $RegistrySubKeys | Where-Object -FilterScript $FilterScript
-            }
-        }
-        catch [System.Security.SecurityException]
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-        finally
-        {
-
-        }
-    }
-
-    end
-    {
-        if($SUT -eq $False) {
-            Pop-Location
-                        
-            Complete-Transaction
-        }
-
-        $RegistrySubKeys
-    }
-}
-
-function Get-Names
-{
-    [CmdletBinding()]
-    [OutputType([String[]])]
-    Param
-    (
-        # TOOD: change to ValueFromPipelineByPropertyName
-        [Parameter(Mandatory = $True, Position = 1, ValueFromPipeline=$True)]
-        [AllowNull()]
-        [PsObject]$RegistrySubKeys
-    )
-
-    begin
-    {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
-    }
-
-    process
-    {
-        try 
-        {
-            $RegistrySubKeys | Get-ItemPropertyValue -Name Name -UseTransaction -PipelineVariable $Names
-        }
-        catch [System.Security.SecurityException]
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-        finally
-        {
-
-        }
-    }
-
-    end
-    {
-        if($SUT -eq $False) {
-            Pop-Location
-        
-            Complete-Transaction
-        }
-    }
-}
-
-function Get-SubKeyByPropertyValue
-{
-    [CmdletBinding()]
-    [OutputType([PsObject])]
-    Param
-    (
-        # TOOD: change to ValueFromPipelineByPropertyName
-        [Parameter(Mandatory = $True, ValueFromPipeline=$True)]
-        [AllowNull()]
-        [PsObject]$RegistrySubKeys,
-
-        [Parameter(Mandatory = $False)]
-        [string]$Id,
-
-        [Parameter(Mandatory = $False)]
-        [string]$Name
-    )
-
-    begin
-    {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
-    }
-
-    process
-    {
-        try 
-        {
-            if($Id) {
-                if((Get-ItemPropertyValue -Path $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
-                    $FoundKey = $_
-                }
-            } elseif($Name) {
-                if((Get-ItemPropertyValue -Path $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
-                    $FoundKey = $_
-                }
-            }
-
-            
-        }
-        catch [System.Security.SecurityException]
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-        finally
-        {
-
-        }
-    }
-
-    end
-    {
-        if($SUT -eq $False) {
-            Pop-Location
-        
-            Complete-Transaction
-        }
-
-        $FoundKey
-    }
-}
-
-function Get-DynamicParameters
-{
-    $ContainerNames = Get-ContainerNames
-
-    $ParamAttrib = New-Object ParameterAttribute
-    $ParamAttrib.Mandatory = $True
-    $ParamAttrib.Position = 0
-
-    $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-    $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
-    $AttribColl.Add($ParamAttrib)
-
-    $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
-    $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
-    $RuntimeParamDic.Add('Name', $RuntimeParam)
-
-    return $RuntimeParamDic
 }
 
 Set-Alias -Name mt -Value Mount-TrueCrypt

@@ -223,7 +223,7 @@ function Restart-LogicalDiskCheck
 {
     # Enumerates thru all containers that have 'IsMounted' set to true and who's LastMountedUri drive is now
     # not attached.  If so, this will set the container's IsMounted to false...
-    Get-PSTrueCryptContainers -FilterScript { $_.getValue('IsMounted') -eq $True -and ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) } | ForEach-Object {
+    Get-RegistrySubKeys -FilterScript { $_.getValue('IsMounted') -eq $True -and ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) } | ForEach-Object {
         Set-PSTrueCryptContainer -SubKeyName $_.PSChildName -IsMounted $False -LastActivity (Get-Date)
     }
 }
@@ -390,3 +390,23 @@ function Read-Container
     }
 }
 Export-ModuleMember -Function Read-Container
+
+function Get-DynamicParameterValues
+{
+    $ContainerNames = Get-RegistrySubKeys | Get-SubKeyNames
+
+    $ParamAttrib = New-Object ParameterAttribute
+    $ParamAttrib.Mandatory = $True
+    $ParamAttrib.Position = 0
+
+    $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+    $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
+    $AttribColl.Add($ParamAttrib)
+
+    $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
+    $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
+    $RuntimeParamDic.Add('Name', $RuntimeParam)
+
+    return $RuntimeParamDic
+}
+Export-ModuleMember -Function Get-DynamicParameterValues
