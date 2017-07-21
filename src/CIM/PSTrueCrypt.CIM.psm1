@@ -33,7 +33,7 @@ function Start-CimLogicalDiskWatch
             # in use and it changes uri.
             $PredeterminedDeviceId = (Get-PSTrueCryptContainers -FilterScript {$_.PSChildName -eq $SubKeyName} | Get-ItemProperty -Name MountLetter).MountLetter
 
-        [void](Register-CimIndicationEvent -Query $Filter -Action { 
+        $void = Register-CimIndicationEvent -Query $Filter -Action { 
                 $KeyId = $Event.MessageData.KeyId # f9910b39-dc58-4a34-be4b-c4b61df3799b
                 $DeviceId = $Event.MessageData.LastMountedUri
                 $IsMounted = $Event.SourceIdentifier.Contains('Creation') # PSTrueCrypt_Creation_Watcher_f9910b39
@@ -53,7 +53,7 @@ function Start-CimLogicalDiskWatch
                 Write-Host ($e | Format-List -Force | Out-String)
                 #>
                 Set-PSTrueCryptContainer -SubKeyName $KeyId -IsMounted $IsMounted -LastActivity $LastActivity -LastMountedUri $DeviceId
-            } -SourceIdentifier $SourceId -MessageData @{ KeyId=$SubKeyName; LastMountedUri=$PredeterminedDeviceId } -MaxTriggerCount 1 -OperationTimeoutSec 35)
+            } -SourceIdentifier $SourceId -MessageData @{ KeyId=$SubKeyName; LastMountedUri=$PredeterminedDeviceId } -MaxTriggerCount 1 -OperationTimeoutSec 35
         }
     }
 

@@ -20,21 +20,7 @@ function Mount-TrueCrypt
 
     DynamicParam
     {
-        $ContainerNames = Get-ContainerNames
-
-        $ParamAttrib = New-Object ParameterAttribute
-        $ParamAttrib.Mandatory = $True
-        $ParamAttrib.Position = 0
-
-        $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
-        $AttribColl.Add($ParamAttrib)
-
-        $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
-        $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
-        $RuntimeParamDic.Add('Name', $RuntimeParam)
-
-        return $RuntimeParamDic
+        return Get-DynamicParameters
     }
     
     process
@@ -123,7 +109,6 @@ function Mount-TrueCrypt
     }
 }
 
-
 #.ExternalHelp PSTrueCrypt-help.xml
 function Dismount-TrueCrypt
 {
@@ -132,21 +117,7 @@ function Dismount-TrueCrypt
 
     DynamicParam
     {
-        $ContainerNames = Get-PSTrueCryptContainers | Get-Names
-
-        $ParamAttrib = New-Object ParameterAttribute
-        $ParamAttrib.Mandatory = $True
-        $ParamAttrib.Position = 0
-
-        $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
-        $AttribColl.Add($ParamAttrib)
-
-        $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
-        $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
-        $RuntimeParamDic.Add('Name', $RuntimeParam)
-
-        return $RuntimeParamDic
+        return Get-DynamicParameters
     }
     
     begin
@@ -311,21 +282,7 @@ function Remove-PSTrueCryptContainer
 
     DynamicParam
     {
-        $ContainerNames = Get-ContainerNames
-
-        $ParamAttrib = New-Object ParameterAttribute
-        $ParamAttrib.Mandatory = $True
-        $ParamAttrib.Position = 0
-
-        $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
-        $AttribColl.Add($ParamAttrib)
-
-        $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
-        $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
-        $RuntimeParamDic.Add('Name', $RuntimeParam)
-
-        return $RuntimeParamDic
+        return Get-DynamicParameters
     }
     
     process
@@ -877,6 +834,25 @@ function Get-SubKeyByPropertyValue
 
         $FoundKey
     }
+}
+
+function Get-DynamicParameters
+{
+    $ContainerNames = Get-ContainerNames
+
+    $ParamAttrib = New-Object ParameterAttribute
+    $ParamAttrib.Mandatory = $True
+    $ParamAttrib.Position = 0
+
+    $AttribColl = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+    $AttribColl.Add((New-Object ValidateSetAttribute($ContainerNames)))
+    $AttribColl.Add($ParamAttrib)
+
+    $RuntimeParam = New-Object RuntimeDefinedParameter('Name', [string], $AttribColl)
+    $RuntimeParamDic = New-Object RuntimeDefinedParameterDictionary
+    $RuntimeParamDic.Add('Name', $RuntimeParam)
+
+    return $RuntimeParamDic
 }
 
 Set-Alias -Name mt -Value Mount-TrueCrypt

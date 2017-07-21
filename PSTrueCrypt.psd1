@@ -100,10 +100,10 @@ FileList = @(
     'src/Utility/PSTrueCrypt.Utility.psm1',
     'src/Utility/Container.psm1',
     'src/Writer/PSTrueCrypt.Writer.psm1',
-    'src/Writer/Error.ps1',
-    'src/Writer/Information.ps1',
-    'src/Writer/Verbose.ps1',
-    'src/Writer/Warning.ps1'
+    'src/Writer/Error.psm1',
+    'src/Writer/Information.psm1',
+    'src/Writer/Verbose.psm1',
+    'src/Writer/Warning.psm1'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
