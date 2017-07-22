@@ -374,7 +374,18 @@ function Read-Container
     {
         $Container = [Container]::GetInstance()
         $Container.SubKey = $RegistrySubKey
-
+        <#
+        the hashtable keys are the following:
+            Id         
+            KeyPath    
+            Name       
+            Location   
+            MountLetter
+            Product    
+            Timestamp  
+            IsMounted  
+            LastActivity
+        #>
         $HashTable = $Container.GetHashTable()
     }
 

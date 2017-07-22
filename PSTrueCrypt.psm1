@@ -29,7 +29,7 @@ function Mount-TrueCrypt
     {
         try 
         {
-            $Settings = Get-PSTrueCryptContainer -Name $PSBoundParameters.Name
+            $Container = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
         }
         catch [ItemNotFoundException]
         {
@@ -37,7 +37,7 @@ function Mount-TrueCrypt
         }
 
         # construct arguments for expression and insert token in for password...
-        [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Settings.TrueCryptContainerPath -PreferredMountDrive $Settings.PreferredMountDrive -Product $Settings.Product -KeyfilePath $KeyfilePath -Timestamp $Settings.Timestamp
+        [string]$Expression = Get-TrueCryptMountParams  -TrueCryptContainerPath $Container.Location -PreferredMountDrive $Container.MountLetter -Product $Container.Product -KeyfilePath $KeyfilePath -Timestamp $Container.Timestamp
 
         # if no password was given, then we need to start the process for of prompting for one...
         if ([string]::IsNullOrEmpty($Password) -eq $True)
@@ -80,7 +80,7 @@ function Mount-TrueCrypt
             $Password.Dispose()
         }
 
-        Start-CimLogicalDiskWatch $Settings.KeyId -InstanceType 'Creation'
+        Start-CimLogicalDiskWatch $Container.Id -InstanceType 'Creation'
 
         try
         {
