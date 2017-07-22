@@ -229,7 +229,6 @@ function Restart-LogicalDiskCheck
 }
 Export-ModuleMember -Function Restart-LogicalDiskCheck
 
-
 function New-Container
 {
     [CmdletBinding()]
@@ -257,13 +256,15 @@ function New-Container
         [switch]$Timestamp
     )
 
-    $Container = [Container]::GetInstance()
-    $Container.Name($Name)
-    $Container.Location($Location)
-    $Container.MountLetter($MountLetter)
-    $Container.Product($Product)
-    $Container.IsMounted($IsMounted)
-    $Container.Timestamp($Timestamp)
+    $Container = [Container]::new()
+    $Container.Start()
+        $Container.Name($Name)
+        $Container.Location($Location)
+        $Container.MountLetter($MountLetter)
+        $Container.Product($Product)
+        $Container.IsMounted($IsMounted)
+        $Container.Timestamp($Timestamp)
+        $Container.SetLastActivity((Get-Date))
     $Container.Complete()
 }
 Export-ModuleMember -Function New-Container
@@ -276,7 +277,7 @@ function Write-Container
         [Parameter(Mandatory = $True, Position = 1, 
          HelpMessage="Enter the generated Id for this container.")]
         [ValidateNotNullOrEmpty()]
-        [string]$Id,
+        [string]$KeyId,
 
         [Parameter(Mandatory = $False)]
         [ValidateNotNullOrEmpty()]
@@ -310,7 +311,7 @@ function Write-Container
     )
 
     $Container = [Container]::GetInstance()
-    $Container.Id = Id
+    $Container.KeyId = KeyId
 
     if($Name) {
         $Container.Name($Name)
@@ -376,7 +377,7 @@ function Read-Container
         $Container.SubKey = $RegistrySubKey
         <#
         the hashtable keys are the following:
-            Id         
+            KeyId         
             KeyPath    
             Name       
             Location   

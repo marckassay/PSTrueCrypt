@@ -80,7 +80,7 @@ function Mount-TrueCrypt
             $Password.Dispose()
         }
 
-        Start-CimLogicalDiskWatch $Container.Id -InstanceType 'Creation'
+        Start-CimLogicalDiskWatch $Container.KeyId -InstanceType 'Creation'
 
         try
         {
@@ -137,7 +137,7 @@ function Dismount-TrueCrypt
     {
         $Container = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
         
-        Start-CIMLogicalDiskWatch $Container.Id -InstanceType 'Deletion'
+        Start-CIMLogicalDiskWatch $Container.KeyId -InstanceType 'Deletion'
 
         # construct arguments and execute expression...
         [string]$Expression = Get-TrueCryptDismountParams -Drive $Container.MountLetter -Product $Container.Product
@@ -223,40 +223,17 @@ function New-PSTrueCryptContainer
         [switch]$Timestamp
     )
 
-    $SubKeyName = Get-SubKeyPath -Name $Name
+    $SubKeyName = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Name
 
     if(-not ($SubKeyName) )
     {
         $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
 
-        $CreationDate = Get-Date
-
         try
         {
             if ($Decision -eq $True)
             {
-                [System.String]$NewSubKeyName = New-Guid
-                $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
-                    [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
-                    [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
-                    [System.Security.AccessControl.PropagationFlags]"None",
-                    [System.Security.AccessControl.AccessControlType]"Allow")
-
-                $SubKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("SOFTWARE\PSTrueCrypt\$NewSubKeyName",
-                        [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
-
-                $AccessControl = $SubKey.GetAccessControl()
-                $AccessControl.SetAccessRule($AccessRule)
-                $SubKey.SetAccessControl($AccessControl)
-
-                # slient out-put using '[void](...)'
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Name        -PropertyType String -Value $Name)
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Location    -PropertyType String -Value $Location)
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name MountLetter -PropertyType String -Value $MountLetter)
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Product     -PropertyType String -Value $Product)
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode())
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name IsMounted   -PropertyType DWord -Value $False.GetHashCode())
-                [void](New-ItemProperty -Path  "HKCU:\SOFTWARE\PSTrueCrypt\$NewSubKeyName" -Name LastActivity -PropertyType String -Value $CreationDate)
+                New-Container -Name $Name -Location $Location -MountLetter $MountLetter -Product $Product -Timestamp
 
                 Out-Information 'NewContainerOperationSucceeded' -Format $Name
             }

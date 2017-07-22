@@ -4,24 +4,9 @@ using namespace Microsoft.PowerShell.Commands.Internal
 
 class Container
 {
-    static [Container] $instance
-
-    static [Container] GetInstance()
-    {
-        if ([Container]::instance -eq $null) {
-            [Container]::instance = [Container]::new()
-        }
-
-        return [Container]::instance
-    }
-
-
-
     hidden [TransactedRegistryKey] $SubKey
 
-    hidden [string] $KeyName
-
-    [string] GetKeyName () {
+    [string] GetKeyId () {
         return $this.SubKey.PSChildName
     }
 
@@ -55,19 +40,9 @@ class Container
         return $this._ReadOnly
     }
 
-    # its important to be aware of how PowerShell handles Transactions.  if this
-    # class is created more then once while the first is still "active", it can only
-    # work on the latest transaction.  Once the latest/last transaction is completed,
-    # it will work on the previous transaction.
-    hidden [void] RequestTransaction () {
-        if(Get-Transaction -ne Active) {
-            Start-Transaction
-        }
-    }
-
    [void] SetName ([string]$Value) {
         if($Value -ne $null) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name Name -Value $Value -PropertyType String -UseTransaction 
@@ -83,7 +58,7 @@ class Container
 
    [void] SetLocation ([string]$Value) {
         if($Value -ne $null) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name Location -Value $Value -PropertyType String -UseTransaction 
@@ -99,7 +74,7 @@ class Container
 
    [void] SetMountLetter ([string]$Value) {
         if($Value -ne $null) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name MountLetter -Value $Value -PropertyType String -UseTransaction 
@@ -115,7 +90,7 @@ class Container
 
    [void] SetLastMountedUri ([string]$Value) {
         if($Value -ne $null) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
@@ -131,7 +106,7 @@ class Container
 
    [void] SetProduct ([string]$Value) {
         if($Value -ne $null) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name Product -Value $Value -PropertyType String -UseTransaction 
@@ -147,7 +122,7 @@ class Container
 
    [void] SetTimestamp ([bool]$Value) {
         if($Value -eq $True) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name Timestamp -Value $Value.GetHashCode() -PropertyType DWord -UseTransaction 
@@ -163,7 +138,7 @@ class Container
 
    [void] SetIsMounted ([bool]$Value) {
         if($Value -eq $True) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value $Value.GetHashCode() -PropertyType DWord -UseTransaction 
@@ -179,7 +154,7 @@ class Container
 
    [void] SetLastActivity ([string]$Value) {
         if($Value -ne $null) {
-            RequestTransaction
+            $this.RequestTransaction()
 
             if($this.GetKeyPath()) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name LastActivity -Value $Value -PropertyType String -UseTransaction 
@@ -195,7 +170,7 @@ class Container
 
     [hashtable] GetHashTable() {
         $hash = @{
-            Id          = $this.GetKeyName()
+            KeyId       = $this.GetKeyId()
             KeyPath     = $this.GetKeyPath()
             Name        = $this.GetName()
             Location    = $this.GetLocation()
@@ -207,7 +182,36 @@ class Container
         }
         return $hash
     }
+
     
+    # its important to be aware of how PowerShell handles Transactions.  if this
+    # class is created more then once while the first is still "active", it can only
+    # work on the latest transaction.  Once the latest/last transaction is completed,
+    # it will work on the previous transaction.
+    hidden [void] RequestTransaction () {
+        if(Get-Transaction -ne Active) {
+            Start-Transaction
+        }
+    }
+
+    [void] Start () {
+        $this.RequestTransaction()
+
+        $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
+            [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
+            [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
+            [System.Security.AccessControl.PropagationFlags]"None",
+            [System.Security.AccessControl.AccessControlType]"Allow")
+
+        [Microsoft.Win32.Registry]$Key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($this.GetKeyPath(),
+            [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+
+        $AccessControl = $Key.GetAccessControl()
+        $AccessControl.SetAccessRule($AccessRule)
+        
+        $Key.SetAccessControl($AccessControl)
+    }
+
     [void] Complete () {
         Complete-Transaction
     }
