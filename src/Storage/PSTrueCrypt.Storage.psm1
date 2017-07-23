@@ -5,29 +5,19 @@ function Get-RegistrySubKeys
     Param
     (
         [Parameter(Mandatory = $False)]
-        [ScriptBlock]$FilterScript
+        [ScriptBlock]$FilterScript = {}
     )
 
     begin
     {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
+        Start-BeginBlock
     }
 
     process
     {
         try 
         {
-            $RegistrySubKeys = Get-ChildItem . -Recurse -UseTransaction
-
-            if($FilterScript) {
-                $RegistrySubKeys = $RegistrySubKeys | Where-Object -FilterScript $FilterScript
-            }
+            Get-ChildItem . -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript
         }
         catch [System.Security.SecurityException]
         {
@@ -42,11 +32,7 @@ function Get-RegistrySubKeys
 
     end
     {
-        if($SUT -eq $False) {
-            Pop-Location
-                        
-            Complete-Transaction
-        }
+        Start-EndBlock
 
         $RegistrySubKeys
     }
@@ -66,13 +52,7 @@ function Get-SubKeyNames
 
     begin
     {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
+        Start-BeginBlock
     }
 
     process
@@ -94,11 +74,7 @@ function Get-SubKeyNames
 
     end
     {
-        if($SUT -eq $False) {
-            Pop-Location
-        
-            Complete-Transaction
-        }
+        Start-EndBlock
     }
 }
 
@@ -122,13 +98,7 @@ function Get-SubKeyByPropertyValue
 
     begin
     {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
+        Start-BeginBlock
     }
 
     process
@@ -136,11 +106,11 @@ function Get-SubKeyByPropertyValue
         try 
         {
             if($Id) {
-                if((Get-ItemPropertyValue -Path $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
+                if(($RegistrySubKeys | Get-ItemPropertyValue -Path $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
                     $FoundKey = $_
                 }
             } elseif($Name) {
-                if((Get-ItemPropertyValue -Path $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
+                if(($RegistrySubKeys | Get-ItemPropertyValue -Path $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
                     $FoundKey = $_
                 }
             }
@@ -158,11 +128,7 @@ function Get-SubKeyByPropertyValue
 
     end
     {
-        if($SUT -eq $False) {
-            Pop-Location
-        
-            Complete-Transaction
-        }
+        Start-EndBlock
 
         $FoundKey
     }
@@ -174,6 +140,11 @@ function Remove-SubKeyByPropertyValue
     [OutputType([void])]
     Param
     (
+        # TOOD: change to ValueFromPipelineByPropertyName
+        [Parameter(Mandatory = $True, ValueFromPipeline=$True)]
+        [AllowNull()]
+        [PsObject]$RegistrySubKeys,
+
         [Parameter(Mandatory = $False)]
         [string]$Id,
 
@@ -183,13 +154,7 @@ function Remove-SubKeyByPropertyValue
 
     begin
     {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
+        Start-BeginBlock
     }
     
     process
@@ -197,9 +162,9 @@ function Remove-SubKeyByPropertyValue
         try 
         {
             if($Id) {
-                Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Id | Remove-Item -Path $_.PSPath -Recurse
+                $RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Id | Remove-Item -Path $_.PSPath -Recurse
             } elseif($Name) {
-                Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Name | Remove-Item -Path $_.PSPath -Recurse
+                $RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Name | Remove-Item -Path $_.PSPath -Recurse
             }
         }
         catch [System.Security.SecurityException]
@@ -215,68 +180,12 @@ function Remove-SubKeyByPropertyValue
 
     end
     {
-        if($SUT -eq $False) {
-            Pop-Location
-        
-            Complete-Transaction
-        }
+        Start-EndBlock
     }
 }
 
-#internal function
-function Get-PSTrueCryptContainer 
+function Start-BeginBlock
 {
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name
-    )
-
-    $SubKeyName = Get-SubKeyPath -Name $Name | Select-Object -ExpandProperty PSChildName
-
-    if($SubKeyName)
-    {
-        $Settings = @{
-            KeyId                   = $SubKeyName
-            TrueCryptContainerPath  = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Location
-            PreferredMountDrive     = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty MountLetter
-            Product                 = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Product
-            LastActivity            = Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty LastActivity
-            Timestamp               = [bool](Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty Timestamp)
-            IsMounted               = [bool](Get-ItemProperty  "HKCU:\SOFTWARE\PSTrueCrypt\$SubKeyName" | Select-Object -ExpandProperty IsMounted)
-        }
-    }
-    else
-    {
-        Out-Error 'UnableToFindPSTrueCryptContainer' -Format $Name -Action Stop
-    }
-
-    $Settings
-}
-
-function Set-PSTrueCryptContainer 
-{
-    [CmdletBinding()]
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$SubKeyName,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [DateTime]$LastActivity,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNull()]
-        [bool]$IsMounted = $False,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [string]$LastMountedUri
-    )
-
     if($SUT -eq $False) {
         Push-Location
         
@@ -284,24 +193,14 @@ function Set-PSTrueCryptContainer
         
         Start-Transaction
     }
+}
 
-    try
-    {
-        Set-ItemProperty -Path $SubKeyName -Name IsMounted -Value $IsMounted.GetHashCode() -UseTransaction 
-        Set-ItemProperty -Path $SubKeyName -Name LastActivity -Value $LastActivity -UseTransaction
-        if($LastMountedUri) {
-            Set-ItemProperty -Path $SubKeyName -Name LastMountedUri -Value $LastMountedUri -UseTransaction
-        }
-    }
-    catch
-    {
-        Out-Error 'UnableToWriteRegistry' -Format $Name -Action Stop
-    }
-
+function Start-EndBlock
+{
     if($SUT -eq $False) {
-        Complete-Transaction
-
         Pop-Location
+    
+        Complete-Transaction
     }
 }
 

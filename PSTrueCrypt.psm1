@@ -155,7 +155,6 @@ function Dismount-TrueCrypt
     }
 }
 
-
 #.ExternalHelp PSTrueCrypt-help.xml
 function Dismount-TrueCryptForceAll
 {
@@ -334,7 +333,7 @@ function Show-PSTrueCryptContainers
     {
         Restart-LogicalDiskCheck
         
-        $OutVar = Get-ChildItem . -Recurse -UseTransaction | ForEach-Object {
+        $OutVar = Get-RegistrySubKeys | ForEach-Object {
             Get-ItemProperty $_.PsPath -UseTransaction
         } | Sort-Object Name
         
