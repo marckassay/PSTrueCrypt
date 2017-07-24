@@ -10,7 +10,7 @@ function Get-RegistrySubKeys
 
     begin
     {
-        Start-BeginBlock
+        Invoke-BeginBlock
     }
 
     process
@@ -32,7 +32,7 @@ function Get-RegistrySubKeys
 
     end
     {
-        Start-EndBlock
+        Invoke-EndBlock
 
         $RegistrySubKeys
     }
@@ -52,7 +52,7 @@ function Get-SubKeyNames
 
     begin
     {
-        Start-BeginBlock
+        Invoke-BeginBlock
     }
 
     process
@@ -74,7 +74,7 @@ function Get-SubKeyNames
 
     end
     {
-        Start-EndBlock
+        Invoke-EndBlock
     }
 }
 
@@ -98,7 +98,7 @@ function Get-SubKeyByPropertyValue
 
     begin
     {
-        Start-BeginBlock
+        Invoke-BeginBlock
     }
 
     process
@@ -128,7 +128,7 @@ function Get-SubKeyByPropertyValue
 
     end
     {
-        Start-EndBlock
+        Invoke-EndBlock
 
         $FoundKey
     }
@@ -154,7 +154,7 @@ function Remove-SubKeyByPropertyValue
 
     begin
     {
-        Start-BeginBlock
+        Invoke-BeginBlock
     }
     
     process
@@ -180,22 +180,22 @@ function Remove-SubKeyByPropertyValue
 
     end
     {
-        Start-EndBlock
+        Invoke-EndBlock
     }
 }
 
-function Start-BeginBlock
+function Invoke-BeginBlock
 {
     if($SUT -eq $False) {
         Push-Location
         
         Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
         
-        Start-Transaction
+        Invoke-Transaction
     }
 }
 
-function Start-EndBlock
+function Invoke-EndBlock
 {
     if($SUT -eq $False) {
         Pop-Location

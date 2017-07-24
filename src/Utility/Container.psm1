@@ -40,7 +40,7 @@ class Container
         return $this._ReadOnly
     }
 
-   [void] SetName ([string]$Value) {
+    [void] SetName ([string]$Value) {
         if($Value -ne $null) {
             $this.RequestTransaction()
 
@@ -56,7 +56,7 @@ class Container
         return Get-ItemPropertyValue -Path $this.KeyPath -Name Name -UseTransaction
     }
 
-   [void] SetLocation ([string]$Value) {
+    [void] SetLocation ([string]$Value) {
         if($Value -ne $null) {
             $this.RequestTransaction()
 
@@ -72,7 +72,7 @@ class Container
         return Get-ItemPropertyValue -Path $this.KeyPath -Name Location -UseTransaction
     }
 
-   [void] SetMountLetter ([string]$Value) {
+    [void] SetMountLetter ([string]$Value) {
         if($Value -ne $null) {
             $this.RequestTransaction()
 
@@ -88,7 +88,7 @@ class Container
         return Get-ItemPropertyValue -Path $this.KeyPath -Name MountLetter -UseTransaction
     }
 
-   [void] SetLastMountedUri ([string]$Value) {
+    [void] SetLastMountedUri ([string]$Value) {
         if($Value -ne $null) {
             $this.RequestTransaction()
 
@@ -100,11 +100,11 @@ class Container
         }
     }
 
-   [string] GetLastMountedUri () {
+    [string] GetLastMountedUri () {
         return Get-ItemPropertyValue -Path $this.KeyPath -Name LastMountedUri -UseTransaction
     }
 
-   [void] SetProduct ([string]$Value) {
+    [void] SetProduct ([string]$Value) {
         if($Value -ne $null) {
             $this.RequestTransaction()
 
@@ -120,7 +120,7 @@ class Container
         return Get-ItemPropertyValue -Path $this.KeyPath -Name Product -UseTransaction
     }
 
-   [void] SetTimestamp ([bool]$Value) {
+    [void] SetTimestamp ([bool]$Value) {
         if($Value -eq $True) {
             $this.RequestTransaction()
 
@@ -136,7 +136,7 @@ class Container
         return Get-ItemPropertyValue -Path $this.KeyPath -Name Timestamp -UseTransaction
    }
 
-   [void] SetIsMounted ([bool]$Value) {
+    [void] SetIsMounted ([bool]$Value) {
         if($Value -eq $True) {
             $this.RequestTransaction()
 
@@ -148,11 +148,11 @@ class Container
         }
     }
 
-   [bool] GetIsMounted () {
+    [bool] GetIsMounted () {
         return Get-ItemPropertyValue -Path $this.KeyPath -Name IsMounted -UseTransaction
-   }
+    }
 
-   [void] SetLastActivity ([string]$Value) {
+    [void] SetLastActivity ([string]$Value) {
         if($Value -ne $null) {
             $this.RequestTransaction()
 
