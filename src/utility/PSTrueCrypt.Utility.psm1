@@ -1,5 +1,6 @@
 using module ..\Writer\PSTrueCrypt.Writer.psm1
 using module .\Container.psm1
+using module ..\Storage\PSTrueCrypt.Storage.psm1
 
 enum OSVerification {
     TrueCryptFound = 1
@@ -223,9 +224,9 @@ function Restart-LogicalDiskCheck
 {
     # Enumerates thru all containers that have 'IsMounted' set to true and who's LastMountedUri drive is now
     # not attached.  If so, this will set the container's IsMounted to false...
-    Get-RegistrySubKeys -FilterScript { $_.getValue('IsMounted') -eq $True -and ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) } | ForEach-Object {
-        Set-PSTrueCryptContainer -SubKeyName $_.PSChildName -IsMounted $False -LastActivity (Get-Date)
-    }
+    Get-RegistrySubKeys -FilterScript { [bool]($_.getValue('IsMounted')) -eq $True -and `
+                             ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) 
+                        } | Write-Container -IsMounted:$False
 }
 Export-ModuleMember -Function Restart-LogicalDiskCheck
 
@@ -259,13 +260,13 @@ function New-Container
 
     $Container = [Container]::new()
     $Container.Start()
-        $Container.Name($Name)
-        $Container.Location($Location)
-        $Container.MountLetter($MountLetter)
-        $Container.Product($Product)
-        $Container.IsMounted($IsMounted)
-        $Container.Timestamp($Timestamp)
-        $Container.SetLastActivity((Get-Date))
+    $Container.Name($Name)
+    $Container.Location($Location)
+    $Container.MountLetter($MountLetter)
+    $Container.Product($Product)
+    $Container.IsMounted($IsMounted)
+    $Container.Timestamp($Timestamp)
+    $Container.SetLastActivity((Get-Date))
     $Container.Complete()
 }
 Export-ModuleMember -Function New-Container
@@ -275,7 +276,11 @@ function Write-Container
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1, 
+        [Parameter(Mandatory = $False, ValueFromPipeline = $True)]
+        [AllowNull()]
+        [PsObject]$RegistrySubKey,
+
+        [Parameter(Mandatory = $False, 
          HelpMessage="Enter the generated Id for this container.")]
         [ValidateNotNullOrEmpty()]
         [string]$KeyId,
@@ -301,18 +306,23 @@ function Write-Container
         [string]$LastMountedUri,
 
         [Parameter(Mandatory = $False)]
-        [bool]$Timestamp,
+        [switch]$IsMounted,
 
-        [Parameter(Mandatory = $False)]
-        [bool]$IsMounted,
+        [switch]$Timestamp,
 
-        [switch]$NoActivity,
+        [switch]$SilenceActivity,
 
         [switch]$ContinueTransaction
     )
 
-    $Container = [Container]::GetInstance()
-    $Container.KeyId = KeyId
+    $Container = [Container]::new()
+    if($RegistrySubKey) {
+        $Container.SubKey = $RegistrySubKey
+    } elseif ($KeyId) {
+        $Container.KeyId = $KeyId
+    }
+
+    $Container.Start()
 
     if($Name) {
         $Container.Name($Name)
@@ -374,7 +384,7 @@ function Read-Container
 
     process 
     {
-        $Container = [Container]::GetInstance()
+        $Container = [Container]::new()
         $Container.SubKey = $RegistrySubKey
         <#
         the hashtable keys are the following:

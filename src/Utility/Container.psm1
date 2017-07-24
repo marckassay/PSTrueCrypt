@@ -6,38 +6,33 @@ class Container
 {
     hidden [TransactedRegistryKey] $SubKey
 
+    [TransactedRegistryKey] GetKey () {
+        return $this.SubKey
+    }
+
+    [void] SetKey ([TransactedRegistryKey]$Value) {
+        $this.SubKey = $Value
+    }
+
+    # example of PSPath: Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\PSTrueCrypt\83adbc84-168f-4f4f-a374-a1b70091f8dd\
+    [string] GetKeyPath () {
+        return $this.SubKey.PSPath
+    }
+
+    # example of PSChildName: 83adbc84-168f-4f4f-a374-a1b70091f8dd
     [string] GetKeyId () {
         return $this.SubKey.PSChildName
     }
 
-    hidden [string] $KeyPath
-
-    [string] GetKeyPath () {
-        if ($this.KeyPath -eq $null) {
-            if($this.SubKey -ne $null) {
-                $this.KeyPath = $this.SubKey.PSPath
-            } else { 
-                $Path = Get-Location | Select-Object -ExpandProperty Path
-                $Name = New-Guid | Select-Object -ExpandProperty Guid
-                $this.KeyPath = "$Path\$Name"
-            }
+    [void] SetKeyId ([string]$Value) {
+        try {
+            [System.Guid]::Parse($Value)
+        } catch {
+            throw "PSTrueCrypt's Container.SetKeyId() received invalid data."
         }
-
-        return $this.KeyPath
-    }
-
-    # immutable property
-    hidden [bool]$_ReadOnly = $False
-    hidden [bool]$_ReadOnlyHasBeenMutated = $False
-    hidden [bool] ReadOnly ([bool]$Value) {
-        if($Value -eq $True) {
-            if($this._ReadOnlyHasBeenMutated -eq $False) {
-                $this._ReadOnlyHasBeenMutated = $True
-                $this._ReadOnly = $True
-            }
-        }
-
-        return $this._ReadOnly
+        # just an Id was passed, so we will form a URL for retrieve and save it to $this.SubKey
+        $Path = Get-Location | Select-Object -ExpandProperty Path
+        $this.SubKey = Get-Item ($Path+$Value)
     }
 
     [void] SetName ([string]$Value) {
@@ -183,7 +178,6 @@ class Container
         return $hash
     }
 
-    
     # its important to be aware of how PowerShell handles Transactions.  if this
     # class is created more then once while the first is still "active", it can only
     # work on the latest transaction.  Once the latest/last transaction is completed,
@@ -203,8 +197,19 @@ class Container
             [System.Security.AccessControl.PropagationFlags]"None",
             [System.Security.AccessControl.AccessControlType]"Allow")
 
-        [Microsoft.Win32.Registry]$Key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($this.GetKeyPath(),
+        [Microsoft.Win32.Registry]$Key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($this.GetKeyPath(),
             [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+        
+        if(-not $Key) {
+            $Path = Get-Location | Select-Object -ExpandProperty Path
+            $Key = New-Guid | Select-Object -ExpandProperty Guid
+            $KeyPath = $Path+$Key
+
+            [Microsoft.Win32.Registry]$Key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($KeyPath,
+                [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
+
+            $this.SubKey = $Key
+        }
 
         $AccessControl = $Key.GetAccessControl()
         $AccessControl.SetAccessRule($AccessRule)

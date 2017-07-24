@@ -17,7 +17,7 @@ function Get-RegistrySubKeys
     {
         try 
         {
-            Get-ChildItem . -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript
+            Get-ChildItem . -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
         }
         catch [System.Security.SecurityException]
         {
