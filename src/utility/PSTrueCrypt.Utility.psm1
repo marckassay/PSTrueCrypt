@@ -1,5 +1,4 @@
 using module ..\Writer\PSTrueCrypt.Writer.psm1
-using module .\Container.psm1
 using module ..\Storage\PSTrueCrypt.Storage.psm1
 
 enum OSVerification {
@@ -230,190 +229,6 @@ function Restart-LogicalDiskCheck
 }
 Export-ModuleMember -Function Restart-LogicalDiskCheck
 
-
-function New-Container
-{
-    [CmdletBinding()]
-    Param
-    (
-        [Parameter(Mandatory = $True, Position = 1,
-         HelpMessage="Give a name for this container.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name,
-
-        [Parameter(Mandatory = $True, Position = 2)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Location,
-
-        [Parameter(Mandatory = $True, Position = 3)]
-        [ValidatePattern("^[a-zA-Z]$")]
-        [string]$MountLetter,
-
-        [Parameter(Mandatory = $True, Position = 4)]
-        [ValidateSet("TrueCrypt", "VeraCrypt")]
-        [string]$Product,
-
-        [switch]$IsMounted,
-
-        [switch]$Timestamp
-    )
-
-    $Container = [Container]::new()
-    $Container.Start()
-    $Container.Name($Name)
-    $Container.Location($Location)
-    $Container.MountLetter($MountLetter)
-    $Container.Product($Product)
-    $Container.IsMounted($IsMounted)
-    $Container.Timestamp($Timestamp)
-    $Container.SetLastActivity((Get-Date))
-    $Container.Complete()
-}
-Export-ModuleMember -Function New-Container
-
-function Write-Container
-{
-    [CmdletBinding()]
-    Param
-    (
-        [Parameter(Mandatory = $False, ValueFromPipeline = $True)]
-        [AllowNull()]
-        [PsObject]$RegistrySubKey,
-
-        [Parameter(Mandatory = $False, 
-         HelpMessage="Enter the generated Id for this container.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$KeyId,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Location,
-
-        [Parameter(Mandatory = $False)]
-        [ValidatePattern("^[a-zA-Z]$")]
-        [string]$MountLetter,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateSet("TrueCrypt", "VeraCrypt")]
-        [string]$Product,
-
-        [Parameter(Mandatory = $False)]
-        [ValidatePattern("^[a-zA-Z]$")]
-        [string]$LastMountedUri,
-
-        [Parameter(Mandatory = $False)]
-        [switch]$IsMounted,
-
-        [switch]$Timestamp,
-
-        [switch]$SilenceActivity,
-
-        [switch]$ContinueTransaction
-    )
-
-    $Container = [Container]::new()
-    if($RegistrySubKey) {
-        $Container.SubKey = $RegistrySubKey
-    } elseif ($KeyId) {
-        $Container.KeyId = $KeyId
-    }
-
-    $Container.Start()
-
-    if($Name) {
-        $Container.Name($Name)
-    }
-    
-    if($Location) {
-        $Container.Location($Location)
-    }
-
-    if($MountLetter) {
-        $Container.MountLetter($MountLetter)
-    }
-    
-    if($Product) {
-        $Container.Product($Product)
-    }
-    
-    if($Timestamp) {
-        $Container.Timestamp($Timestamp)
-    }
-    
-    if($IsMounted) {
-        $Container.IsMounted($IsMounted)
-    }
-
-    # if this is switched (True), that means we dont want to record this activity
-    if($NoActivity -eq $False) {
-        $Container.LastActivity( (Get-Date) )
-    }
-
-    # if this is switched (True), that means we dont want to complete this transaction just yet.
-    if($ContinueTransaction -eq $False) {
-        $Container.Complete()
-    }
-}
-Export-ModuleMember -Function Write-Container
-
-function Read-Container
-{
-    [CmdletBinding()]
-    [OutputType([HashTable])]
-    Param
-    (
-        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
-        [AllowNull()]
-        [PsObject]$RegistrySubKey
-    )
-
-    begin
-    {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
-    }
-
-    process 
-    {
-        $Container = [Container]::new()
-        $Container.SubKey = $RegistrySubKey
-        <#
-        the hashtable keys are the following:
-            KeyId         
-            KeyPath    
-            Name       
-            Location   
-            MountLetter
-            Product    
-            Timestamp  
-            IsMounted  
-            LastActivity
-        #>
-        $HashTable = $Container.GetHashTable()
-    }
-
-    end
-    {
-        if($SUT -eq $False) {
-            Pop-Location
-
-            Complete-Transaction
-        }
-
-        $HashTable
-    }
-}
-Export-ModuleMember -Function Read-Container
-
 function Get-DynamicParameterValues
 {
     $ContainerNames = Get-RegistrySubKeys | Get-SubKeyNames
@@ -433,3 +248,37 @@ function Get-DynamicParameterValues
     return $RuntimeParamDic
 }
 Export-ModuleMember -Function Get-DynamicParameterValues
+
+function Invoke-BeginBlock
+{
+    [CmdletBinding()]
+    Param
+    (
+        [switch]$IsSystemUnderTest
+    )
+
+    if($IsSystemUnderTest.ToBool() -eq $False) {
+        Push-Location
+        
+        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
+        
+        Start-Transaction
+    }
+}
+Export-ModuleMember -Function Invoke-BeginBlock
+
+function Invoke-EndBlock
+{
+    [CmdletBinding()]
+    Param
+    (
+        [switch]$IsSystemUnderTest
+    )
+
+    if($IsSystemUnderTest.ToBool() -eq $False) {
+        Pop-Location
+    
+        Complete-Transaction
+    }
+}
+Export-ModuleMember -Function Invoke-EndBlock

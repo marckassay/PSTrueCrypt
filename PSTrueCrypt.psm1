@@ -24,7 +24,12 @@ function Mount-TrueCrypt
     {
         return Get-DynamicParameterValues
     }
-    
+
+    begin
+    {
+        Invoke-BeginBlock -IsSystemUnderTest:$SUT
+    }
+
     process
     {
         try 
@@ -109,6 +114,11 @@ function Mount-TrueCrypt
             Edit-HistoryFile -KeyfilePath $KeyfilePath
         }
     }
+
+    end
+    {
+        Invoke-EndBlock -IsSystemUnderTest:$SUT
+    }
 }
 
 #.ExternalHelp PSTrueCrypt-help.xml
@@ -124,13 +134,7 @@ function Dismount-TrueCrypt
     
     begin
     {
-        if($SUT -eq $False) {
-            Push-Location
-            
-            Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-            
-            Start-Transaction
-        }
+        Invoke-BeginBlock -IsSystemUnderTest:$SUT
     }
 
     process
@@ -147,11 +151,7 @@ function Dismount-TrueCrypt
 
     end
     {
-        if($SUT -eq $False) {
-            Pop-Location
-
-            Complete-Transaction
-        }
+        Invoke-EndBlock -IsSystemUnderTest:$SUT
     }
 }
 
@@ -221,33 +221,46 @@ function New-PSTrueCryptContainer
 
         [switch]$Timestamp
     )
-
-    $SubKeyName = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Name
-
-    if(-not ($SubKeyName) )
+    
+    begin
     {
-        $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
+        Invoke-BeginBlock -IsSystemUnderTest:$SUT
+    }
 
-        try
-        {
-            if ($Decision -eq $True)
-            {
-                New-Container -Name $Name -Location $Location -MountLetter $MountLetter -Product $Product -Timestamp
+    process
+    {
+        $SubKeyName = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Name
 
-                Out-Information 'NewContainerOperationSucceeded' -Format $Name
-            }
-            else
-            {
-                Out-Warning 'NewContainerOperationCancelled'
-            }
-        }
-        catch [System.UnauthorizedAccessException]
+        if(-not ($SubKeyName) )
         {
-            # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
-            Out-Error 'UnauthorizedAccessException'
+            $Decision = Get-Confirmation -Message "New-PSTrueCryptContainer will add a new subkey in the following of your registry: HKCU:\SOFTWARE\PSTrueCrypt"
+
+            try
+            {
+                if ($Decision -eq $True)
+                {
+                    New-Container -Name $Name -Location $Location -MountLetter $MountLetter -Product $Product -Timestamp
+
+                    Out-Information 'NewContainerOperationSucceeded' -Format $Name
+                }
+                else
+                {
+                    Out-Warning 'NewContainerOperationCancelled'
+                }
+            }
+            catch [System.UnauthorizedAccessException]
+            {
+                # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
+                Out-Error 'UnauthorizedAccessException'
+            }
+        } else {
+            Out-Warning 'ContainerNameAlreadyExists' -Format $Name
         }
-    } else {
-         Out-Warning 'ContainerNameAlreadyExists' -Format $Name
+    }
+    
+    end
+    {
+        Invoke-EndBlock -IsSystemUnderTest:$SUT
     }
 }
 
@@ -263,6 +276,11 @@ function Remove-PSTrueCryptContainer
         return Get-DynamicParameterValues
     }
     
+    begin
+    {
+        Invoke-BeginBlock -IsSystemUnderTest:$SUT
+    }
+
     process
     {
         try
@@ -312,6 +330,11 @@ function Remove-PSTrueCryptContainer
             Out-Error 'UnknownException'
         }
     }
+
+    end
+    {
+        Invoke-EndBlock -IsSystemUnderTest:$SUT
+    }
 }
 
 
@@ -321,40 +344,42 @@ function Show-PSTrueCryptContainers
     [CmdletBinding()]
     Param ()
 
-    if($SUT -eq $False) {
-        Push-Location
-        
-        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-        
-        Start-Transaction
+    begin
+    {
+        Invoke-BeginBlock -IsSystemUnderTest:$SUT
     }
 
-    try 
+    process 
     {
-        Restart-LogicalDiskCheck
-        
-        $OutVar = Get-RegistrySubKeys | ForEach-Object {
-            Get-ItemProperty $_.PsPath -UseTransaction
-        } | Sort-Object Name
-        
-        if($OutVar) {
-            Format-Table Name, Location, MountLetter, Product, @{Label="Timestamp";Expression={[bool]($_.Timestamp)}}, @{Label="IsMounted";Expression={[bool]($_.IsMounted)}}, @{Label="Last Activity";Expression={[DateTime]($_.LastActivity)}} -AutoSize -InputObject $OutVar
-        } else {
-            Out-Information 'NoPSTrueCryptContainerFound'
+        try 
+        {
+            Restart-LogicalDiskCheck
+            
+            $OutVar = Get-RegistrySubKeys | Read-Container | Sort-Object Name
+            
+            if($OutVar) {
+                Format-Table    @{Label="Name";Expression={($_.Name)}},`
+                                @{Label="Location";Expression={($_.Location)}},`
+                                @{Label="MountLetter";Expression={($_.MountLetter)}},`
+                                @{Label="Product";Expression={($_.Product)}},`
+                                @{Label="Timestamp";Expression={($_.Timestamp)}},`
+                                @{Label="IsMounted";Expression={($_.IsMounted)}},`
+                                @{Label="Last Activity";Expression={[DateTime]($_.LastActivity)}}`
+                                -AutoSize -InputObject $OutVar
+            } else {
+                Out-Information 'NoPSTrueCryptContainerFound'
+            }
+        }
+        catch [System.Security.SecurityException]
+        {
+            #The user does not have the permissions required to delete the key.
+            Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
         }
     }
-    catch [System.Security.SecurityException]
+
+    end
     {
-        #The user does not have the permissions required to delete the key.
-        Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
-    }
-
-    if($SUT -eq $False) {
-        Complete-Transaction
-
-        Pop-Location
-    } else {
-        $OutVar
+        Invoke-EndBlock -IsSystemUnderTest:$SUT
     }
 }
 

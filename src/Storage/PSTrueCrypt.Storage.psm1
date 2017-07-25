@@ -1,3 +1,5 @@
+using module .\Container.psm1
+
 function Get-RegistrySubKeys
 {
     [CmdletBinding()]
@@ -5,19 +7,18 @@ function Get-RegistrySubKeys
     Param
     (
         [Parameter(Mandatory = $False)]
-        [ScriptBlock]$FilterScript = {}
+        [ScriptBlock]$FilterScript
     )
-
-    begin
-    {
-        Invoke-BeginBlock
-    }
 
     process
     {
         try 
         {
-            Get-ChildItem . -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
+            if($FilterScript) {
+                 Get-ChildItem -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
+            } else {
+                Get-ChildItem -Recurse -OutVariable $RegistrySubKeys -UseTransaction
+            }
         }
         catch [System.Security.SecurityException]
         {
@@ -32,8 +33,6 @@ function Get-RegistrySubKeys
 
     end
     {
-        Invoke-EndBlock
-
         $RegistrySubKeys
     }
 }
@@ -50,11 +49,6 @@ function Get-SubKeyNames
         [PsObject]$RegistrySubKeys
     )
 
-    begin
-    {
-        Invoke-BeginBlock
-    }
-
     process
     {
         try 
@@ -70,11 +64,6 @@ function Get-SubKeyNames
         {
 
         }
-    }
-
-    end
-    {
-        Invoke-EndBlock
     }
 }
 
@@ -95,11 +84,6 @@ function Get-SubKeyByPropertyValue
         [Parameter(Mandatory = $False)]
         [string]$Name
     )
-
-    begin
-    {
-        Invoke-BeginBlock
-    }
 
     process
     {
@@ -128,8 +112,6 @@ function Get-SubKeyByPropertyValue
 
     end
     {
-        Invoke-EndBlock
-
         $FoundKey
     }
 }
@@ -151,11 +133,6 @@ function Remove-SubKeyByPropertyValue
         [Parameter(Mandatory = $False)]
         [string]$Name
     )
-
-    begin
-    {
-        Invoke-BeginBlock
-    }
     
     process
     {
@@ -177,34 +154,158 @@ function Remove-SubKeyByPropertyValue
 
         }
     }
+}
+
+function New-Container
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter(Mandatory = $True, Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Location,
+
+        [Parameter(Mandatory = $True, Position = 3)]
+        [ValidatePattern("^[a-zA-Z]$")]
+        [string]$MountLetter,
+
+        [Parameter(Mandatory = $True, Position = 4)]
+        [ValidateSet("TrueCrypt", "VeraCrypt")]
+        [string]$Product,
+
+        [switch]$IsMounted,
+
+        [switch]$Timestamp
+    )
+
+    $Container = [Container]::new()
+    $Container.OpenTrueCryptKey()
+    $Container.SetName($Name)
+    $Container.SetLocation($Location)
+    $Container.SetMountLetter($MountLetter)
+    $Container.SetProduct($Product)
+    $Container.SetIsMounted($IsMounted)
+    $Container.SetTimestamp($Timestamp)
+    $Container.SetSetLastActivity((Get-Date))
+}
+
+function Write-Container
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $False, ValueFromPipeline = $True)]
+        [AllowNull()]
+        [PsObject]$RegistrySubKey,
+
+        [Parameter(Mandatory = $False, 
+         HelpMessage="Enter the generated Id for this container.")]
+        [ValidateNotNullOrEmpty()]
+        [string]$KeyId,
+
+        [Parameter(Mandatory = $False)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter(Mandatory = $False)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Location,
+
+        [Parameter(Mandatory = $False)]
+        [ValidatePattern("^[a-zA-Z]$")]
+        [string]$MountLetter,
+
+        [Parameter(Mandatory = $False)]
+        [ValidateSet("TrueCrypt", "VeraCrypt")]
+        [string]$Product,
+
+        [Parameter(Mandatory = $False)]
+        [ValidatePattern("^[a-zA-Z]$")]
+        [string]$LastMountedUri,
+
+        [Parameter(Mandatory = $False)]
+        [switch]$IsMounted,
+
+        [switch]$Timestamp
+    )
+
+    if($RegistrySubKey -or $KeyId)
+    {
+        $Container = [Container]::new()
+        if($RegistrySubKey) {
+            $Container.SetKey($RegistrySubKey)
+        } elseif ($KeyId) {
+            $Container.SetKeyId($KeyId)
+        }
+
+        $Container.OpenTrueCryptKey()
+
+        if($Name) {
+            $Container.SetName($Name)
+        }
+        
+        if($Location) {
+            $Container.SetLocation($Location)
+        }
+
+        if($MountLetter) {
+            $Container.SetMountLetter($MountLetter)
+        }
+        
+        if($Product) {
+            $Container.SetProduct($Product)
+        }
+ 
+        if($LastMountedUri) {
+            $Container.SetLastMountedUri($LastMountedUri)
+        }
+
+        $Container.SetIsMounted($IsMounted)
+
+        $Container.SetTimestamp($Timestamp)
+
+        # if this is switched (True), that means we dont want to record this activity
+        if($NoActivity -eq $False) {
+            $Container.SetLastActivity( (Get-Date) )
+        }
+    }
+}
+
+function Read-Container
+{
+    [CmdletBinding()]
+    [OutputType([HashTable])]
+    Param
+    (
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
+        [AllowNull()]
+        [PsObject]$RegistrySubKey
+    )
+    process 
+    {
+        if($RegistrySubKey) 
+        {
+            $Container = [Container]::new()
+            $Container.SetKey($RegistrySubKey)
+            $HashTable = $Container.GetHashTable()
+            $HashTable
+        }
+    }
 
     end
     {
-        Invoke-EndBlock
-    }
-}
-
-function Invoke-BeginBlock
-{
-    if($SUT -eq $False) {
-        Push-Location
         
-        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-        
-        Invoke-Transaction
     }
 }
-
-function Invoke-EndBlock
-{
-    if($SUT -eq $False) {
-        Pop-Location
-    
-        Complete-Transaction
-    }
-}
-
 Export-ModuleMember -Function Get-RegistrySubKeys
 Export-ModuleMember -Function Get-SubKeyNames
 Export-ModuleMember -Function Get-SubKeyByPropertyValue
 Export-ModuleMember -Function Remove-SubKeyByPropertyValue
+
+Export-ModuleMember -Function New-Container
+Export-ModuleMember -Function Write-Container
+Export-ModuleMember -Function Read-Container
