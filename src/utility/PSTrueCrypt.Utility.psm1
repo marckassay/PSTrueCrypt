@@ -1,5 +1,8 @@
+using namespace 'System.Management.Automation'
 using module ..\Writer\PSTrueCrypt.Writer.psm1
 using module ..\Storage\PSTrueCrypt.Storage.psm1
+
+$StorageLocation = 'HKCU:\SOFTWARE\PSTrueCrypt'
 
 enum OSVerification {
     TrueCryptFound = 1
@@ -231,7 +234,11 @@ Export-ModuleMember -Function Restart-LogicalDiskCheck
 
 function Get-DynamicParameterValues
 {
-    $ContainerNames = Get-RegistrySubKeys | Get-SubKeyNames
+    Start-Transaction
+
+    $ContainerNames = Get-RegistrySubKeys -Path $StorageLocation | Get-SubKeyNames
+    
+    Complete-Transaction
 
     $ParamAttrib = New-Object ParameterAttribute
     $ParamAttrib.Mandatory = $True
@@ -258,11 +265,11 @@ function Invoke-BeginBlock
     )
 
     if($IsSystemUnderTest.ToBool() -eq $False) {
+        Start-Transaction
+        
         Push-Location
         
-        Set-Location -Path HKCU:\SOFTWARE\PSTrueCrypt
-        
-        Start-Transaction
+        Set-Location -Path $StorageLocation
     }
 }
 Export-ModuleMember -Function Invoke-BeginBlock

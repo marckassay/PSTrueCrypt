@@ -1,3 +1,5 @@
+using module ..\Storage\PSTrueCrypt.Storage.psm1
+
 function Start-CimLogicalDiskWatch
 {
     Param
@@ -5,7 +7,7 @@ function Start-CimLogicalDiskWatch
         [Parameter(Mandatory = $True, Position = 1, ValueFromPipelineByPropertyName=$True)]
         [AllowNull()]
         [Alias("PSChildName")]
-        [String]$SubKeyName,
+        [String]$KeyId,
 
         [ValidateSet("Creation","Deletion")]
         [Parameter(Mandatory = $True, Position = 2)]
@@ -19,8 +21,8 @@ function Start-CimLogicalDiskWatch
 
     process
     {
-        if($SubKeyName) {
-            $UniqueLabel = $SubKeyName.Substring(0,8)
+        if($KeyId) {
+            $UniqueLabel = $KeyId.Substring(0,8)
         
             Stop-CimLogicalDiskWatch $UniqueLabel $InstanceType
 
@@ -31,10 +33,10 @@ function Start-CimLogicalDiskWatch
             # TODO: temp hack until I can retrieve DeviceID inside the Action block for Register-CimIndicationEvent.  this
             # problematic if the mounting executing changes uri from MountedLetter.  For instance if MountedLetter is already
             # in use and it changes uri.
-            $PredeterminedDeviceId = (Get-PSTrueCryptContainers -FilterScript {$_.PSChildName -eq $SubKeyName} | Get-ItemProperty -Name MountLetter).MountLetter
+            $PredeterminedDeviceId = (Get-RegistrySubKeys -FilterScript {$_.PSChildName -eq $KeyId} | Read-Container).MountLetter
 
-        $void = Register-CimIndicationEvent -Query $Filter -Action { 
-                $KeyId = $Event.MessageData.KeyId # f9910b39-dc58-4a34-be4b-c4b61df3799b
+            Register-CimIndicationEvent -Query $Filter -Action { 
+                $ReturnedKeyId = $Event.MessageData.KeyId # f9910b39-dc58-4a34-be4b-c4b61df3799b
                 $DeviceId = $Event.MessageData.LastMountedUri
                 $IsMounted = $Event.SourceIdentifier.Contains('Creation') # PSTrueCrypt_Creation_Watcher_f9910b39
                 $LastActivity = $Event.TimeGenerated # 6/21/2017 5:10:15 PM
@@ -52,13 +54,14 @@ function Start-CimLogicalDiskWatch
                 Write-Host ($d | Format-List -Force | Out-String)
                 Write-Host ($e | Format-List -Force | Out-String)
                 #>
-                Set-PSTrueCryptContainer -SubKeyName $KeyId -IsMounted $IsMounted -LastActivity $LastActivity -LastMountedUri $DeviceId
-            } -SourceIdentifier $SourceId -MessageData @{ KeyId=$SubKeyName; LastMountedUri=$PredeterminedDeviceId } -MaxTriggerCount 1 -OperationTimeoutSec 35
+                Write-Container -KeyId $ReturnedKeyId -IsMounted $IsMounted -LastActivity $LastActivity -LastMountedUri $DeviceId
+
+            } -SourceIdentifier $SourceId -MessageData @{ KeyId=$KeyId; LastMountedUri=$PredeterminedDeviceId } -MaxTriggerCount 1 -OperationTimeoutSec 35 | Out-Null
         }
     }
 
     end
-    {
+    { 
 
     }
 }
@@ -69,7 +72,7 @@ function Stop-CimLogicalDiskWatch
     (
         [Parameter(Mandatory = $False, Position = 1)]
         [ValidateNotNullOrEmpty()]
-        [string]$SubKeyName,
+        [string]$KeyId,
 
         [Parameter(Mandatory = $False)]
         [ValidateNotNullOrEmpty()]
@@ -80,8 +83,8 @@ function Stop-CimLogicalDiskWatch
         [String]$InstanceType
     )
 
-    if($SubKeyName) {
-        $UniqueLabel = $SubKeyName.Substring(0,8)
+    if($KeyId) {
+        $UniqueLabel = $KeyId.Substring(0,8)
     }
     
     $SourceId = "PSTrueCrypt_"+$InstanceType+"_Watcher_"+$UniqueLabel

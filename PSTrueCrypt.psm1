@@ -24,7 +24,7 @@ function Mount-TrueCrypt
     {
         return Get-DynamicParameterValues
     }
-
+    
     begin
     {
         Invoke-BeginBlock -IsSystemUnderTest:$SUT
@@ -141,7 +141,7 @@ function Dismount-TrueCrypt
     {
         $Container = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
         
-        Start-CIMLogicalDiskWatch $Container.KeyId -InstanceType 'Deletion'
+        Start-CimLogicalDiskWatch $Container.KeyId -InstanceType 'Deletion'
 
         # construct arguments and execute expression...
         [string]$Expression = Get-TrueCryptDismountParams -Drive $Container.MountLetter -Product $Container.Product
@@ -289,7 +289,7 @@ function Remove-PSTrueCryptContainer
 
             if ($Decision -eq $True)
             {
-                Remove-SubKeyByPropertyValue -Name $PSBoundParameters.Name
+                Get-RegistrySubKeys | Remove-SubKeyByPropertyValue -Name $PSBoundParameters.Name
 
                 Out-Information 'ContainerSettingsDeleted'
             } 

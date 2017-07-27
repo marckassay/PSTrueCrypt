@@ -7,17 +7,24 @@ function Get-RegistrySubKeys
     Param
     (
         [Parameter(Mandatory = $False)]
-        [ScriptBlock]$FilterScript
+        [ScriptBlock]$FilterScript,
+
+        [Parameter(Mandatory = $False)]
+        [string]$Path
     )
 
     process
     {
         try 
         {
+            if(-not $Path) {
+                $Path = Get-Location
+            }
+
             if($FilterScript) {
-                 Get-ChildItem -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
+                Get-ChildItem -Path $Path -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
             } else {
-                Get-ChildItem -Recurse -OutVariable $RegistrySubKeys -UseTransaction
+                Get-ChildItem -Path $Path -Recurse -OutVariable $RegistrySubKeys -UseTransaction
             }
         }
         catch [System.Security.SecurityException]
@@ -53,7 +60,9 @@ function Get-SubKeyNames
     {
         try 
         {
-            $RegistrySubKeys | Get-ItemPropertyValue -Name Name -UseTransaction -PipelineVariable $Names
+            if($RegistrySubKeys) {
+                $RegistrySubKeys | Get-ItemPropertyValue -Name Name -PipelineVariable $Names
+            }
         }
         catch [System.Security.SecurityException]
         {
@@ -82,20 +91,30 @@ function Get-SubKeyByPropertyValue
         [string]$Id,
 
         [Parameter(Mandatory = $False)]
-        [string]$Name
+        [string]$Name,
+
+        [Parameter(Mandatory = $False)]
+        [string]$MountLetter
     )
 
     process
     {
         try 
         {
-            if($Id) {
-                if(($RegistrySubKeys | Get-ItemPropertyValue -Path $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
-                    $FoundKey = $_
-                }
-            } elseif($Name) {
-                if(($RegistrySubKeys | Get-ItemPropertyValue -Path $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
-                    $FoundKey = $_
+            if($RegistrySubKeys)
+            {
+                if($Id) {
+                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name PSChildName -UseTransaction) -eq $Id) {
+                        $FoundKey = $_
+                    }
+                } elseif($Name) {
+                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name Name -UseTransaction) -eq $Name) {
+                        $FoundKey = $_
+                    }
+                } elseif($MountLetter) {
+                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name MountLetter -UseTransaction) -eq $MountLetter) {
+                        $FoundKey = $_
+                    }
                 }
             }
         }
