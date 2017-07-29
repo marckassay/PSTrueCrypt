@@ -24,7 +24,7 @@ function Get-RegistrySubKeys
             if($FilterScript) {
                 Get-ChildItem -Path $Path -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
             } else {
-                Get-ChildItem -Path $Path -Recurse -OutVariable $RegistrySubKeys -UseTransaction
+                Get-ChildItem $Path -UseTransaction
             }
         }
         catch [System.Security.SecurityException]
@@ -157,8 +157,6 @@ function Remove-SubKeyByPropertyValue
     {
         try 
         {
-            $PSTrueCryptKey = (Get-Location -UseTransaction).Drive.CurrentLocation
-
             if($RegistrySubKeys)
             {
                 if($Id) {
@@ -167,10 +165,7 @@ function Remove-SubKeyByPropertyValue
                     }
                 } elseif($Name) {
                     if((Get-ItemPropertyValue $_.PSChildName -Name Name) -eq $Name) {
-
-                        Remove-Item $_.PSChildName
-
-                        return
+                        $RegistrySubKeys | Remove-Item -UseTransaction
                     }
                 }
             }
