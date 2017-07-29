@@ -22,7 +22,7 @@ function Get-RegistrySubKeys
             }
 
             if($FilterScript) {
-                Get-ChildItem -Path $Path -Recurse -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
+                Get-ChildItem $Path -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
             } else {
                 Get-ChildItem $Path -UseTransaction
             }
@@ -208,8 +208,6 @@ function New-Container
         [ValidateSet("TrueCrypt", "VeraCrypt")]
         [string]$Product,
 
-        [switch]$IsMounted,
-
         [switch]$Timestamp
     )
 
@@ -219,7 +217,6 @@ function New-Container
     $Container.SetLocation($Location)
     $Container.SetMountLetter($MountLetter)
     $Container.SetProduct($Product)
-    $Container.SetIsMounted($IsMounted)
     $Container.SetTimestamp($Timestamp)
 }
 
@@ -257,8 +254,10 @@ function Write-Container
         [ValidatePattern("^[a-zA-Z]$")]
         [string]$LastMountedUri,
 
-        [Parameter(Mandatory = $False)]
-        [switch]$IsMounted,
+        [Parameter(Mandatory = $True)]
+        [bool]$IsMounted,
+
+        [switch]$NoActivity,
 
         [switch]$Timestamp
     )
@@ -271,8 +270,6 @@ function Write-Container
         } elseif ($KeyId) {
             $Container.SetKeyId($KeyId)
         }
-
-        $Container.OpenSubKey()
 
         if($Name) {
             $Container.SetName($Name)
@@ -302,8 +299,6 @@ function Write-Container
         if($NoActivity -eq $False) {
             $Container.SetLastActivity( (Get-Date) )
         }
-
-         # $Container.CloseSubKey()
     }
 }
 

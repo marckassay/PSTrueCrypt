@@ -119,7 +119,7 @@ class Container
         if(-not $this.IsNewSubKey) {
             Set-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
         } else {
-            New-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value ($False.GetHashCode()) -PropertyType DWord -UseTransaction 
+            New-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
         }
     }
 
@@ -157,21 +157,23 @@ class Container
     }
 
     [void] OpenSubKey () {
-        $PSTrueCryptKey = (Get-Location).Drive.CurrentLocation
 
-        [RegistryKey]$Key = [RegistryKey]::CurrentUser.OpenSubKey(($PSTrueCryptKey+'\'+$this.GetKeyId()), [RegistryKeyPermissionCheck]::ReadWriteSubTree)
+        Use-Transaction {
+            $PSTrueCryptKey = (Get-Location -UseTransaction).Drive.CurrentLocation
 
+            [RegistryKey]$Key = [RegistryKey]::CurrentUser.OpenSubKey(($PSTrueCryptKey+'\'+$this.GetKeyId()), [RegistryKeyPermissionCheck]::ReadWriteSubTree)
 
-        $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
-        [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
-        [InheritanceFlags]"ObjectInherit,ContainerInherit",
-        [PropagationFlags]"None",
-        [AccessControlType]"Allow")
+            $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
+            [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
+            [InheritanceFlags]"ObjectInherit,ContainerInherit",
+            [PropagationFlags]"None",
+            [AccessControlType]"Allow")
 
-        $AccessControl = $Key.GetAccessControl()
-        $AccessControl.SetAccessRule($AccessRule)
-        
-        $Key.SetAccessControl($AccessControl)
+            $AccessControl = $Key.GetAccessControl()
+            $AccessControl.SetAccessRule($AccessRule)
+            
+            $Key.SetAccessControl($AccessControl)
+        } -UseTransaction
     }
 
     [void] NewSubKey () {
@@ -182,6 +184,7 @@ class Container
         $this.IsNewSubKey = $True
 
         $this.SetLastMountedUri("")
+        $this.SetIsMounted($False)
         $this.SetLastActivity((Get-Date))
     }
 }

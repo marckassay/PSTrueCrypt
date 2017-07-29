@@ -228,7 +228,7 @@ function Restart-LogicalDiskCheck
     # not attached.  If so, this will set the container's IsMounted to false...
     Get-RegistrySubKeys -FilterScript { [bool]($_.getValue('IsMounted')) -eq $True -and `
                              ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) 
-                        } | Write-Container -IsMounted:$False
+                        } | Write-Container -IsMounted $False
 }
 Export-ModuleMember -Function Restart-LogicalDiskCheck
 
