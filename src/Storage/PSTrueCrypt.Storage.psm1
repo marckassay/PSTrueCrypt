@@ -40,7 +40,7 @@ function Get-RegistrySubKeys
 
     end
     {
-        $RegistrySubKeys
+
     }
 }
 
@@ -157,10 +157,22 @@ function Remove-SubKeyByPropertyValue
     {
         try 
         {
-            if($Id) {
-                $RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Id | Remove-Item -Path $_.PSPath -Recurse
-            } elseif($Name) {
-                $RegistrySubKeys | Get-SubKeyByPropertyValue -Name $Name | Remove-Item -Path $_.PSPath -Recurse
+            $PSTrueCryptKey = (Get-Location -UseTransaction).Drive.CurrentLocation
+
+            if($RegistrySubKeys)
+            {
+                if($Id) {
+                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name PSChildName ) -eq $Id) {
+                         Remove-Item .\$_.PSChildName -UseTransaction -Recurse -Force
+                    }
+                } elseif($Name) {
+                    if((Get-ItemPropertyValue $_.PSChildName -Name Name) -eq $Name) {
+
+                        Remove-Item $_.PSChildName
+
+                        return
+                    }
+                }
             }
         }
         catch [System.Security.SecurityException]
@@ -172,6 +184,11 @@ function Remove-SubKeyByPropertyValue
         {
 
         }
+    }
+
+    end
+    {
+       
     }
 }
 
@@ -202,14 +219,13 @@ function New-Container
     )
 
     $Container = [Container]::new()
-    $Container.OpenTrueCryptKey()
+    $Container.NewSubKey()
     $Container.SetName($Name)
     $Container.SetLocation($Location)
     $Container.SetMountLetter($MountLetter)
     $Container.SetProduct($Product)
     $Container.SetIsMounted($IsMounted)
     $Container.SetTimestamp($Timestamp)
-    $Container.SetSetLastActivity((Get-Date))
 }
 
 function Write-Container
@@ -261,7 +277,7 @@ function Write-Container
             $Container.SetKeyId($KeyId)
         }
 
-        $Container.OpenTrueCryptKey()
+        $Container.OpenSubKey()
 
         if($Name) {
             $Container.SetName($Name)
@@ -291,6 +307,8 @@ function Write-Container
         if($NoActivity -eq $False) {
             $Container.SetLastActivity( (Get-Date) )
         }
+
+         # $Container.CloseSubKey()
     }
 }
 

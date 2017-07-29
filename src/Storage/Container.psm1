@@ -1,10 +1,13 @@
+using namespace Microsoft.PowerShell.Commands.Internal
 using namespace Microsoft.Win32
 using namespace System.Management.Automation
-using namespace Microsoft.PowerShell.Commands.Internal
+using namespace System.Security.AccessControl
 
 class Container
 {
     hidden [TransactedRegistryKey] $SubKey
+
+    hidden [bool] $IsNewSubKey = $False
 
     [TransactedRegistryKey] GetKey () {
         return $this.SubKey
@@ -34,7 +37,7 @@ class Container
 
     [void] SetName ([string]$Value) {
         if($Value -ne $null) {
-            if($this.GetKeyPath()) {
+            if(-not $this.IsNewSubKey) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name Name -Value $Value -PropertyType String -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyPath() -Name Name -Value $Value -PropertyType String -UseTransaction 
@@ -48,7 +51,7 @@ class Container
 
     [void] SetLocation ([string]$Value) {
         if($Value -ne $null) {
-            if($this.GetKeyPath()) {
+            if(-not $this.IsNewSubKey) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name Location -Value $Value -PropertyType String -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyPath() -Name Location -Value $Value -PropertyType String -UseTransaction 
@@ -62,7 +65,7 @@ class Container
 
     [void] SetMountLetter ([string]$Value) {
         if($Value -ne $null) {
-            if($this.GetKeyPath()) {
+            if(-not $this.IsNewSubKey) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name MountLetter -Value $Value -PropertyType String -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyPath() -Name MountLetter -Value $Value -PropertyType String -UseTransaction 
@@ -75,12 +78,10 @@ class Container
     }
 
     [void] SetLastMountedUri ([string]$Value) {
-        if($Value -ne $null) {
-            if($this.GetKeyPath()) {
-                Set-ItemProperty -Path $this.GetKeyPath() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
-            } else {
-                New-ItemProperty -Path $this.GetKeyPath() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
-            }
+        if(-not $this.IsNewSubKey) {
+            Set-ItemProperty -Path $this.GetKeyPath() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
+        } else {
+            New-ItemProperty -Path $this.GetKeyPath() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
         }
     }
 
@@ -90,7 +91,7 @@ class Container
 
     [void] SetProduct ([string]$Value) {
         if($Value -ne $null) {
-            if($this.GetKeyPath()) {
+            if(-not $this.IsNewSubKey) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name Product -Value $Value -PropertyType String -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyPath() -Name Product -Value $Value -PropertyType String -UseTransaction 
@@ -103,12 +104,10 @@ class Container
     }
 
     [void] SetTimestamp ([bool]$Value) {
-        if($Value -eq $True) {
-            if($this.GetKeyPath()) {
-                Set-ItemProperty -Path $this.GetKeyPath() -Name Timestamp -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
-            } else {
-                New-ItemProperty -Path $this.GetKeyPath() -Name Timestamp -Value ($False.GetHashCode()) -PropertyType DWord -UseTransaction 
-            }
+        if(-not $this.IsNewSubKey) {
+            Set-ItemProperty -Path $this.GetKeyPath() -Name Timestamp -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
+        } else {
+            New-ItemProperty -Path $this.GetKeyPath() -Name Timestamp -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
         }
     }
 
@@ -117,12 +116,10 @@ class Container
    }
 
     [void] SetIsMounted ([bool]$Value) {
-        if($Value -eq $True) {
-            if($this.GetKeyPath()) {
-                Set-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
-            } else {
-                New-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value ($False.GetHashCode()) -PropertyType DWord -UseTransaction 
-            }
+        if(-not $this.IsNewSubKey) {
+            Set-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
+        } else {
+            New-ItemProperty -Path $this.GetKeyPath() -Name IsMounted -Value ($False.GetHashCode()) -PropertyType DWord -UseTransaction 
         }
     }
 
@@ -132,7 +129,7 @@ class Container
 
     [void] SetLastActivity ([string]$Value) {
         if($Value -ne $null) {
-            if($this.GetKeyPath()) {
+            if(-not $this.IsNewSubKey) {
                 Set-ItemProperty -Path $this.GetKeyPath() -Name LastActivity -Value $Value -PropertyType String -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyPath() -Name LastActivity -Value $Value -PropertyType String -UseTransaction 
@@ -159,26 +156,17 @@ class Container
         return $hash
     }
 
-    [void] OpenTrueCryptKey () {
+    [void] OpenSubKey () {
+        $PSTrueCryptKey = (Get-Location).Drive.CurrentLocation
+
+        [RegistryKey]$Key = [RegistryKey]::CurrentUser.OpenSubKey(($PSTrueCryptKey+'\'+$this.GetKeyId()), [RegistryKeyPermissionCheck]::ReadWriteSubTree)
+
+
         $AccessRule = New-Object System.Security.AccessControl.RegistryAccessRule (
-            [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
-            [System.Security.AccessControl.InheritanceFlags]"ObjectInherit,ContainerInherit",
-            [System.Security.AccessControl.PropagationFlags]"None",
-            [System.Security.AccessControl.AccessControlType]"Allow")
-
-        $GetRootDirectory = (Get-Location).Drive.CurrentLocation
-
-        [Microsoft.Win32.RegistryKey]$Key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey(($GetRootDirectory+'\'+$this.GetKeyId()),
-            [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
-        
-        if(-not $Key) {
-            $Id = New-Guid | Select-Object -ExpandProperty Guid
-
-            [Microsoft.Win32.RegistryKey]$Key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey(($GetRootDirectory+'\'+$Id),
-                [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
-
-            $this.SubKey = $Key
-        }
+        [System.Security.Principal.WindowsIdentity]::GetCurrent().Name, "FullControl",
+        [InheritanceFlags]"ObjectInherit,ContainerInherit",
+        [PropagationFlags]"None",
+        [AccessControlType]"Allow")
 
         $AccessControl = $Key.GetAccessControl()
         $AccessControl.SetAccessRule($AccessRule)
@@ -186,7 +174,14 @@ class Container
         $Key.SetAccessControl($AccessControl)
     }
 
-    [void] Delete () {
-        Remove-Item $this.GetKeyPath() -Recurse
+    [void] NewSubKey () {
+        $Id = New-Guid | Select-Object -ExpandProperty Guid
+
+        $this.SubKey = New-Item -Name $Id -UseTransaction
+
+        $this.IsNewSubKey = $True
+
+        $this.SetLastMountedUri("")
+        $this.SetLastActivity((Get-Date))
     }
 }

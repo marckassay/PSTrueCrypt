@@ -285,7 +285,7 @@ function Remove-PSTrueCryptContainer
     {
         try
         {
-            $Decision = Get-Confirmation -Message "Remove-PSTrueCryptContainer will remove the $PSBoundParameters.Name"+" from your registry: HKCU:\SOFTWARE\PSTrueCrypt"
+            $Decision = Get-Confirmation -Message ("Remove-PSTrueCryptContainer will remove the "+$PSBoundParameters.Name+" from your registry: HKCU:\SOFTWARE\PSTrueCrypt")
 
             if ($Decision -eq $True)
             {
