@@ -217,7 +217,7 @@ function New-Container
     $Container.SetLocation($Location)
     $Container.SetMountLetter($MountLetter)
     $Container.SetProduct($Product)
-    $Container.SetTimestamp($Timestamp)
+    $Container.SetTimestamp($Timestamp.IsPresent)
 }
 
 function Write-Container
@@ -233,6 +233,9 @@ function Write-Container
          HelpMessage="Enter the generated Id for this container.")]
         [ValidateNotNullOrEmpty()]
         [string]$KeyId,
+
+        [Parameter(Mandatory = $True)]
+        [bool]$IsMounted,
 
         [Parameter(Mandatory = $False)]
         [ValidateNotNullOrEmpty()]
@@ -254,16 +257,19 @@ function Write-Container
         [ValidatePattern("^[a-zA-Z]$")]
         [string]$LastMountedUri,
 
-        [Parameter(Mandatory = $True)]
-        [bool]$IsMounted,
-
         [switch]$NoActivity,
 
-        [switch]$Timestamp
+        [switch]$Timestamp,
+
+        [switch]$IndependentTransaction
     )
 
     if($RegistrySubKey -or $KeyId)
     {
+        if($IndependentTransaction.IsPresent) {
+            Invoke-BeginBlock -IndependentTransaction:$IndependentTransaction
+        }
+
         $Container = [Container]::new()
         if($RegistrySubKey) {
             $Container.SetKey($RegistrySubKey)
@@ -293,11 +299,17 @@ function Write-Container
 
         $Container.SetIsMounted($IsMounted)
 
-        $Container.SetTimestamp($Timestamp)
+        if($Timestamp.IsPresent) {
+            $Container.SetTimestamp($True)
+        }
 
         # if this is switched (True), that means we dont want to record this activity
-        if($NoActivity -eq $False) {
+        if($NoActivity.IsPresent -eq $False) {
             $Container.SetLastActivity( (Get-Date) )
+        }
+
+        if($IndependentTransaction.IsPresent) {
+            Invoke-EndBlock 
         }
     }
 }

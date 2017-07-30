@@ -4,8 +4,7 @@ function Start-CimLogicalDiskWatch
 {
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1, ValueFromPipelineByPropertyName=$True)]
-        [AllowNull()]
+        [Parameter(Mandatory = $True, Position = 1)]
         [Alias("PSChildName")]
         [String]$KeyId,
 
@@ -54,8 +53,8 @@ function Start-CimLogicalDiskWatch
                 Write-Host ($d | Format-List -Force | Out-String)
                 Write-Host ($e | Format-List -Force | Out-String)
                 #>
-                Write-Container -KeyId $ReturnedKeyId -IsMounted $IsMounted -LastActivity $LastActivity -LastMountedUri $DeviceId
-
+                #Write-Host "Wrie-Host -KeyId $ReturnedKeyId -IsMounted $IsMounted -LastMountedUri $DeviceId "
+                Write-Container -KeyId $ReturnedKeyId -IsMounted $IsMounted -LastMountedUri $DeviceId -IndependentTransaction
             } -SourceIdentifier $SourceId -MessageData @{ KeyId=$KeyId; LastMountedUri=$PredeterminedDeviceId } -MaxTriggerCount 1 -OperationTimeoutSec 35 | Out-Null
         }
     }

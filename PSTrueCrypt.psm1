@@ -239,7 +239,7 @@ function New-PSTrueCryptContainer
             {
                 if ($Decision -eq $True)
                 {
-                    New-Container -Name $Name -Location $Location -MountLetter $MountLetter -Product $Product -Timestamp
+                    New-Container -Name $Name -Location $Location -MountLetter $MountLetter -Product $Product -Timestamp:$Timestamp.IsPresent
 
                     Out-Information 'NewContainerOperationSucceeded' -Format $Name
                 }

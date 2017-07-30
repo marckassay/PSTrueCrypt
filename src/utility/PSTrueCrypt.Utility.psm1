@@ -261,11 +261,13 @@ function Invoke-BeginBlock
     [CmdletBinding()]
     Param
     (
-        [switch]$IsSystemUnderTest
+        [switch]$IsSystemUnderTest,
+
+        [switch]$IndependentTransaction
     )
 
     if($IsSystemUnderTest.ToBool() -eq $False) {
-        Start-Transaction
+        Start-Transaction -Independent:$IndependentTransaction
         
         Push-Location
         

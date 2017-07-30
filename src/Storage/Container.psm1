@@ -38,7 +38,7 @@ class Container
     [void] SetName ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name Name -Value $Value -PropertyType String -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name Name -Value $Value -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyId() -Name Name -Value $Value -PropertyType String -UseTransaction 
             }
@@ -52,7 +52,7 @@ class Container
     [void] SetLocation ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name Location -Value $Value -PropertyType String -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name Location -Value $Value -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyId() -Name Location -Value $Value -PropertyType String -UseTransaction 
             }
@@ -66,7 +66,7 @@ class Container
     [void] SetMountLetter ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name MountLetter -Value $Value -PropertyType String -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name MountLetter -Value $Value -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyId() -Name MountLetter -Value $Value -PropertyType String -UseTransaction 
             }
@@ -79,7 +79,7 @@ class Container
     }
     [void] SetLastMountedUri ([string]$Value) {
         if(-not $this.IsNewSubKey) {
-            Set-ItemProperty -Path $this.GetKeyId() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
+            Set-ItemProperty -Path $this.GetKeyId() -Name LastMountedUri -Value $Value -UseTransaction 
         } else {
             New-ItemProperty -Path $this.GetKeyId() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
         }
@@ -92,7 +92,7 @@ class Container
     [void] SetProduct ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name Product -Value $Value -PropertyType String -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name Product -Value $Value -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyId() -Name Product -Value $Value -PropertyType String -UseTransaction 
             }
@@ -105,7 +105,7 @@ class Container
     }
     [void] SetTimestamp ([bool]$Value) {
         if(-not $this.IsNewSubKey) {
-            Set-ItemProperty -Path $this.GetKeyId() -Name Timestamp -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
+            Set-ItemProperty -Path $this.GetKeyId() -Name Timestamp -Value ($Value.GetHashCode()) -UseTransaction 
         } else {
             New-ItemProperty -Path $this.GetKeyId() -Name Timestamp -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
         }
@@ -117,7 +117,7 @@ class Container
     }
     [void] SetIsMounted ([bool]$Value) {
         if(-not $this.IsNewSubKey) {
-            Set-ItemProperty -Path $this.GetKeyId() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
+            Set-ItemProperty -Path $this.GetKeyId() -Name IsMounted -Value ($Value.GetHashCode()) -UseTransaction 
         } else {
             New-ItemProperty -Path $this.GetKeyId() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
         }
@@ -130,7 +130,7 @@ class Container
     [void] SetLastActivity ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name LastActivity -Value $Value -PropertyType String -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name LastActivity -Value $Value -UseTransaction 
             } else {
                 New-ItemProperty -Path $this.GetKeyId() -Name LastActivity -Value $Value -PropertyType String -UseTransaction 
             }
