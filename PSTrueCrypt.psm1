@@ -35,7 +35,6 @@ function Mount-TrueCrypt
         try 
         {
             $Container = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
-            Write-Container
         }
         catch [ItemNotFoundException]
         {
@@ -118,7 +117,7 @@ function Mount-TrueCrypt
 
     end
     {
-      # Invoke-EndBlock -IsSystemUnderTest:$SUT
+        Invoke-EndBlock -IsSystemUnderTest:$SUT
     }
 }
 
