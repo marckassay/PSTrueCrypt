@@ -267,7 +267,7 @@ function Invoke-BeginBlock
     )
 
     if($IsSystemUnderTest.ToBool() -eq $False) {
-        Start-Transaction #-Independent:$UseIndependentTransaction.IsPresent
+        Start-Transaction -Independent:$UseIndependentTransaction.IsPresent
         
         Push-Location
         
@@ -285,7 +285,7 @@ function Invoke-EndBlock
     )
 
     if($IsSystemUnderTest.ToBool() -eq $False) {
-       # Pop-Location
+        Pop-Location
     
         Complete-Transaction
     }

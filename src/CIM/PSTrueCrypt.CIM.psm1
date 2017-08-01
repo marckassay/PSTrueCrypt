@@ -24,8 +24,15 @@ function Start-CimLogicalDiskWatch
             $IsMounted = $Event.SourceIdentifier.Contains('Creation') # PSTrueCrypt_Creation_Watcher_f9910b39
             $DeviceId = $Event.MessageData.LastMountedUri # D
             #$LastActivity = $Event.TimeGenerated # 6/21/2017 5:10:15 PM
-            Start-Transaction -Independent
+
+            $StorageLocation = 'HKCU:\SOFTWARE\PSTrueCrypt'
+            Start-Transaction
+            Push-Location
+            Set-Location -Path $StorageLocation
+
             Get-RegistrySubKeys -FilterScript { $_.PSChildName -eq $ReturnedKeyId } | Write-Container -IsMounted $IsMounted -LastMountedUri $DeviceId
+
+            Pop-Location
             Complete-Transaction
         }
 
@@ -36,7 +43,6 @@ function Start-CimLogicalDiskWatch
         # in use and it changes uri.
         $PredeterminedDeviceId = (Get-RegistrySubKeys -FilterScript {$_.PSChildName -eq $KeyId} | Read-Container).MountLetter
 
-        Start-Sleep -Milliseconds 6000
         Register-CimIndicationEvent -Query $Filter `
                                     -Action $Action `
                                     -SourceIdentifier $SourceId `
