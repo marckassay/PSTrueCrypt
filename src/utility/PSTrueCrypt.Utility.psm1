@@ -226,7 +226,7 @@ function Restart-LogicalDiskCheck
 {
     # Enumerates thru all containers that have 'IsMounted' set to true and who's LastMountedUri drive is now
     # not attached.  If so, this will set the container's IsMounted to false...
-    Get-RegistrySubKeys -FilterScript { [bool]($_.getValue('IsMounted')) -eq $True -and `
+    Get-RegistrySubKeys -FilterScript { [bool](($_.getValue('IsMounted')) -eq $True) -and `
                              ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) 
                         } | Write-Container -IsMounted $False
 }
@@ -285,7 +285,7 @@ function Invoke-EndBlock
     )
 
     if($IsSystemUnderTest.ToBool() -eq $False) {
-        Pop-Location
+       # Pop-Location
     
         Complete-Transaction
     }

@@ -266,12 +266,6 @@ function Write-Container
 
     begin
     {
-    Write-Host ">>> begin"
-    Write-Host ">>> $RegistrySubKey"
-    Write-Host ">>> $IsMounted"
-    Write-Host ">>> $LastMountedUri"
-    Write-Host ">>> "$UseIndependentTransaction.IsPresent
-
         if($UseIndependentTransaction.IsPresent) {
             Invoke-BeginBlock -IndependentTransaction:$IndependentTransaction
         }
@@ -279,12 +273,6 @@ function Write-Container
 
     process
     {
-
-    Write-Host ">>> process"
-    Write-Host ">>> $RegistrySubKey"
-    Write-Host ">>> $IsMounted"
-    Write-Host ">>> $LastMountedUri"
-
         if($RegistrySubKey -or $KeyId)
         {
             $Container = [Container]::new()
