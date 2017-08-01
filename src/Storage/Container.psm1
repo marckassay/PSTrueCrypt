@@ -7,12 +7,12 @@ class Container
 {
     hidden [bool] $IsNewSubKey = $False
 
-    hidden [TransactedRegistryKey] $SubKey
+    hidden [RegistryKey] $SubKey
 
-    [TransactedRegistryKey] GetKey () {
+    [RegistryKey] GetKey () {
         return $this.SubKey
     }
-    [void] SetKey ([TransactedRegistryKey]$Value) {
+    [void] SetKey ([RegistryKey]$Value) {
         $this.SubKey = $Value
     }
 
@@ -33,106 +33,106 @@ class Container
 
 
     [string] GetName () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Name -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Name 
     }
     [void] SetName ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name Name -Value $Value -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name Name -Value $Value  
             } else {
-                New-ItemProperty -Path $this.GetKeyId() -Name Name -Value $Value -PropertyType String -UseTransaction 
+                New-ItemProperty -Path $this.GetKeyId() -Name Name -Value $Value -PropertyType String  
             }
         } 
     }
 
 
     [string] GetLocation () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Location -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Location 
     }
     [void] SetLocation ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name Location -Value $Value -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name Location -Value $Value  
             } else {
-                New-ItemProperty -Path $this.GetKeyId() -Name Location -Value $Value -PropertyType String -UseTransaction 
+                New-ItemProperty -Path $this.GetKeyId() -Name Location -Value $Value -PropertyType String  
             }
         }
     }
 
 
     [string] GetMountLetter () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name MountLetter -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name MountLetter 
     }
     [void] SetMountLetter ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name MountLetter -Value $Value -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name MountLetter -Value $Value  
             } else {
-                New-ItemProperty -Path $this.GetKeyId() -Name MountLetter -Value $Value -PropertyType String -UseTransaction 
+                New-ItemProperty -Path $this.GetKeyId() -Name MountLetter -Value $Value -PropertyType String  
             }
         }
     }
 
 
     [string] GetLastMountedUri () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name LastMountedUri -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name LastMountedUri 
     }
     [void] SetLastMountedUri ([string]$Value) {
         if(-not $this.IsNewSubKey) {
-            Set-ItemProperty -Path $this.GetKeyId() -Name LastMountedUri -Value $Value -UseTransaction 
+            Set-ItemProperty -Path $this.GetKeyId() -Name LastMountedUri -Value $Value  
         } else {
-            New-ItemProperty -Path $this.GetKeyId() -Name LastMountedUri -Value $Value -PropertyType String -UseTransaction 
+            New-ItemProperty -Path $this.GetKeyId() -Name LastMountedUri -Value $Value -PropertyType String  
         }
     }
 
 
     [string] GetProduct () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Product -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Product 
     }
     [void] SetProduct ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name Product -Value $Value -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name Product -Value $Value  
             } else {
-                New-ItemProperty -Path $this.GetKeyId() -Name Product -Value $Value -PropertyType String -UseTransaction 
+                New-ItemProperty -Path $this.GetKeyId() -Name Product -Value $Value -PropertyType String  
             }
         }
     }
 
 
     [bool] GetTimestamp () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Timestamp -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name Timestamp 
     }
     [void] SetTimestamp ([bool]$Value) {
         if(-not $this.IsNewSubKey) {
-            Set-ItemProperty -Path $this.GetKeyId() -Name Timestamp -Value ($Value.GetHashCode()) -UseTransaction 
+            Set-ItemProperty -Path $this.GetKeyId() -Name Timestamp -Value ($Value.GetHashCode())  
         } else {
-            New-ItemProperty -Path $this.GetKeyId() -Name Timestamp -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
+            New-ItemProperty -Path $this.GetKeyId() -Name Timestamp -Value ($Value.GetHashCode()) -PropertyType DWord  
         }
     }
 
 
     [bool] GetIsMounted () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name IsMounted -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name IsMounted 
     }
     [void] SetIsMounted ([bool]$Value) {
         if(-not $this.IsNewSubKey) {
-            Set-ItemProperty -Path $this.GetKeyId() -Name IsMounted -Value ($Value.GetHashCode()) -UseTransaction 
+            Set-ItemProperty -Path $this.GetKeyId() -Name IsMounted -Value ($Value.GetHashCode())  
         } else {
-            New-ItemProperty -Path $this.GetKeyId() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord -UseTransaction 
+            New-ItemProperty -Path $this.GetKeyId() -Name IsMounted -Value ($Value.GetHashCode()) -PropertyType DWord  
         }
     }
 
 
     [string] GetLastActivity () {
-        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name LastActivity -UseTransaction
+        return Get-ItemPropertyValue -Path $this.GetKeyId() -Name LastActivity 
     }
     [void] SetLastActivity ([string]$Value) {
         if($Value -ne $null) {
             if(-not $this.IsNewSubKey) {
-                Set-ItemProperty -Path $this.GetKeyId() -Name LastActivity -Value $Value -UseTransaction 
+                Set-ItemProperty -Path $this.GetKeyId() -Name LastActivity -Value $Value  
             } else {
-                New-ItemProperty -Path $this.GetKeyId() -Name LastActivity -Value $Value -PropertyType String -UseTransaction 
+                New-ItemProperty -Path $this.GetKeyId() -Name LastActivity -Value $Value -PropertyType String  
             }
         }
     }
@@ -156,12 +156,12 @@ class Container
     [void] NewSubKey () {
         $Id = New-Guid | Select-Object -ExpandProperty Guid
 
-        $this.SubKey = New-Item -Name $Id -UseTransaction
+        $this.SubKey = New-Item -Name $Id 
 
         $this.IsNewSubKey = $True
 
         $this.SetLastMountedUri("")
-        $this.SetIsMounted($False)
+        $this.SetIsMounted($True)
         $this.SetLastActivity((Get-Date))
     }
 }

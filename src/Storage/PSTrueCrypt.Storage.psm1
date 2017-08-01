@@ -15,6 +15,8 @@ function Get-RegistrySubKeys
 
     process
     {
+                        Write-Information -MessageData "Get-RegistrySubKeys..." -InformationAction Continue
+
         try 
         {
             if(-not $Path) {
@@ -22,9 +24,9 @@ function Get-RegistrySubKeys
             }
 
             if($FilterScript) {
-                Get-ChildItem $Path -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
+                Get-ChildItem $Path  | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
             } else {
-                Get-ChildItem $Path -UseTransaction
+                Get-ChildItem $Path 
             }
         }
         catch [System.Security.SecurityException]
@@ -104,15 +106,15 @@ function Get-SubKeyByPropertyValue
             if($RegistrySubKeys)
             {
                 if($Id) {
-                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name PSChildName -UseTransaction) -eq $Id) {
+                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name PSChildName ) -eq $Id) {
                         $FoundKey = $_
                     }
                 } elseif($Name) {
-                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name Name -UseTransaction) -eq $Name) {
+                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name Name ) -eq $Name) {
                         $FoundKey = $_
                     }
                 } elseif($MountLetter) {
-                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name MountLetter -UseTransaction) -eq $MountLetter) {
+                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name MountLetter ) -eq $MountLetter) {
                         $FoundKey = $_
                     }
                 }
@@ -161,11 +163,11 @@ function Remove-SubKeyByPropertyValue
             {
                 if($Id) {
                     if(($RegistrySubKeys | Get-ItemPropertyValue -Name PSChildName ) -eq $Id) {
-                         Remove-Item .\$_.PSChildName -UseTransaction -Recurse -Force
+                         Remove-Item .\$_.PSChildName  -Recurse -Force
                     }
                 } elseif($Name) {
                     if((Get-ItemPropertyValue $_.PSChildName -Name Name) -eq $Name) {
-                        $RegistrySubKeys | Remove-Item -UseTransaction
+                        $RegistrySubKeys | Remove-Item 
                     }
                 }
             }
@@ -225,92 +227,32 @@ function Write-Container
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory = $False, ValueFromPipeline = $True)]
-        [AllowNull()]
-        [PsObject]$RegistrySubKey,
-
-        [Parameter(Mandatory = $False, 
-         HelpMessage="Enter the generated Id for this container.")]
-        [ValidateNotNullOrEmpty()]
-        [string]$KeyId,
-
-        [Parameter(Mandatory = $True)]
-        [bool]$IsMounted,
-
         [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Location,
-
-        [Parameter(Mandatory = $False)]
-        [ValidatePattern("^[a-zA-Z]$")]
-        [string]$MountLetter,
-
-        [Parameter(Mandatory = $False)]
-        [ValidateSet("TrueCrypt", "VeraCrypt")]
-        [string]$Product,
-
-        [Parameter(Mandatory = $False)]
-        [ValidatePattern("^[a-zA-Z]$")]
-        [string]$LastMountedUri,
-
-        [switch]$NoActivity,
-
-        [switch]$Timestamp,
-
-        [switch]$IndependentTransaction
+        [ScriptBlock]$FilterScript
     )
 
-    if($RegistrySubKey -or $KeyId)
+    begin
     {
-        if($IndependentTransaction.IsPresent) {
-            Invoke-BeginBlock -IndependentTransaction:$IndependentTransaction
-        }
+    
+                Write-Information -MessageData "begin >>> $FilterScript " -InformationAction Continue
 
-        $Container = [Container]::new()
-        if($RegistrySubKey) {
-            $Container.SetKey($RegistrySubKey)
-        } elseif ($KeyId) {
-            $Container.SetKeyId($KeyId)
-        }
 
-        if($Name) {
-            $Container.SetName($Name)
-        }
-        
-        if($Location) {
-            $Container.SetLocation($Location)
-        }
 
-        if($MountLetter) {
-            $Container.SetMountLetter($MountLetter)
-        }
-        
-        if($Product) {
-            $Container.SetProduct($Product)
-        }
+    }
+
+    process
+    {
+
+        if($FilterScript) {
+
+        Write-Information -MessageData "process >>> " -InformationAction Continue
+        }        
+    }
+
+    end
+    {
+                Write-Information -MessageData "end >>> " -InformationAction Continue
  
-        if($LastMountedUri) {
-            $Container.SetLastMountedUri($LastMountedUri)
-        }
-
-        $Container.SetIsMounted($IsMounted)
-
-        if($Timestamp.IsPresent) {
-            $Container.SetTimestamp($True)
-        }
-
-        # if this is switched (True), that means we dont want to record this activity
-        if($NoActivity.IsPresent -eq $False) {
-            $Container.SetLastActivity( (Get-Date) )
-        }
-
-        if($IndependentTransaction.IsPresent) {
-            Invoke-EndBlock 
-        }
     }
 }
 
@@ -326,6 +268,7 @@ function Read-Container
     )
     process 
     {
+      Write-Host " >read-container>>"+$RegistrySubKey
         if($RegistrySubKey) 
         {
             $Container = [Container]::new()
