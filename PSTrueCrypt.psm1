@@ -349,15 +349,17 @@ function Show-PSTrueCryptContainers
         Invoke-BeginBlock -IsSystemUnderTest:$SUT
     }
 
-    process 
+    end 
     {
         try 
         {
             Restart-LogicalDiskCheck
+            # TODO: not sorting
+            $SortedContainers = Get-RegistrySubKeys | `
+                                Read-Container | `
+                                Sort-Object -Property @{ Expression = {$_.Name} }
             
-            $OutVar = Get-RegistrySubKeys | Read-Container | Sort-Object Name
-            
-            if($OutVar) {
+            if($SortedContainers) {
                 Format-Table    @{Label="Name";Expression={($_.Name)}},`
                                 @{Label="Location";Expression={($_.Location)}},`
                                 @{Label="MountLetter";Expression={($_.MountLetter)}},`
@@ -365,7 +367,7 @@ function Show-PSTrueCryptContainers
                                 @{Label="Timestamp";Expression={($_.Timestamp)}},`
                                 @{Label="IsMounted";Expression={($_.IsMounted)}},`
                                 @{Label="Last Activity";Expression={[DateTime]($_.LastActivity)}}`
-                                -AutoSize -InputObject $OutVar
+                                -AutoSize -InputObject $SortedContainers
             } else {
                 Out-Information 'NoPSTrueCryptContainerFound'
             }
@@ -375,11 +377,10 @@ function Show-PSTrueCryptContainers
             #The user does not have the permissions required to delete the key.
             Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
         }
-    }
-
-    end
-    {
-        Invoke-EndBlock -IsSystemUnderTest:$SUT
+        finally
+        {
+            Invoke-EndBlock -IsSystemUnderTest:$SUT
+        }
     }
 }
 

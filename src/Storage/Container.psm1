@@ -139,18 +139,16 @@ class Container
 
 
     [hashtable] GetHashTable() {
-        $hash = @{
-            KeyId       = $this.GetKeyId()
-            KeyPath     = $this.GetKeyId()
-            Name        = $this.GetName()
-            Location    = $this.GetLocation()
-            MountLetter = $this.GetMountLetter()
-            Product     = $this.GetProduct()
-            Timestamp   = $this.GetTimestamp()
-            IsMounted   = $this.GetIsMounted()
-            LastActivity  = $this.GetLastActivity()
+        return @{
+            KeyId           = $this.GetKeyId()
+            Name            = $this.GetName()
+            Location        = $this.GetLocation()
+            MountLetter     = $this.GetMountLetter()
+            Product         = $this.GetProduct()
+            Timestamp       = $this.GetTimestamp()
+            IsMounted       = $this.GetIsMounted()
+            LastActivity    = $this.GetLastActivity()
         }
-        return $hash
     }
 
     [void] NewSubKey () {
