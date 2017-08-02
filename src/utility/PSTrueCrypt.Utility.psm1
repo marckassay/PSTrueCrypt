@@ -224,11 +224,19 @@ Export-ModuleMember -Function Test-IsAdmin
 
 function Restart-LogicalDiskCheck
 {
-    # Enumerates thru all containers and selects ones that have 'IsMounted' set to true and who's 'LastMountedUri'
-    # drive now no longer exists.  If so, this will set the container's 'IsMounted' to false...
-    Get-RegistrySubKeys -FilterScript { [bool](($_.getValue('IsMounted')) -eq $True) -and `
-                             ((Test-Path ($_.getValue('LastMountedUri')+':')) -eq $False) 
-                        } | Write-Container -IsMounted $False
+    # Enumerates thru all containers and selects ones that have 'IsMounted' set to true and 
+    # who's 'LastMountedUri' drive now no longer exists.  If so, this will set the container's 
+    # 'IsMounted' to false...
+    # NOTE: Test-Path doesnt work in this FilterScript immediately aftering container is 
+    # mounted, hence the Get-PSDrive call
+    Get-RegistrySubKeys -FilterScript { 
+        $Path = $_.getValue('LastMountedUri')+':'
+
+        [bool](($_.getValue('IsMounted')) -eq $True) `
+        -and `
+        (Get-PSDrive | Where-Object {$_.Root -match $Path} -eq $False)
+
+    } | Write-Container -IsMounted $False
 }
 Export-ModuleMember -Function Restart-LogicalDiskCheck
 

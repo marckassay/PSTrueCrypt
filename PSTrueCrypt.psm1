@@ -354,7 +354,7 @@ function Show-PSTrueCryptContainers
         try 
         {
             Restart-LogicalDiskCheck
-            # TODO: not sorting
+            
             $SortedContainers = Get-RegistrySubKeys | `
                                 Read-Container | `
                                 Sort-Object -Property @{ Expression = {$_.Name} }
