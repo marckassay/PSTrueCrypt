@@ -229,13 +229,8 @@ function Restart-LogicalDiskCheck
     # 'IsMounted' to false...
     # NOTE: Test-Path doesnt work in this FilterScript immediately aftering container is 
     # mounted, hence the Get-PSDrive call
-    Get-RegistrySubKeys -FilterScript { 
-        $Path = $_.getValue('LastMountedUri')+':'
-
-        [bool](($_.getValue('IsMounted')) -eq $True) `
-        -and `
-        (Get-PSDrive | Where-Object {$_.Root -match $Path} -eq $False)
-
+    Get-RegistrySubKeys -FilterScript  {
+        ($_.getValue('IsMounted').GetHashCode() -eq $True) -and (-not(Get-PSDrive).Root.Contains($_.getValue('LastMountedUri')+':\'))
     } | Write-Container -IsMounted $False
 }
 Export-ModuleMember -Function Restart-LogicalDiskCheck
