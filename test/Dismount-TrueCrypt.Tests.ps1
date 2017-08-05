@@ -11,7 +11,7 @@ Describe "Test Dismount-TrueCrypt when called..." {
             $SUT = $True
             Start-Transaction
             . .\resources\HKCU_Software_PSTrueCrypt_Test1.ps1
-            Set-Location HKCU:\Software\PSTrueCrypt\Test -UseTransaction
+           # Set-Location HKCU:\Software\PSTrueCrypt\Test -UseTransaction
 
             Dismount-TrueCrypt -Name 'AlicesTaxDocs'
 

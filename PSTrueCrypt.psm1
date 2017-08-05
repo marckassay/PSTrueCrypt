@@ -22,7 +22,7 @@ function Mount-TrueCrypt
 
     DynamicParam
     {
-        return Get-DynamicParameterValues
+        return Get-DynamicParameterValues -IsSystemUnderTest:$SUT
     }
     
     begin
@@ -129,7 +129,7 @@ function Dismount-TrueCrypt
 
     DynamicParam
     {
-        return Get-DynamicParameterValues
+        return Get-DynamicParameterValues -IsSystemUnderTest:$SUT
     }
     
     begin

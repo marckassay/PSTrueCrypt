@@ -25,12 +25,12 @@ function New-SubKey
     $SubKeyPath = "HKCU:\Software\PSTrueCrypt\Test\00000000-0000-0000-0000-$SubKeyName"
 
     New-Item -Path $SubKeyPath -Force -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name Name        -PropertyType String -Value $Name -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name Location    -PropertyType String -Value $Location -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name MountLetter -PropertyType String -Value $MountLetter -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name Product     -PropertyType String -Value $Product -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name LastMountedUri -PropertyType String -Value $LastMountedUri -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name LastActivity -PropertyType String -Value $LastActivity -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name Timestamp   -PropertyType DWord -Value $Timestamp.GetHashCode() -UseTransaction
-    New-ItemProperty -Path $SubKeyPath -Name IsMounted   -PropertyType DWord -Value $IsMounted.GetHashCode() -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name Name           -PropertyType String -Value $Name                    -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name Location       -PropertyType String -Value $Location                -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name MountLetter    -PropertyType String -Value $MountLetter             -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name Product        -PropertyType String -Value $Product                 -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name LastMountedUri -PropertyType String -Value $LastMountedUri          -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name LastActivity   -PropertyType String -Value $LastActivity            -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name Timestamp      -PropertyType DWord  -Value $Timestamp.GetHashCode() -UseTransaction
+    New-ItemProperty -Path $SubKeyPath -Name IsMounted      -PropertyType DWord  -Value $IsMounted.GetHashCode() -UseTransaction
 }

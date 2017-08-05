@@ -2,7 +2,10 @@ using namespace 'System.Management.Automation'
 using module ..\Writer\PSTrueCrypt.Writer.psm1
 using module ..\Storage\PSTrueCrypt.Storage.psm1
 
-$StorageLocation = 'HKCU:\SOFTWARE\PSTrueCrypt'
+$StorageLocation = @{
+    Production  = 'HKCU:\SOFTWARE\PSTrueCrypt'
+    Testing     = 'HKCU:\SOFTWARE\PSTrueCrypt\Test'
+}
 
 enum OSVerification {
     TrueCryptFound = 1
@@ -225,8 +228,8 @@ Export-ModuleMember -Function Test-IsAdmin
 function Restart-LogicalDiskCheck
 {
     # Enumerates thru all containers and selects ones that have 'IsMounted' set to true and 
-    # who's 'LastMountedUri' drive now no longer exists.  If so, this will set the container's 
-    # 'IsMounted' to false...
+    # who's 'LastMountedUri' drive now no longer exists will set the container's 
+    # 'IsMounted' to false.
     # NOTE: Test-Path doesnt work in this FilterScript immediately aftering container is 
     # mounted, hence the Get-PSDrive call
     Get-RegistrySubKeys -FilterScript  {
@@ -237,9 +240,20 @@ Export-ModuleMember -Function Restart-LogicalDiskCheck
 
 function Get-DynamicParameterValues
 {
-    Start-Transaction
+    [CmdletBinding()]
+    Param
+    (
+        [switch]$IsSystemUnderTest
+    )
 
-    $ContainerNames = Get-RegistrySubKeys -Path $StorageLocation | Get-SubKeyNames
+    if(-not $IsSystemUnderTest) {
+        Start-Transaction
+        $Scope = $StorageLocation.Production
+    } else {
+        $Scope = $StorageLocation.Testing
+    }
+
+    $ContainerNames = Get-RegistrySubKeys -Path $Scope | Get-SubKeyNames -Path $Scope 
     
     Complete-Transaction
 
@@ -274,7 +288,7 @@ function Invoke-BeginBlock
         
         Push-Location
         
-        Set-Location -Path $StorageLocation
+        Set-Location -Path $StorageLocation.Production
     }
 }
 Export-ModuleMember -Function Invoke-BeginBlock

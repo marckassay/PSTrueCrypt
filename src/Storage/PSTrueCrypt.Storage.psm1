@@ -22,9 +22,9 @@ function Get-RegistrySubKeys
             }
 
             if($FilterScript) {
-                Get-ChildItem $Path -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable $RegistrySubKeys
+                Get-ChildItem $Path -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable RegistrySubKeys
             } else {
-                Get-ChildItem $Path -UseTransaction
+                Get-ChildItem $Path -UseTransaction -OutVariable RegistrySubKeys
             }
         }
         catch [System.Security.SecurityException]
@@ -53,7 +53,10 @@ function Get-SubKeyNames
         # TOOD: change to ValueFromPipelineByPropertyName
         [Parameter(Mandatory = $True, Position = 1, ValueFromPipeline=$True)]
         [AllowNull()]
-        [PsObject]$RegistrySubKeys
+        [PsObject]$RegistrySubKeys,
+
+        [Parameter(Mandatory = $True)]
+        [string]$Path
     )
 
     process
@@ -61,7 +64,8 @@ function Get-SubKeyNames
         try 
         {
             if($RegistrySubKeys) {
-                $RegistrySubKeys | Get-ItemPropertyValue -Name Name -PipelineVariable $Names
+                $P = Join-Path $Path -Child $RegistrySubKeys.PSChildName
+                Get-ItemPropertyValue -Path $P -Name Name -OutVariable +Names #-UseTransaction
             }
         }
         catch [System.Security.SecurityException]
