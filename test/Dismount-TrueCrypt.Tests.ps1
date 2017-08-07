@@ -1,5 +1,4 @@
-Import-Module $PSScriptRoot\OutXStubModule.psm1
-Import-Module $PSScriptRoot\PSTrueCryptTestModule.psm1
+Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Test Dismount-TrueCrypt when called..." {
     Context "with valid Name" {

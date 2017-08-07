@@ -1,6 +1,6 @@
 Import-Module $PSScriptRoot\..\src\Storage\PSTrueCrypt.Storage.psm1
 Import-Module $PSScriptRoot\..\src\Writer\PSTrueCrypt.Writer.psm1
-Import-Module $PSScriptRoot\PSTrueCryptTestModule.psm1
+Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Test PSTrueCrypt.Storage when called..." {
     Context "with valid data" {
