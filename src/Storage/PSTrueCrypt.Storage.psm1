@@ -65,7 +65,7 @@ function Get-SubKeyNames
         {
             if($RegistrySubKeys) {
                 $P = Join-Path $Path -Child $RegistrySubKeys.PSChildName
-                Get-ItemPropertyValue -Path $P -Name Name -OutVariable +Names #-UseTransaction
+                Get-ItemPropertyValue -Path $P -Name Name -OutVariable +Names -UseTransaction
             }
         }
         catch [System.Security.SecurityException]

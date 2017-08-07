@@ -273,7 +273,7 @@ function Remove-PSTrueCryptContainer
 
     DynamicParam
     {
-        return Get-DynamicParameterValues
+        return Get-DynamicParameterValues -IsSystemUnderTest:$SUT
     }
     
     begin
