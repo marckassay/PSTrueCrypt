@@ -1,20 +1,21 @@
-Import-Module -Name .\StubModule
+Import-Module $PSScriptRoot\..\src\Storage\PSTrueCrypt.Storage.psm1
+Import-Module $PSScriptRoot\..\src\Writer\PSTrueCrypt.Writer.psm1
+Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Test New-PSTrueCryptContainer when called..." {
-
-    #$OutTestPath = Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out/test/resources"
-    
     Context "with valid entries without Timestamp" {
-
         InModuleScope PSTrueCrypt {
+            $SUT = $True
 
+            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test3.ps1'
+            
             Mock Get-Confirmation { return $True } -Verifiable
 
-            Mock New-Guid { return 'e03e195e-c069-4c6b-9d35-6b61cdf40aad' }
+            Mock Out-Information{}
 
-            Mock Out-Information{} -Verifiable
+            Mock New-Guid { return '00000000-0000-0000-0000-00000003' }
 
-            Mock New-ItemProperty {}
+            Mock New-Container {} 
 
             New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V' -Product 'VeraCrypt'
 
@@ -22,49 +23,60 @@ Describe "Test New-PSTrueCryptContainer when called..." {
                 Assert-VerifiableMocks
             }
 
-            It "Should of called New-ItemProperty by setting the Path and Name property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq 'AlicesTaxDocs')
+            It "Should of called New-Container setting the Name property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Name -eq "AlicesTaxDocs"
+                }
+            }
+            
+            It "Should of called New-Container setting the Location property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Location -eq "C:\Users\Alice\Documents\AlicesContainer"
                 }
             }
 
-            It "Should of called New-ItemProperty setting the Location property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "C:\Users\Alice\Documents\AlicesContainer")
+            It "Should of called New-Container setting the MountLetter property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $MountLetter -eq "V"
                 }
             }
 
-            It "Should of called New-ItemProperty setting the MountLetter property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "V")
+            It "Should of called New-Container setting the Product property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Product -eq "VeraCrypt"
                 }
             }
 
-            It "Should of called New-ItemProperty setting the Product property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "VeraCrypt")
+            It "Should of called New-Container setting the Timestamp property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Timestamp -eq $False
                 }
             }
+            
+            It "Should of called Out-Information with 'NewContainerOperationSucceeded' value..." {
+                Assert-MockCalled Out-Information -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    ($Key -eq 'NewContainerOperationSucceeded') -and ($Format -eq "AlicesTaxDocs")
+                }
+            } 
 
-            It "Should of called New-ItemProperty setting the Timestamp property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq $False.GetHashCode())
-                }
-            }
+            Complete-InModuleScopeForPSTrueCrypt 
         }
     }
 
     Context "with valid entries with Timestamp" {
 
         InModuleScope PSTrueCrypt {
+            $SUT = $True
 
+            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test3.ps1'
+            
             Mock Get-Confirmation { return $True } -Verifiable
 
-            Mock New-Guid { return 'e03e195e-c069-4c6b-9d35-6b61cdf40aad' }
+            Mock Out-Information{}
 
-            Mock Out-Information{} -Verifiable
+            Mock New-Guid { return '00000000-0000-0000-0000-00000003' }
 
-            Mock New-ItemProperty {}
+            Mock New-Container {} 
 
             New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V' -Product 'VeraCrypt' -Timestamp
 
@@ -72,35 +84,43 @@ Describe "Test New-PSTrueCryptContainer when called..." {
                 Assert-VerifiableMocks
             }
 
-            It "Should of called New-ItemProperty by setting the Path and Name property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq 'AlicesTaxDocs')
+            It "Should of called New-Container setting the Name property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Name -eq "AlicesTaxDocs"
+                }
+            }
+            
+            It "Should of called New-Container setting the Location property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Location -eq "C:\Users\Alice\Documents\AlicesContainer"
                 }
             }
 
-            It "Should of called New-ItemProperty setting the Location property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "C:\Users\Alice\Documents\AlicesContainer")
+            It "Should of called New-Container setting the MountLetter property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $MountLetter -eq "V"
                 }
             }
 
-            It "Should of called New-ItemProperty setting the MountLetter property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "V")
+            It "Should of called New-Container setting the Product property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Product -eq "VeraCrypt"
                 }
             }
 
-            It "Should of called New-ItemProperty setting the Product property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq "VeraCrypt")
+            It "Should of called New-Container setting the Timestamp property of this subkey..." {
+                Assert-MockCalled New-Container -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Timestamp -eq $True
                 }
             }
+            
+            It "Should of called Out-Information with 'NewContainerOperationSucceeded' value..." {
+                Assert-MockCalled Out-Information -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    ($Key -eq 'NewContainerOperationSucceeded') -and ($Format -eq "AlicesTaxDocs")
+                }
+            } 
 
-            It "Should of called New-ItemProperty setting the Timestamp property of this subkey..." {
-                Assert-MockCalled New-ItemProperty -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($Path -like '*e03e195e-c069-4c6b-9d35-6b61cdf40aad') -and ($Value -eq $True.GetHashCode())
-                }
-            }
+            Complete-InModuleScopeForPSTrueCrypt 
         }
     }
 

@@ -34,7 +34,7 @@ Describe "Test PSTrueCrypt.Storage when called..." {
 <#
     Context "with invalid data"  {
         InModuleScope PSTrueCrypt.Storage {
-            Start-InModuleScopeForPSTrueCrypt -NoLoad
+            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test2.ps1'
 
             Mock Out-Error{} -Verifiable
 

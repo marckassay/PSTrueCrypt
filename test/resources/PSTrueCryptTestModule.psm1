@@ -6,16 +6,14 @@ function Start-InModuleScopeForPSTrueCrypt
 {
     Param 
     (
-        [switch]$NoLoad
+        [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [String]$ScriptFile = '.\resources\HKCU_Software_PSTrueCrypt_Test1.ps1'
     )
 
     Start-Transaction
 
-    if($NoLoad -eq $False) {
-        . .\resources\HKCU_Software_PSTrueCrypt_Test1.ps1
-    } else {
-        . .\resources\HKCU_Software_PSTrueCrypt_Test2.ps1
-    }
+    . $ScriptFile
 }
 
 function Complete-InModuleScopeForPSTrueCrypt
