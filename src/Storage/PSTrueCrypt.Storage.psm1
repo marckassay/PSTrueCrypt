@@ -1,5 +1,5 @@
 using module .\Container.psm1
-
+using module ..\Writer\PSTrueCrypt.Writer.psm1
 function Get-RegistrySubKeys
 {
     [CmdletBinding()]
@@ -13,7 +13,7 @@ function Get-RegistrySubKeys
         [string]$Path
     )
 
-    process
+    end
     {
         try 
         {
@@ -26,8 +26,12 @@ function Get-RegistrySubKeys
             } else {
                 Get-ChildItem $Path -UseTransaction -OutVariable RegistrySubKeys
             }
+
+            if($RegistrySubKeys.Length -eq 0) {
+                throw 'UnableToReadRegistry'
+            }
         }
-        catch [System.Security.SecurityException]
+        catch 
         {
             # TODO: Need to throw specific error to calling method
             Out-Error 'UnableToReadRegistry'
@@ -36,11 +40,6 @@ function Get-RegistrySubKeys
         {
 
         }
-    }
-
-    end
-    {
-
     }
 }
 
@@ -107,16 +106,19 @@ function Get-SubKeyByPropertyValue
         {
             if($RegistrySubKeys)
             {
+                $Path = Get-Location -UseTransaction
+                $P = Join-Path $Path -Child $RegistrySubKeys.PSChildName
+
                 if($Id) {
-                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name PSChildName -UseTransaction) -eq $Id) {
+                    if((Get-ItemPropertyValue -Path $P -Name PSChildName -UseTransaction) -eq $Id) {
                         $FoundKey = $_
                     }
                 } elseif($Name) {
-                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name Name -UseTransaction) -eq $Name) {
+                if((Get-ItemPropertyValue -Path $P -Name Name -UseTransaction) -eq $Name) {
                         $FoundKey = $_
                     }
                 } elseif($MountLetter) {
-                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name MountLetter -UseTransaction) -eq $MountLetter) {
+                    if((Get-ItemPropertyValue -Path $P -Name MountLetter -UseTransaction) -eq $MountLetter) {
                         $FoundKey = $_
                     }
                 }

@@ -1,5 +1,5 @@
 #Import-Module -Name .\StubModule
-# TODO: for thie test to to work, source code will need to be modified for 2 reasons:
+# TODO: for this test to to work, source code will need to be modified for 2 reasons:
 # - the redacted value 'X:\XXXXX...' cant seem to be escaped 
 # - And the pipeline in the body of this function will need to be broke apart 
 #   so that $TestDrive can get in the url
