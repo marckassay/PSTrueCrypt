@@ -1,17 +1,15 @@
-Import-Module $PSScriptRoot\StubModule.psm1
+Import-Module $PSScriptRoot\OutXStubModule.psm1
+Import-Module $PSScriptRoot\PSTrueCryptTestModule.psm1
 
 Describe "Test Dismount-TrueCrypt when called..." {
-
     Context "with valid Name" {
         InModuleScope PSTrueCrypt {
-            Mock Start-CimLogicalDiskWatch {}
+            $SUT = $True
 
+            Mock Start-CimLogicalDiskWatch {}
             Mock Invoke-Expression {}
 
-            $SUT = $True
-            Start-Transaction
-            . .\resources\HKCU_Software_PSTrueCrypt_Test1.ps1
-           # Set-Location HKCU:\Software\PSTrueCrypt\Test -UseTransaction
+            Start-InModuleScopeForPSTrueCrypt
 
             Dismount-TrueCrypt -Name 'AlicesTaxDocs'
 
@@ -27,8 +25,7 @@ Describe "Test Dismount-TrueCrypt when called..." {
                 }
             }
 
-            Undo-Transaction
-            $SUT = $False
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
 }

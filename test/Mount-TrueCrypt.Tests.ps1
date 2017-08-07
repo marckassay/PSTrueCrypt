@@ -1,43 +1,30 @@
-Import-Module $PSScriptRoot\StubModule.psm1
+Import-Module $PSScriptRoot\OutXStubModule.psm1
+Import-Module $PSScriptRoot\PSTrueCryptTestModule.psm1
 
 Describe "Test Mount-TrueCrypt when called..." {
-    
-    BeforeEach {
-        #$OutTestPath = Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out/test/resources"
-        
-        #Remove-Item -Path $OutTestPath -Recurse -ErrorAction Silently 
-        
-        #Copy-Item "$PSScriptRoot/resources" -Destination $OutTestPath -Recurse
-    }
-
-    AfterEach {
-        #Split-Path -Path $PSScriptRoot -Parent | Join-Path -ChildPath "out" | Remove-Item -Recurse
-    }
-    
     Context "with no KeyfilePath..." {
         InModuleScope PSTrueCrypt {
-            Mock Get-PSTrueCryptContainer { 
-            @{
-                TrueCryptContainerPath = "C:\Users\Bob\Documents\BobsContainer"
-                PreferredMountDrive = "T";
-                Product = "TrueCrypt";
-                Timestamp = 0x00000000
-            }} -Verifiable
+            $SUT = $True
 
+            Mock Start-CimLogicalDiskWatch {}
             Mock Test-IsAdmin { return $True } -Verifiable
-
             Mock Read-Host { return  ConvertTo-SecureString "123abc" -AsPlainText -Force } -Verifiable
-
             Mock Set-ItemProperty {} -Verifiable
-
             Mock Invoke-Expression {}
-            
             Mock Edit-HistoryFile {}
+
+            Start-InModuleScopeForPSTrueCrypt
 
             Mount-TrueCrypt -Name 'BobsTaxDocs'
 
             It "Should of called internal functions..." {
                 Assert-VerifiableMocks
+            }
+            
+            It "Should of called Start-CimLogicalDiskWatch with 'KeyId' and 'InstanceType' value..." {
+                Assert-MockCalled Start-CimLogicalDiskWatch -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    ($KeyId -eq '00000000-0000-0000-0000-00000002') -and ($InstanceType -eq 'Creation')
+                }
             }
 
             It "Should of called Invoke-Expression with the value being used in this comparison operator..." {
@@ -45,28 +32,23 @@ Describe "Test Mount-TrueCrypt when called..." {
                     $Command -eq "& TrueCrypt /explore /password '123abc' /volume 'C:\Users\Bob\Documents\BobsContainer' /quit /auto /letter 'T'"
                 }
             }
+
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
     
     Context "with KeyfilePath..." {
         InModuleScope PSTrueCrypt {
-            Mock Get-PSTrueCryptContainer { 
-            @{
-                TrueCryptContainerPath = "C:\Users\Bob\Documents\BobsContainer"
-                PreferredMountDrive = "T";
-                Product = "TrueCrypt";
-                Timestamp = 0x00000000
-            }} -Verifiable
+            $SUT = $True
 
+            Mock Start-CimLogicalDiskWatch {}
             Mock Test-IsAdmin { return $True } -Verifiable
-
             Mock Read-Host { return  ConvertTo-SecureString "123abc" -AsPlainText -Force } -Verifiable
-
             Mock Set-ItemProperty {} -Verifiable
-
             Mock Invoke-Expression {}
-            
-            Mock Edit-HistoryFile {}
+            Mock Edit-HistoryFile {} -Verifiable
+
+            Start-InModuleScopeForPSTrueCrypt
 
             Mount-TrueCrypt -Name 'BobsTaxDocs' -KeyfilePath "C:\Users\Bob\Music\ABC.mp3"
 
@@ -74,27 +56,31 @@ Describe "Test Mount-TrueCrypt when called..." {
                 Assert-VerifiableMocks
             }
 
+            It "Should of called Start-CimLogicalDiskWatch with 'KeyId' and 'InstanceType' value..." {
+                Assert-MockCalled Start-CimLogicalDiskWatch -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    ($KeyId -eq '00000000-0000-0000-0000-00000002') -and ($InstanceType -eq 'Creation')
+                }
+            }
+
             It "Should of called Invoke-Expression with the value being used in this comparison operator..." {
                 Assert-MockCalled Invoke-Expression -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
                     $Command -eq "& TrueCrypt /keyfile 'C:\Users\Bob\Music\ABC.mp3' /explore /password '123abc' /volume 'C:\Users\Bob\Documents\BobsContainer' /quit /auto /letter 'T'"
                 }
             }
+
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
     
     Context "with SecureString..." {
         InModuleScope PSTrueCrypt {
-            Mock Get-PSTrueCryptContainer { 
-            @{
-                TrueCryptContainerPath = "C:\Users\Bob\Documents\BobsContainer"
-                PreferredMountDrive = "T";
-                Product = "TrueCrypt";
-                Timestamp = 0x00000000
-            }} -Verifiable
+            $SUT = $True
 
+            Mock Start-CimLogicalDiskWatch {}
             Mock Invoke-Expression {}
-            
-            Mock Edit-HistoryFile {} -Verifiable
+            Mock Edit-HistoryFile {}
+
+            Start-InModuleScopeForPSTrueCrypt
 
             $SecureString = ConvertTo-SecureString '123abc' -AsPlainText -Force
 
@@ -104,11 +90,19 @@ Describe "Test Mount-TrueCrypt when called..." {
                 Assert-VerifiableMocks
             }
 
+            It "Should of called Start-CimLogicalDiskWatch with 'KeyId' and 'InstanceType' value..." {
+                Assert-MockCalled Start-CimLogicalDiskWatch -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    ($KeyId -eq '00000000-0000-0000-0000-00000002') -and ($InstanceType -eq 'Creation')
+                }
+            }
+
             It "Should of called Invoke-Expression with the value being used in this comparison operator..." {
                 Assert-MockCalled Invoke-Expression -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
                     $Command -eq "& TrueCrypt /keyfile 'C:\Users\Bob\Music\ABC.mp3' /explore /password '123abc' /volume 'C:\Users\Bob\Documents\BobsContainer' /quit /auto /letter 'T'"
                 }
             }
+
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
 }
