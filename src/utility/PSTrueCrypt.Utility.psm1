@@ -255,8 +255,12 @@ function Get-DynamicParameterValues
 
     $ContainerNames = Get-RegistrySubKeys -Path $Scope | Get-SubKeyNames -Path $Scope 
     
-    Complete-Transaction
+    if(-not $IsSystemUnderTest) {
+        Complete-Transaction
+    } else {
 
+    }
+    
     $ParamAttrib = New-Object ParameterAttribute
     $ParamAttrib.Mandatory = $True
     $ParamAttrib.Position = 0
@@ -283,12 +287,14 @@ function Invoke-BeginBlock
         [switch]$UseIndependentTransaction
     )
 
-    if($IsSystemUnderTest.ToBool() -eq $False) {
-        Start-Transaction -Independent:$UseIndependentTransaction.IsPresent
-        
-        Push-Location
-        
+    Start-Transaction -Independent:$UseIndependentTransaction.IsPresent
+    
+    Push-Location
+    
+    if($IsSystemUnderTest -eq $False) {
         Set-Location -Path $StorageLocation.Production
+    } else {
+        Set-Location -Path $StorageLocation.Testing -UseTransaction
     }
 }
 Export-ModuleMember -Function Invoke-BeginBlock
@@ -301,10 +307,12 @@ function Invoke-EndBlock
         [switch]$IsSystemUnderTest
     )
 
-    if($IsSystemUnderTest.ToBool() -eq $False) {
-        Pop-Location
+    Pop-Location
     
+    if($IsSystemUnderTest -eq $False) {
         Complete-Transaction
+    } else {
+
     }
 }
 Export-ModuleMember -Function Invoke-EndBlock

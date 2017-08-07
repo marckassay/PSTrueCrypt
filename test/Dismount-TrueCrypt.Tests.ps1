@@ -15,9 +15,9 @@ Describe "Test Dismount-TrueCrypt when called..." {
 
             Dismount-TrueCrypt -Name 'AlicesTaxDocs'
 
-            It "Should of called Start-CimLogicalDiskWatch with 'SubKeyName' and 'InstanceType' value..." {
+            It "Should of called Start-CimLogicalDiskWatch with 'KeyId' and 'InstanceType' value..." {
                 Assert-MockCalled Start-CimLogicalDiskWatch -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    ($SubKeyName -eq '00000000-0000-0000-0000-00000003') -and ($InstanceType -eq 'Deletion')
+                    ($KeyId -eq '00000000-0000-0000-0000-00000003') -and ($InstanceType -eq 'Deletion')
                 }
             }
 
@@ -27,7 +27,6 @@ Describe "Test Dismount-TrueCrypt when called..." {
                 }
             }
 
-            Pop-Location
             Undo-Transaction
             $SUT = $False
         }
