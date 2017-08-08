@@ -128,6 +128,8 @@ Describe "Test New-PSTrueCryptContainer when called..." {
 
         InModuleScope PSTrueCrypt {
 
+            Mock Get-Confirmation {return $True}
+            
             It "Should of expected an exception from MountLetter attribute..." {
                 {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'VV' -Product 'VeraCrypt' -Timestamp} | Should Throw "Cannot validate argument on parameter 'MountLetter'"
             }

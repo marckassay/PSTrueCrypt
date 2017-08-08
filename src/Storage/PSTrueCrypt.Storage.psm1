@@ -170,8 +170,8 @@ function Remove-SubKeyByPropertyValue
                          Remove-Item .\$_.PSChildName -UseTransaction -Recurse -Force
                     }
                 } elseif($Name) {
-                    if((Get-ItemPropertyValue $_.PSChildName -Name Name) -eq $Name) {
-                        $RegistrySubKeys | Remove-Item -UseTransaction
+                    if((Get-ItemPropertyValue $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
+                        Remove-Item $_.PSChildName -UseTransaction -Recurse -Force
                     }
                 }
             }

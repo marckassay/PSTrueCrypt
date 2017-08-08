@@ -1,23 +1,27 @@
-Import-Module -Name .\StubModule
+Import-Module $PSScriptRoot\..\src\Storage\PSTrueCrypt.Storage.psm1
+Import-Module $PSScriptRoot\..\src\Writer\PSTrueCrypt.Writer.psm1
+Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Remove-PSTrueCryptContainer when called..." {
     
-    Context "with valid name..." {
+    Context "and user accepted removal..." {
 
         InModuleScope PSTrueCrypt {
+            $SUT = $True
 
-            Mock Get-SubKeyPath { return 'e03e195e-c069-4c6b-9d35-6b61cdf40aad' }
+            Start-InModuleScopeForPSTrueCrypt 
 
-            Mock Out-Information{}
+            Mock Get-Confirmation { return $True } 
 
-            Mock Remove-HKCUSubKey{}
+            Mock Out-Information {}
+
+            Join-Path $StorageLocation.Testing -ChildPath '00000000-0000-0000-0000-00000003' -UseTransaction -OutVariable P
+            Get-ItemProperty $P -Name Name -UseTransaction -OutVariable PriorToFixtureCallName 
 
             Remove-PSTrueCryptContainer AlicesTaxDocs
 
-            It "Should of called Remove-HKCUSubKey with correct FullPath value..." {
-                Assert-MockCalled Remove-HKCUSubKey -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    $FullPath -eq 'SOFTWARE\PSTrueCrypt\e03e195e-c069-4c6b-9d35-6b61cdf40aad'
-                }
+            It "Should return its object prior to removal..." {
+                 $PriorToFixtureCallName.Name | Should BeExactly 'AlicesTaxDocs'
             }
 
             It "Should of called Out-Information with 'ContainerSettingsDeleted' value..." {
@@ -25,26 +29,38 @@ Describe "Remove-PSTrueCryptContainer when called..." {
                     $Key -eq 'ContainerSettingsDeleted'
                 }
             }
+
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
     
-    Context "with invalid name..." {
+    Context "and user cancels removal..." {
 
         InModuleScope PSTrueCrypt {
+            $SUT = $True
 
-            Mock Get-SubKeyPath { return $null }
+            Start-InModuleScopeForPSTrueCrypt 
 
-            Mock Out-Error{}
+            Mock Get-Confirmation { return $False } 
 
-            Mock Remove-HKCUSubKey{}
+            Mock Out-Information {}
 
-            Remove-PSTrueCryptContainer AlicesDaxTocs 
+            Join-Path $StorageLocation.Testing -ChildPath '00000000-0000-0000-0000-00000003' -UseTransaction -OutVariable P
+            Get-ItemProperty $P -Name Name -UseTransaction -OutVariable PriorToFixtureCallName 
 
-            It "Should of called Out-Error with 'UnableToFindPSTrueCryptContainer' value..." {
-                Assert-MockCalled Out-Error -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
-                    $Key -eq 'UnableToFindPSTrueCryptContainer'
+            Remove-PSTrueCryptContainer AlicesTaxDocs
+
+            It "Should return its object prior to removal..." {
+                 $PriorToFixtureCallName.Name | Should BeExactly 'AlicesTaxDocs'
+            }
+
+            It "Should of called Out-Information with 'RemoveContainerOperationCancelled' value..." {
+                Assert-MockCalled Out-Information -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
+                    $Key -eq 'RemoveContainerOperationCancelled'
                 }
             }
+
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
 }

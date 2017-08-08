@@ -6,7 +6,7 @@ function Start-InModuleScopeForPSTrueCrypt
 {
     Param 
     (
-        [Parameter(Mandatory = $True, Position = 1)]
+        [Parameter(Mandatory = $False, Position = 1)]
         [ValidateNotNullOrEmpty()]
         [String]$ScriptFile = '.\resources\HKCU_Software_PSTrueCrypt_Test1.ps1'
     )
@@ -23,6 +23,7 @@ function Complete-InModuleScopeForPSTrueCrypt
 
 function Use-TestLocation 
 {
+    [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory=$True, Position=1)]
@@ -36,6 +37,7 @@ function Use-TestLocation
 
 function Use-Location 
 {
+    [CmdletBinding()]
     Param
     (
         [Parameter(Mandatory=$True, Position=1)]
@@ -52,8 +54,15 @@ function Use-Location
         Set-Location -Path $Path -UseTransaction
         Invoke-Command -ScriptBlock $Script
     } catch {
-        
+        Write-Information -MessageData "Use-Location caught an exception!"
     } finally {
         Pop-Location -UseTransaction
     }
 }
+
+Export-ModuleMember -Function Start-InModuleScopeForPSTrueCrypt
+Export-ModuleMember -Function Complete-InModuleScopeForPSTrueCrypt
+Export-ModuleMember -Function Use-Location 
+Export-ModuleMember -Function Use-TestLocation 
+
+Export-ModuleMember -Variable StorageLocation
