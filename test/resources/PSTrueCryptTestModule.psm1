@@ -8,12 +8,18 @@ function Start-InModuleScopeForPSTrueCrypt
     (
         [Parameter(Mandatory = $False, Position = 1)]
         [ValidateNotNullOrEmpty()]
-        [String]$ScriptFile = '.\resources\HKCU_Software_PSTrueCrypt_Test1.ps1'
+        [String]$ScriptFile = '.\resources\HKCU_Software_PSTrueCrypt_Test1.ps1',
+
+        [switch]$NoScriptFile
     )
 
     Start-Transaction
 
-    . $ScriptFile
+    if($NoScriptFile -eq $False) {
+        . $ScriptFile
+    } else {
+        New-Item -Path $StorageLocation.Testing -Force -UseTransaction
+    }
 }
 
 function Complete-InModuleScopeForPSTrueCrypt

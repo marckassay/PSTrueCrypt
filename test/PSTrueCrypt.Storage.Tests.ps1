@@ -3,6 +3,8 @@ Import-Module $PSScriptRoot\..\src\Writer\PSTrueCrypt.Writer.psm1
 Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Test PSTrueCrypt.Storage when called..." {
+# TODO: this context works if all other Context(s) are disabled 
+<#
     Context "with valid data" {
         InModuleScope PSTrueCrypt.Storage {
             Start-InModuleScopeForPSTrueCrypt 
@@ -30,8 +32,7 @@ Describe "Test PSTrueCrypt.Storage when called..." {
             Complete-InModuleScopeForPSTrueCrypt
         }
     }
-# TODO: this context works if all other Context(s) are disabled 
-<#
+
     Context "with invalid data"  {
         InModuleScope PSTrueCrypt.Storage {
             Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test2.ps1'

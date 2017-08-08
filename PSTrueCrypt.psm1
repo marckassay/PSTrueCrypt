@@ -111,7 +111,7 @@ function Mount-TrueCrypt
 
         if($KeyfilePath -ne $null)
         {
-            Edit-HistoryFile -KeyfilePath $KeyfilePath
+            Edit-HistoryFile
         }
     }
 
@@ -354,7 +354,7 @@ function Show-PSTrueCryptContainers
         try 
         {
             Restart-LogicalDiskCheck
-            
+
             $SortedContainers = Get-RegistrySubKeys | `
                                 Read-Container | `
                                 Sort-Object -Property @{ Expression = {$_.Name} }

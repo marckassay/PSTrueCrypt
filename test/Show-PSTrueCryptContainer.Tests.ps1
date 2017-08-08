@@ -1,56 +1,49 @@
-Import-Module -Name .\StubModule
+Import-Module $PSScriptRoot\..\src\Storage\PSTrueCrypt.Storage.psm1
+Import-Module $PSScriptRoot\..\src\Writer\PSTrueCrypt.Writer.psm1
+Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Test Show-PSTrueCryptContainer when called..." {
-   
     Context "while 4 containers are in registry" {
-
         InModuleScope PSTrueCrypt {
-            
             $SUT = $True
 
-            Start-Transaction
+            Start-InModuleScopeForPSTrueCrypt 
 
-            . .\resources\HKCU_Software_PSTrueCrypt_Test1.ps1
-
-            Set-Location HKCU:\Software\PSTrueCrypt\Test -UseTransaction
-
-            Show-PSTrueCryptContainers | Out-Default -OutVariable Containers
-
-            It "Should of internally called Get-ChildItem returning expected number of items..." {
-               $Containers.Count | Should Be 4
+            Mock Restart-LogicalDiskCheck {} -Verifiable
+            Mock Format-Table {} -Verifiable -ParameterFilter { ($InputObject.Count -eq 4) -and `
+                (($InputObject.Item(0)).Name -eq 'AlicesTaxDocs') -and `
+                (($InputObject.Item(1)).Name -eq 'BobsTaxDocs') -and `
+                (($InputObject.Item(2)).Name -eq 'Krytos') -and `
+                (($InputObject.Item(3)).Name -eq 'MarcsTaxDocs')
             }
 
-            Undo-Transaction
+            Show-PSTrueCryptContainers
 
-            $SUT = $False
+            It "Should of called internal functions..." {
+                Assert-VerifiableMocks
+            }
+
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
    
     Context "while no containers are in registry" {
-
         InModuleScope PSTrueCrypt {
-            
             $SUT = $True
 
-            Start-Transaction
-
-            New-Item -Path "HKCU:\Software\PSTrueCrypt\Test\" -Force -UseTransaction
-
-            Set-Location HKCU:\Software\PSTrueCrypt\Test -UseTransaction
+            Start-InModuleScopeForPSTrueCrypt -NoScriptFile
 
             Mock Out-Information {}
 
-            Show-PSTrueCryptContainers -Debug
-
+            Show-PSTrueCryptContainers
+            
             It "Should of called Out-Information with 'NoPSTrueCryptContainerFound' value..." {
                 Assert-MockCalled Out-Information -ModuleName PSTrueCrypt -Times 1 -ParameterFilter {
                     $Key -eq 'NoPSTrueCryptContainerFound'
                 }
             }
 
-            Undo-Transaction
-
-            $SUT = $False
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
 }
