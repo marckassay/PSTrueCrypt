@@ -204,7 +204,7 @@ function Get-Confirmation
         [string]$Message
     )
     
-    $Question = 'Are you sure you want to proceed?'
+    $Question = 'Do you want to proceed?'
 
     $Choices = New-Object Collections.ObjectModel.Collection[Management.Automation.Host.ChoiceDescription]
     $Choices.Add((New-Object Management.Automation.Host.ChoiceDescription -ArgumentList "&Yes"))

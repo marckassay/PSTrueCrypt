@@ -1,5 +1,6 @@
 using module .\Container.psm1
 using module ..\Writer\PSTrueCrypt.Writer.psm1
+
 function Get-RegistrySubKeys
 {
     [CmdletBinding()]
@@ -114,7 +115,7 @@ function Get-SubKeyByPropertyValue
                         $FoundKey = $_
                     }
                 } elseif($Name) {
-                if((Get-ItemPropertyValue -Path $P -Name Name -UseTransaction) -eq $Name) {
+                    if((Get-ItemPropertyValue -Path $P -Name Name -UseTransaction) -eq $Name) {
                         $FoundKey = $_
                     }
                 } elseif($MountLetter) {
@@ -166,8 +167,8 @@ function Remove-SubKeyByPropertyValue
             if($RegistrySubKeys)
             {
                 if($Id) {
-                    if(($RegistrySubKeys | Get-ItemPropertyValue -Name PSChildName ) -eq $Id) {
-                         Remove-Item .\$_.PSChildName -UseTransaction -Recurse -Force
+                    if((Get-ItemPropertyValue $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
+                        Remove-Item $_.PSChildName -UseTransaction -Recurse -Force
                     }
                 } elseif($Name) {
                     if((Get-ItemPropertyValue $_.PSChildName -Name Name -UseTransaction) -eq $Name) {

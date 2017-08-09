@@ -1,4 +1,3 @@
-
 # internal function
 function Get-TrueCryptMountParams 
 {
