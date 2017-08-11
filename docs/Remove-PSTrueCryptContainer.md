@@ -12,7 +12,7 @@ Remove settings that were added by the New-PSTrueCryptContainer function.
 ## SYNTAX
 
 ```
-Remove-PSTrueCryptContainer [-Name] <String>
+Remove-PSTrueCryptContainer [-Name] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -22,7 +22,7 @@ Remove the subkey in the HKCU:\Software\PSTrueCrypt registry, that contains the 
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-Remove-PSTrueCryptContainer -Name Kryptos
+C:\> Remove-PSTrueCryptContainer -Name Kryptos
 ```
 
 ## PARAMETERS
@@ -41,6 +41,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

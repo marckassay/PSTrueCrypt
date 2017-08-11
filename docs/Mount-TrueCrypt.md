@@ -12,7 +12,7 @@ Mounts a TrueCrypt container.
 ## SYNTAX
 
 ```
-Mount-TrueCrypt [-KeyfilePath <Array>] [-Password <SecureString>] [-Name] <String>
+Mount-TrueCrypt [-KeyfilePath <Array>] [-Password <SecureString>] [-Name] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,18 +25,18 @@ The default Alias name is: mt
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-PS C:\\\>Mount-TrueCrypt -Name Kryptos
+C:\> Mount-TrueCrypt -Name Kryptos
 ```
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-PS C:\\\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
+C:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3
 ```
 
 ### -------------------------- EXAMPLE 3 --------------------------
 ```
-PS C:\\\>$SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
-PS C:\\\>Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword
+C:\> $SecurePassword = "123abc" | ConvertTo-SecureString -AsPlainText -Force
+C:\> Mount-TrueCrypt -Name Kryptos -KeyfilePath C:/Music/Courage.mp3 -Password $SecurePassword
 ```
 
 ## PARAMETERS
@@ -87,6 +87,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

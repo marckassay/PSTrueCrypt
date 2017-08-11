@@ -92,6 +92,23 @@ Please add any feedback, concerns, requests and/or bugs in the 'Issues' section 
 	E:\>
 	```
 
+	### Edit-PSTrueCryptContainer
+
+	Use this function to edit an existing container that has been created with New-PSTrueCryptContainer.
+	```powershell
+	E:\> Edit-PSTrueCryptContainer Bobby -NewName Bob
+
+	Name Location                            MountLetter Product   Timestamp
+	---- --------                            ----------- -------   ---------
+	Bob  D:\Google Drive\Documents\truecrypt T           TrueCrypt     False
+
+	Edit-PSTrueCryptContainer will set Bobby with the above values.
+	Do you want to proceed?
+	[Y] Yes  [N] No  [?] Help (default is "N"): Y
+	'Bob' PSTrueCrypt container has been updated!
+	E:\>
+	```
+
 	### Remove-PSTrueCryptContainer
 
 	```powershell

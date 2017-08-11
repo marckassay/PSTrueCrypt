@@ -12,7 +12,7 @@ Dismounts a TrueCrypt container.
 ## SYNTAX
 
 ```
-Dismount-TrueCrypt [-Name] <String>
+Dismount-TrueCrypt [-Name] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,7 +25,7 @@ The default Alias name is: dmt
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-PS C:\\\>Dismount-TrueCrypt -Name Kryptos
+C:\> Dismount-TrueCrypt -Name Kryptos
 ```
 
 ## PARAMETERS
@@ -44,6 +44,9 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

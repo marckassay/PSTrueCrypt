@@ -4,41 +4,45 @@ online version: https://github.com/marckassay/PSTrueCrypt
 schema: 2.0.0
 ---
 
-# New-PSTrueCryptContainer
+# Edit-PSTrueCryptContainer
 
 ## SYNOPSIS
-Adds a new PSTrueCryptContainer in the registry with the following values: Name, Location, MountLetter, Product and Timestamp
+Edits a PSTrueCryptContainer in the registry with any of the following values: Name, Location, MountLetter, Product and Timestamp
 
 ## SYNTAX
 
 ```
-New-PSTrueCryptContainer [-Name] <String> [-Location] <String> [-MountLetter] <String> [-Product] <String>
+Edits-PSTrueCryptContainer [-Name] <String> [-Location] <String> [-MountLetter] <String> [-Product] <String>
  [-Timestamp] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-When invoked successfully, the container's: location, preferred mount drive letter, and name will be stored as a subkey in the HKCU:\Software\PSTrueCrypt registry key. 
-If call for first time, PSTrueCrypt registry key will be created.
+Edits a PSTrueCryptContainer in the registry with any of the following values: Name, Location, MountLetter, Product and Timestamp
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-C:\> New-PSTrueCryptContainer -Name Kryptos -Location D:\Kryptos -MountLetter F -Product TrueCrypt
+C:\> Edit-PSTrueCryptContainer Kriptos -Name Kryptos
+```
+
+### -------------------------- EXAMPLE 2 --------------------------
+```
+C:\> Edit-PSTrueCryptContainer Kryptos -Location D:\Kryptos -MountLetter F -Timestamp
 ```
 
 ## PARAMETERS
 
 ### -Name
-An arbitrary name to reference this setting when using Mount-TrueCrypt or Dismount-TrueCrypt.
+The existing name to reference this setting. If you want to 
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
-Position: 2
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -52,8 +56,8 @@ Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
-Position: 3
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -67,8 +71,8 @@ Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
-Position: 4
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -82,8 +86,8 @@ Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
-Position: 5
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

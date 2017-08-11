@@ -12,7 +12,7 @@ Dismounts all TrueCrypt and VeraCrypt containers.
 ## SYNTAX
 
 ```
-Dismount-TrueCryptForceAll
+Dismount-TrueCryptForceAll [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,15 +24,18 @@ The default Alias name is: dmt*
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-PS C:\\\>Dismount-TrueCryptForceAll
+C:\> Dismount-TrueCryptForceAll
 ```
 
 ### -------------------------- EXAMPLE 2 --------------------------
 ```
-PS C:\\\>dmt*
+C:\> dmt*
 ```
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

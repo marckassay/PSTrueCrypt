@@ -135,4 +135,7 @@
   <data name="NoPSTrueCryptContainerFound" xml:space="preserve">
     <value>No subkey of HKCU:\SOFTWARE\PSTrueCrypt exists.  Use New-PSTrueCryptContainer to add a subkey.</value>
   </data> 
+  <data name="EditContainerOperationSucceeded" xml:space="preserve">
+    <value>'{0}' PSTrueCrypt container has been updated!</value>
+  </data>
 </root>

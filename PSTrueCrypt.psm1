@@ -329,11 +329,11 @@ function Edit-PSTrueCryptContainer
                                     -Product $ProposedParameterValues.Product `
                                     -Timestamp $ProposedParameterValues.Timestamp
 
-                    #Out-Information 'NewContainerOperationSucceeded' -Format $Name
+                    Out-Information 'EditContainerOperationSucceeded' -Format $ProposedParameterValues.Name
                 }
                 else
                 {
-                    #Out-Warning 'NewContainerOperationCancelled'
+                    Out-Warning 'EditContainerOperationCancelled'
                 }
             }
             catch [System.UnauthorizedAccessException]
@@ -341,7 +341,7 @@ function Edit-PSTrueCryptContainer
                 Out-Error 'UnauthorizedAccessException'
             }
         } else {
-            Out-Error 'NoPSTrueCryptContainerFound' -Action Stop
+            Out-Error 'NoPSTrueCryptContainerFound'
         }
     }
     

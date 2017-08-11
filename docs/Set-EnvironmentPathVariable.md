@@ -4,35 +4,31 @@ online version: https://github.com/marckassay/PSTrueCrypt
 schema: 2.0.0
 ---
 
-# Set-CryptEnvironmentVariable 
+# Remove-PSTrueCryptContainer
 
 ## SYNOPSIS
-Sets the TrueCrypt directory in the environment variable field.
+Remove settings that were added by the New-PSTrueCryptContainer function.
 
 ## SYNTAX
 
 ```
-Set-CryptEnvironmentVariable [-PathVar] <String>
+Remove-PSTrueCryptContainer [-Name] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Will accept TrueCrypt or VeraCrypt directory paths to be used to set the operating system's environment variable.
-This is needed when Mount-TrueCrypt or Dismount-TrueCrypt functions are called. 
-It will check ParVar parameter to make sure its valid before setting it as an environment variable.
+Remove the subkey in the HKCU:\Software\PSTrueCrypt registry, that contains the value of Name parameter.
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-Setting TrueCrypt directory.
 ```
-PS C:\\\>Set-CryptEnvironmentVariable 'C:\Program Files\TrueCrypt'
+C:\> Remove-PSTrueCryptContainer -Name Kryptos
 ```
-
 
 ## PARAMETERS
 
-### -PathVar
-The directory path where TrueCrypt or VeraCrypt executable resides.
+### -Name
+The name that is used to reference this setting for Mount-TrueCrypt or Dismount-TrueCrypt functions.
 
 ```yaml
 Type: String
@@ -40,11 +36,14 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: True
-Position: 1
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

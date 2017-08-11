@@ -12,7 +12,7 @@ Displays all settings for mounting and dismounting.
 ## SYNTAX
 
 ```
-Show-PSTrueCryptContainers
+Show-PSTrueCryptContainers [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -22,7 +22,7 @@ When this parameterless function is called, a list is displayed in the command-l
 
 ### -------------------------- EXAMPLE 1 --------------------------
 ```
-PS C:\>Show-PSTrueCryptContainers
+C:\> Show-PSTrueCryptContainers
  Name  Location                      MountLetter Product
  ----  --------                      ----------- -------
  brian C:\passwords                  X           VeraCrypt
@@ -30,10 +30,13 @@ PS C:\>Show-PSTrueCryptContainers
  lori  D:\Documents                  H           TrueCrypt
  1pw   F:\Google Drive\1pw           Z           TrueCrypt
 
-PS C:\>
+C:\> 
 ```
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
