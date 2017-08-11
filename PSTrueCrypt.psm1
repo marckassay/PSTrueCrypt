@@ -284,8 +284,7 @@ function Edit-PSTrueCryptContainer
         [ValidateSet("TrueCrypt", "VeraCrypt")]
         [string]$Product,
 
-        [Parameter(Mandatory = $False)]
-        [bool]$Timestamp
+        [switch]$Timestamp
     )
 
     DynamicParam
@@ -308,7 +307,7 @@ function Edit-PSTrueCryptContainer
                                           Location    = ($Location, $Container.Location, 1 -notmatch "^$")[0]
                                           MountLetter = ($MountLetter, $Container.MountLetter, 1 -notmatch "^$")[0]
                                           Product     = ($Product, $Container.Product, 1 -notmatch "^$")[0]
-                                          Timestamp   = $True}
+                                          Timestamp   = $Timestamp.IsPresent }
 
             Format-Table @{Label="Name";Expression={($_.Name)}},`
                         @{Label="Location";Expression={($_.Location)}},`
@@ -339,11 +338,10 @@ function Edit-PSTrueCryptContainer
             }
             catch [System.UnauthorizedAccessException]
             {
-                # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
                 Out-Error 'UnauthorizedAccessException'
             }
         } else {
-            #Out-Warning 'ContainerNameAlreadyExists' -Format $Name
+            Out-Error 'NoPSTrueCryptContainerFound' -Action Stop
         }
     }
     

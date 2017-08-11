@@ -264,9 +264,10 @@ function Write-Container
         [ValidatePattern("^[a-zA-Z]$")]
         [string]$LastMountedUri,
 
-        [switch]$NoActivity,
+        [Parameter(Mandatory = $False)]
+        [bool]$Timestamp,
 
-        [switch]$Timestamp,
+        [switch]$NoActivity,
 
         [switch]$UseIndependentTransaction
     )
@@ -311,9 +312,7 @@ function Write-Container
 
             $Container.SetIsMounted($IsMounted)
 
-            if($Timestamp.IsPresent) {
-                $Container.SetTimestamp($True)
-            }
+            $Container.SetTimestamp($Timestamp)
 
             # if this is switched (True), that means we dont want to record this activity
             if($NoActivity.IsPresent -eq $False) {
