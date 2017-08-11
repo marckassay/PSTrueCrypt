@@ -241,7 +241,7 @@ function Write-Container
         [ValidateNotNullOrEmpty()]
         [string]$KeyId,
 
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $False)]
         [bool]$IsMounted,
 
         [Parameter(Mandatory = $False)]

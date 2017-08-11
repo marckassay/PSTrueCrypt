@@ -264,6 +264,77 @@ function New-PSTrueCryptContainer
     }
 }
 
+#.ExternalHelp PSTrueCrypt-help.xml
+function Edit-PSTrueCryptContainer
+{
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory = $True, Position = 1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter(Mandatory = $False, Position = 2)]
+        [ValidateNotNullOrEmpty()]
+        [string]$NewName,
+
+        [Parameter(Mandatory = $False, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Location,
+
+        [Parameter(Mandatory = $False, Position = 4)]
+        [ValidatePattern("^[a-zA-Z]$")]
+        [string]$MountLetter,
+
+        [Parameter(Mandatory = $False, Position = 5)]
+        [ValidateSet("TrueCrypt", "VeraCrypt")]
+        [string]$Product,
+
+        [switch]$Timestamp
+    )
+    
+    begin
+    {
+        Invoke-BeginBlock -IsSystemUnderTest:$SUT
+    }
+
+    process
+    {
+        $FoundKey = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name
+
+        if($FoundKey)
+        {
+            $Decision = Get-Confirmation -Message "Edit-PSTrueCryptContainer will edit $Name with the following values:"
+
+            try
+            {
+                if ($Decision -eq $True)
+                {
+                   $FoundKey | Write-Container -Name $NewName
+
+                    #Out-Information 'NewContainerOperationSucceeded' -Format $Name
+                }
+                else
+                {
+                    #Out-Warning 'NewContainerOperationCancelled'
+                }
+            }
+            catch [System.UnauthorizedAccessException]
+            {
+                # TODO: append to this message of options for a solution.  solution will be determined if the user is in an elevated CLS.
+                Out-Error 'UnauthorizedAccessException'
+            }
+        } else {
+            #Out-Warning 'ContainerNameAlreadyExists' -Format $Name
+        }
+    }
+    
+    end
+    {
+        Invoke-EndBlock -IsSystemUnderTest:$SUT
+    }
+}
+
 
 #.ExternalHelp PSTrueCrypt-help.xml
 function Remove-PSTrueCryptContainer 

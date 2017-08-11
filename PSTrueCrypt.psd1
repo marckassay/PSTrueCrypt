@@ -69,6 +69,7 @@ FunctionsToExport = @(
     'Dismount-TrueCrypt', 
     'Dismount-TrueCryptForceAll', 
     'New-PSTrueCryptContainer', 
+    'Edit-PSTrueCryptContainer', 
     'Remove-PSTrueCryptContainer', 
     'Show-PSTrueCryptContainers',
     'Get-RegistrySubKeys',
