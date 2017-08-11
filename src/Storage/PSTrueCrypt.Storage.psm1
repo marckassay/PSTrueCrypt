@@ -283,10 +283,10 @@ function Write-Container
         if($RegistrySubKey -or $KeyId)
         {
             $Container = [Container]::new()
-            if($RegistrySubKey) {
-                $Container.SetKey($RegistrySubKey)
-            } elseif ($KeyId) {
+            if ($KeyId) {
                 $Container.SetKeyId($KeyId)
+            } else {
+                $Container.SetKey($RegistrySubKey)
             }
 
             if($Name) {

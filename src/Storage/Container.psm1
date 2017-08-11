@@ -28,7 +28,7 @@ class Container
             throw "PSTrueCrypt's Container.SetKeyId() received invalid data."
         }
 
-        $this.SubKey = Get-Item $Value
+        $this.SubKey = Get-Item $Value -UseTransaction
     }
 
 

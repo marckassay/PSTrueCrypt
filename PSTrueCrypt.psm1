@@ -267,32 +267,32 @@ function New-PSTrueCryptContainer
 #.ExternalHelp PSTrueCrypt-help.xml
 function Edit-PSTrueCryptContainer
 {
-    [CmdletBinding()]
+    [CmdletBinding(PositionalBinding=$False)]
     Param
     (
-        [Parameter(Mandatory = $True, Position = 1)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Name,
-
-        [Parameter(Mandatory = $False, Position = 2)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter(Mandatory = $False)]
         [string]$NewName,
 
-        [Parameter(Mandatory = $False, Position = 3)]
-        [ValidateNotNullOrEmpty()]
+        [Parameter(Mandatory = $False)]
         [string]$Location,
 
-        [Parameter(Mandatory = $False, Position = 4)]
+        [Parameter(Mandatory = $False)]
         [ValidatePattern("^[a-zA-Z]$")]
         [string]$MountLetter,
 
-        [Parameter(Mandatory = $False, Position = 5)]
+        [Parameter(Mandatory = $False)]
         [ValidateSet("TrueCrypt", "VeraCrypt")]
         [string]$Product,
 
-        [switch]$Timestamp
+        [Parameter(Mandatory = $False)]
+        [bool]$Timestamp
     )
-    
+
+    DynamicParam
+    {
+        return Get-DynamicParameterValues -IsSystemUnderTest:$SUT
+    }
+
     begin
     {
         Invoke-BeginBlock -IsSystemUnderTest:$SUT
@@ -300,17 +300,35 @@ function Edit-PSTrueCryptContainer
 
     process
     {
-        $FoundKey = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name
+        $Container = Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name $PSBoundParameters.Name | Read-Container
 
-        if($FoundKey)
+        if($Container)
         {
-            $Decision = Get-Confirmation -Message "Edit-PSTrueCryptContainer will edit $Name with the following values:"
+            $ProposedParameterValues = [PSCustomObject]@{ Name  = ($NewName, $Container.Name, 1 -notmatch "^$")[0]
+                                          Location    = ($Location, $Container.Location, 1 -notmatch "^$")[0]
+                                          MountLetter = ($MountLetter, $Container.MountLetter, 1 -notmatch "^$")[0]
+                                          Product     = ($Product, $Container.Product, 1 -notmatch "^$")[0]
+                                          Timestamp   = $True}
+
+            Format-Table @{Label="Name";Expression={($_.Name)}},`
+                        @{Label="Location";Expression={($_.Location)}},`
+                        @{Label="MountLetter";Expression={($_.MountLetter)}},`
+                        @{Label="Product";Expression={($_.Product)}},`
+                        @{Label="Timestamp";Expression={($_.Timestamp)}}`
+                        -AutoSize -InputObject $ProposedParameterValues
+
+            $Decision = Get-Confirmation -Message ("Edit-PSTrueCryptContainer will set "+$Container.Name+" with the above values.")
 
             try
             {
                 if ($Decision -eq $True)
                 {
-                   $FoundKey | Write-Container -Name $NewName
+                    Write-Container -KeyId $Container.KeyId `
+                                    -Name $ProposedParameterValues.Name `
+                                    -Location $ProposedParameterValues.Location `
+                                    -MountLetter $ProposedParameterValues.MountLetter `
+                                    -Product $ProposedParameterValues.Product `
+                                    -Timestamp $ProposedParameterValues.Timestamp
 
                     #Out-Information 'NewContainerOperationSucceeded' -Format $Name
                 }
