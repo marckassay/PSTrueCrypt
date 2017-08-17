@@ -446,23 +446,19 @@ function Show-PSTrueCryptContainers
                                 Read-Container | `
                                 Sort-Object -Property @{ Expression = {$_.Name} }
             
-            if($SortedContainers) {
-                Format-Table    @{Label="Name";Expression={($_.Name)}},`
-                                @{Label="Location";Expression={($_.Location)}},`
-                                @{Label="MountLetter";Expression={($_.MountLetter)}},`
-                                @{Label="Product";Expression={($_.Product)}},`
-                                @{Label="Timestamp";Expression={($_.Timestamp)}},`
-                                @{Label="IsMounted";Expression={($_.IsMounted)}},`
-                                @{Label="Last Activity";Expression={[DateTime]($_.LastActivity)}}`
-                                -AutoSize -InputObject $SortedContainers
-            } else {
-                Out-Information 'NoPSTrueCryptContainerFound'
-            }
+            Format-Table    @{Label="Name";Expression={($_.Name)}},`
+                            @{Label="Location";Expression={($_.Location)}},`
+                            @{Label="MountLetter";Expression={($_.MountLetter)}},`
+                            @{Label="Product";Expression={($_.Product)}},`
+                            @{Label="Timestamp";Expression={($_.Timestamp)}},`
+                            @{Label="IsMounted";Expression={($_.IsMounted)}},`
+                            @{Label="Last Activity";Expression={[DateTime]($_.LastActivity)}}`
+                            -AutoSize -InputObject $SortedContainers
+           
         }
-        catch [System.Security.SecurityException]
+        catch [System.NullReferenceException]
         {
-            #The user does not have the permissions required to delete the key.
-            Out-Error 'SecurityException' -Recommendment 'SecurityRecommendment'
+            Out-Information 'NoPSTrueCryptContainerFound'
         }
         finally
         {

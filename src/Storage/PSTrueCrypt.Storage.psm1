@@ -16,30 +16,18 @@ function Get-RegistrySubKeys
 
     end
     {
-        try 
-        {
-            if(-not $Path) {
-                $Path = Get-Location
-            }
-
-            if($FilterScript) {
-                Get-ChildItem $Path -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable RegistrySubKeys
-            } else {
-                Get-ChildItem $Path -UseTransaction -OutVariable RegistrySubKeys
-            }
-
-            if($RegistrySubKeys.Length -eq 0) {
-                throw 'UnableToReadRegistry'
-            }
+        if(-not $Path) {
+            $Path = Get-Location
         }
-        catch 
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-        finally
-        {
 
+        if($FilterScript) {
+            Get-ChildItem $Path -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable RegistrySubKeys
+        } else {
+            Get-ChildItem $Path -UseTransaction -OutVariable RegistrySubKeys
+        }
+
+        if($RegistrySubKeys.Count -eq 0) {
+            throw New-Object System.NullReferenceException
         }
     }
 }
