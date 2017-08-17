@@ -56,14 +56,11 @@ function Use-Location
         $Script
     )
 
-    try {
-        Set-Location -Path $Path -UseTransaction
-        Invoke-Command -ScriptBlock $Script
-    } catch {
-        Write-Information -MessageData "Use-Location caught an exception!"
-    } finally {
-        Pop-Location -UseTransaction
-    }
+    Set-Location -Path $Path -UseTransaction
+
+    Invoke-Command -ScriptBlock $Script
+
+    Pop-Location -UseTransaction
 }
 
 Export-ModuleMember -Function Start-InModuleScopeForPSTrueCrypt

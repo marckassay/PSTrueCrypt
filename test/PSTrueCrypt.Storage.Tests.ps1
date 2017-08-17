@@ -3,8 +3,6 @@ Import-Module $PSScriptRoot\..\src\Writer\PSTrueCrypt.Writer.psm1
 Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Test PSTrueCrypt.Storage when called..." {
-# TODO: this context works if all other Context(s) are disabled 
-<#
     Context "with valid data" {
         InModuleScope PSTrueCrypt.Storage {
             Start-InModuleScopeForPSTrueCrypt 
@@ -35,22 +33,21 @@ Describe "Test PSTrueCrypt.Storage when called..." {
 
     Context "with invalid data"  {
         InModuleScope PSTrueCrypt.Storage {
-            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test2.ps1'
+            Start-InModuleScopeForPSTrueCrypt -NoScriptFile 
 
-            Mock Out-Error{} -Verifiable
-
-            Use-TestLocation {
-                Get-RegistrySubKeys | Get-SubKeyByPropertyValue -Name 'AlicesTaxDocs' | Read-Container
+            try {
+                Use-TestLocation {
+                    Get-RegistrySubKeys
+                } -ErrorAction Ignore -ErrorVariable RegistrySubKeysError
+            } catch [System.NullReferenceException] {
+                $ErrorType = $RegistrySubKeysError.Item(0).Exception.toString()
             }
-
-            It "Should of called Out-Error with 'UnableToReadRegistry' value..." {
-                Assert-MockCalled Out-Error -ModuleName PSTrueCrypt.Storage -Times 1 -ParameterFilter {
-                    $Key -eq 'UnableToReadRegistry'
-                }
-            } 
+            
+            It "Should of thrown 'NullReferenceException' exception..." {
+                $ErrorType |  Should Match 'System.NullReferenceException'
+            }
 
             Complete-InModuleScopeForPSTrueCrypt
         } 
     }
-#>
 }

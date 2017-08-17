@@ -49,21 +49,9 @@ function Get-SubKeyNames
 
     process
     {
-        try 
-        {
-            if($RegistrySubKeys) {
-                $P = Join-Path $Path -Child $RegistrySubKeys.PSChildName
-                Get-ItemPropertyValue -Path $P -Name Name -OutVariable +Names -UseTransaction
-            }
-        }
-        catch [System.Security.SecurityException]
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-        finally
-        {
-
+        if($RegistrySubKeys) {
+            $P = Join-Path $Path -Child $RegistrySubKeys.PSChildName
+            Get-ItemPropertyValue -Path $P -Name Name -OutVariable +Names -UseTransaction
         }
     }
 }
@@ -91,36 +79,24 @@ function Get-SubKeyByPropertyValue
 
     process
     {
-        try 
+        if($RegistrySubKeys)
         {
-            if($RegistrySubKeys)
-            {
-                $Path = Get-Location -UseTransaction
-                $P = Join-Path $Path -Child $RegistrySubKeys.PSChildName
+            $Path = Get-Location -UseTransaction
+            $P = Join-Path $Path -Child $RegistrySubKeys.PSChildName
 
-                if($Id) {
-                    if((Get-ItemPropertyValue -Path $P -Name PSChildName -UseTransaction) -eq $Id) {
-                        $FoundKey = $_
-                    }
-                } elseif($Name) {
-                    if((Get-ItemPropertyValue -Path $P -Name Name -UseTransaction) -eq $Name) {
-                        $FoundKey = $_
-                    }
-                } elseif($MountLetter) {
-                    if((Get-ItemPropertyValue -Path $P -Name MountLetter -UseTransaction) -eq $MountLetter) {
-                        $FoundKey = $_
-                    }
+            if($Id) {
+                if((Get-ItemPropertyValue -Path $P -Name PSChildName -UseTransaction) -eq $Id) {
+                    $FoundKey = $_
+                }
+            } elseif($Name) {
+                if((Get-ItemPropertyValue -Path $P -Name Name -UseTransaction) -eq $Name) {
+                    $FoundKey = $_
+                }
+            } elseif($MountLetter) {
+                if((Get-ItemPropertyValue -Path $P -Name MountLetter -UseTransaction) -eq $MountLetter) {
+                    $FoundKey = $_
                 }
             }
-        }
-        catch [System.Security.SecurityException]
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-        finally
-        {
-
         }
     }
 
@@ -150,29 +126,17 @@ function Remove-SubKeyByPropertyValue
     
     process
     {
-        try 
+        if($RegistrySubKeys)
         {
-            if($RegistrySubKeys)
-            {
-                if($Id) {
-                    if((Get-ItemPropertyValue $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
-                        Remove-Item $_.PSChildName -UseTransaction -Recurse -Force
-                    }
-                } elseif($Name) {
-                    if((Get-ItemPropertyValue $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
-                        Remove-Item $_.PSChildName -UseTransaction -Recurse -Force
-                    }
+            if($Id) {
+                if((Get-ItemPropertyValue $_.PSChildName -Name PSChildName -UseTransaction) -eq $Id) {
+                    Remove-Item $_.PSChildName -UseTransaction -Recurse -Force
+                }
+            } elseif($Name) {
+                if((Get-ItemPropertyValue $_.PSChildName -Name Name -UseTransaction) -eq $Name) {
+                    Remove-Item $_.PSChildName -UseTransaction -Recurse -Force
                 }
             }
-        }
-        catch [System.Security.SecurityException]
-        {
-            # TODO: Need to throw specific error to calling method
-            Out-Error 'UnableToReadRegistry'
-        }
-        finally
-        {
-
         }
     }
 
