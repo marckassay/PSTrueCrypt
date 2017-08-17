@@ -24,10 +24,10 @@ function Get-RegistrySubKeys
             Get-ChildItem $Path -UseTransaction | Where-Object -FilterScript $FilterScript -OutVariable RegistrySubKeys
         } else {
             Get-ChildItem $Path -UseTransaction -OutVariable RegistrySubKeys
-        }
-
-        if($RegistrySubKeys.Count -eq 0) {
-            throw New-Object System.NullReferenceException
+            # TODO: works for now, but may not if a caller isnt expecting an exception.
+            if($RegistrySubKeys.Count -eq 0) {
+                throw New-Object System.NullReferenceException
+            }
         }
     }
 }
