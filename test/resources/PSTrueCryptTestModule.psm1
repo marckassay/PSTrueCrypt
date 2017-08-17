@@ -12,7 +12,7 @@ function Start-InModuleScopeForPSTrueCrypt
 
         [switch]$NoScriptFile
     )
-
+    
     Start-Transaction
 
     if($NoScriptFile -eq $False) {
@@ -56,16 +56,17 @@ function Use-Location
         $Script
     )
 
+    Push-Location
+    
     Set-Location -Path $Path -UseTransaction
 
     Invoke-Command -ScriptBlock $Script
 
-    Pop-Location -UseTransaction
+    Pop-Location
 }
 
 Export-ModuleMember -Function Start-InModuleScopeForPSTrueCrypt
 Export-ModuleMember -Function Complete-InModuleScopeForPSTrueCrypt
-Export-ModuleMember -Function Use-Location 
 Export-ModuleMember -Function Use-TestLocation 
 
 Export-ModuleMember -Variable StorageLocation

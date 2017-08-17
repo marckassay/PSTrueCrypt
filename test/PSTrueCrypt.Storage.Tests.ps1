@@ -41,6 +41,8 @@ Describe "Test PSTrueCrypt.Storage when called..." {
                 } -ErrorAction Ignore -ErrorVariable RegistrySubKeysError
             } catch [System.NullReferenceException] {
                 $ErrorType = $RegistrySubKeysError.Item(0).Exception.toString()
+
+                Set-Location -Path $PSScriptRoot
             }
             
             It "Should of thrown 'NullReferenceException' exception..." {

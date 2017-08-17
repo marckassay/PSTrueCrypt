@@ -4,7 +4,7 @@ Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Remove-PSTrueCryptContainer when called..." {
     
-    Context "and user accepted removal..." {
+    Context "and user accepts removal..." {
 
         InModuleScope PSTrueCrypt {
             $SUT = $True

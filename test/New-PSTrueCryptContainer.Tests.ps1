@@ -72,11 +72,9 @@ Describe "Test New-PSTrueCryptContainer when called..." {
             
             Mock Get-Confirmation { return $True } -Verifiable
 
+            Mock New-Container {}
+            
             Mock Out-Information{}
-
-            Mock New-Guid { return '00000000-0000-0000-0000-00000003' }
-
-            Mock New-Container {} 
 
             New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V' -Product 'VeraCrypt' -Timestamp
 
@@ -124,11 +122,12 @@ Describe "Test New-PSTrueCryptContainer when called..." {
         }
     }
 
-    Context "with invalid and valid MountLetter values" {
+    Context "with invalid parameter (MountLetter) values" {
 
         InModuleScope PSTrueCrypt {
-
-            Mock Get-Confirmation {return $True}
+            $SUT = $True
+            
+            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test1.ps1'
             
             It "Should of expected an exception from MountLetter attribute..." {
                 {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'VV' -Product 'VeraCrypt' -Timestamp} | Should Throw "Cannot validate argument on parameter 'MountLetter'"
@@ -137,9 +136,7 @@ Describe "Test New-PSTrueCryptContainer when called..." {
                 {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V ' -Product 'VeraCrypt' -Timestamp} | Should Throw "Cannot validate argument on parameter 'MountLetter'"
             }
 
-            It "Should of not expected an exception from MountLetter attribute..." {
-                {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'V' -Product 'VeraCrypt' -Timestamp} | Should Not Throw "Cannot validate argument on parameter 'MountLetter'"
-            }
+            Complete-InModuleScopeForPSTrueCrypt
         }
     }
 }
