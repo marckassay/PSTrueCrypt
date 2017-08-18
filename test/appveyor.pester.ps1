@@ -23,11 +23,12 @@ param([switch]$Finalize)
     if(-not $Finalize)
     {
         "`n`tSTATUS: Testing with PowerShell $PSVersion`n"
-    
-        Import-Module Pester
-        Import-Module PSTrueCrypt
+        
+        refreshenv
 
-        Invoke-Pester -Path "$ProjectRoot\Test" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru |
+        Import-Module Pester
+
+        Invoke-Pester -Path "$ProjectRoot\Test" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru | `
             Export-Clixml -Path "$ProjectRoot\PesterResults$PSVersion.xml"
     }
 
@@ -35,7 +36,7 @@ param([switch]$Finalize)
     else
     {
         #Show status...
-            $AllFiles = Get-ChildItem -Path $ProjectRoot\*Results*.xml | Select -ExpandProperty FullName
+            $AllFiles = Get-ChildItem -Path $ProjectRoot\*Results*.xml | Select-Object -ExpandProperty FullName
             "`n`tSTATUS: Finalizing results`n"
             "COLLATING FILES:`n$($AllFiles | Out-String)"
 
@@ -53,16 +54,16 @@ param([switch]$Finalize)
         #What failed?
             $Results = @( Get-ChildItem -Path "$ProjectRoot\PesterResults*.xml" | Import-Clixml )
             
-            $FailedCount = $Results |
-                Select -ExpandProperty FailedCount |
-                Measure-Object -Sum |
-                Select -ExpandProperty Sum
+            $FailedCount = $Results | `
+                Select-Object -ExpandProperty FailedCount | `
+                Measure-Object -Sum | `
+                Select-Object -ExpandProperty Sum
     
             if ($FailedCount -gt 0) {
 
                 $FailedItems = $Results |
-                    Select -ExpandProperty TestResult |
-                    Where {$_.Passed -notlike $True}
+                    Select-Object -ExpandProperty TestResult | `
+                    Where-Object {$_.Passed -notlike $True}
 
                 "FAILED TESTS SUMMARY:`n"
                 $FailedItems | ForEach-Object {
@@ -73,8 +74,8 @@ param([switch]$Finalize)
                         Name = "It $($Test.Name)"
                         Result = $Test.Result
                     }
-                } |
-                    Sort Describe, Context, Name, Result |
+                } | `
+                    Sort-Object Describe, Context, Name, Result | `
                     Format-List
 
                 throw "$FailedCount tests failed."
