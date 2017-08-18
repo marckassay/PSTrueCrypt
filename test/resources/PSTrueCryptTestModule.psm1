@@ -8,7 +8,7 @@ function Start-InModuleScopeForPSTrueCrypt
     (
         [Parameter(Mandatory = $False, Position = 1)]
         [ValidateNotNullOrEmpty()]
-        [String]$ScriptFile = '.\resources\HKCU_Software_PSTrueCrypt_Test1.ps1',
+        [String]$ScriptFile = "$PSScriptRoot\HKCU_Software_PSTrueCrypt_Test1.ps1",
 
         [switch]$NoScriptFile
     )

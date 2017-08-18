@@ -7,7 +7,7 @@
 <# 
 Describe "Test Edit-HistoryFile when called..." {
 
-    #Copy-Item "$PSScriptRoot\resources\ConsoleHost_history.1.txt" -Destination $TestDrive
+    #Copy-Item "$PSScriptRoot\ConsoleHost_history.1.txt" -Destination $TestDrive
     
     Context "With full function name..." {
 

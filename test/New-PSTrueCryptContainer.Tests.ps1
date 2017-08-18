@@ -1,5 +1,3 @@
-Import-Module $PSScriptRoot\..\src\Storage\PSTrueCrypt.Storage.psm1
-Import-Module $PSScriptRoot\..\src\Writer\PSTrueCrypt.Writer.psm1
 Import-Module $PSScriptRoot\resources\PSTrueCryptTestModule.psm1
 
 Describe "Test New-PSTrueCryptContainer when called..." {
@@ -7,7 +5,7 @@ Describe "Test New-PSTrueCryptContainer when called..." {
         InModuleScope PSTrueCrypt {
             $SUT = $True
 
-            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test3.ps1'
+            Start-InModuleScopeForPSTrueCrypt -ScriptFile "$PSScriptRoot\resources\HKCU_Software_PSTrueCrypt_Test3.ps1"
             
             Mock Get-Confirmation { return $True } -Verifiable
 
@@ -68,7 +66,7 @@ Describe "Test New-PSTrueCryptContainer when called..." {
         InModuleScope PSTrueCrypt {
             $SUT = $True
 
-            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test3.ps1'
+            Start-InModuleScopeForPSTrueCrypt -ScriptFile "$PSScriptRoot\resources\HKCU_Software_PSTrueCrypt_Test3.ps1"
             
             Mock Get-Confirmation { return $True } -Verifiable
 
@@ -127,7 +125,7 @@ Describe "Test New-PSTrueCryptContainer when called..." {
         InModuleScope PSTrueCrypt {
             $SUT = $True
             
-            Start-InModuleScopeForPSTrueCrypt -ScriptFile '.\resources\HKCU_Software_PSTrueCrypt_Test1.ps1'
+            Start-InModuleScopeForPSTrueCrypt -ScriptFile "$PSScriptRoot\resources\HKCU_Software_PSTrueCrypt_Test1.ps1"
             
             It "Should of expected an exception from MountLetter attribute..." {
                 {New-PSTrueCryptContainer -Name 'AlicesTaxDocs' -Location "C:\Users\Alice\Documents\AlicesContainer" -MountLetter 'VV' -Product 'VeraCrypt' -Timestamp} | Should Throw "Cannot validate argument on parameter 'MountLetter'"

@@ -4,7 +4,7 @@ Describe "Test Dismount-TrueCrypt when called..." {
     Context "with valid Name" {
         InModuleScope PSTrueCrypt {
             $SUT = $True
-
+             $ee = $MyInvocation
             Mock Start-CimLogicalDiskWatch {}
             Mock Invoke-Expression {}
 

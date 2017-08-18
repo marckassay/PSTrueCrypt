@@ -42,7 +42,8 @@ Describe "Test PSTrueCrypt.Storage when called..." {
             } catch [System.NullReferenceException] {
                 $ErrorType = $RegistrySubKeysError.Item(0).Exception.toString()
 
-                Set-Location -Path $PSScriptRoot
+                # set location to the parent directory where this ps1 file resides...
+                Set-Location -Path (Split-Path -Parent $PSScriptRoot)
             }
             
             It "Should of thrown 'NullReferenceException' exception..." {
