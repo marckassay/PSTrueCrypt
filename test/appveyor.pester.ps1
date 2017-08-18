@@ -1,13 +1,5 @@
 # completely stolen from: https://github.com/RamblingCookieMonster/PSDiskPart
 
-#handle PS2
-if(-not $PSScriptRoot)
-{
-    $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
-}
-
-$PSVersion = $PSVersionTable.PSVersion.Major
-
 # This script will invoke pester tests
 # It should invoke on PowerShell v2 and later
 # We serialize XML results and pull them in appveyor.yml
@@ -16,6 +8,11 @@ $PSVersion = $PSVersionTable.PSVersion.Major
 param([switch]$Finalize)
 
 #Initialize some variables, move to the project root
+    #handle PS2
+    if(-not $PSScriptRoot)
+    {
+        $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
+    }
     $PSVersion = $PSVersionTable.PSVersion.Major
     $TestFile = "TestResultsPS$PSVersion.xml"
     $ProjectRoot = $ENV:APPVEYOR_BUILD_FOLDER
@@ -29,7 +26,7 @@ param([switch]$Finalize)
     
         Import-Module Pester
 
-        Invoke-Pester -Path "$ProjectRoot\Tests" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru |
+        Invoke-Pester -Path "$ProjectRoot\Test" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru |
             Export-Clixml -Path "$ProjectRoot\PesterResults$PSVersion.xml"
     }
 
