@@ -26,7 +26,9 @@ param([switch]$Finalize)
         
         refreshenv
 
-        Import-Module Pester
+    Import-Module Pester
+    # this uri was found in the console view of a build at, eg: ci.appveyor.com/project/marckassay/pstruecrypt/build/0.0.6.21
+    Import-Module -Name C:\projects\PSTrueCrypt
 
         Invoke-Pester -Path "$ProjectRoot\Test" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru | `
             Export-Clixml -Path "$ProjectRoot\PesterResults$PSVersion.xml"

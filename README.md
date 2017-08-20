@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/1dnmc2xm6k4s3pjh/branch/master?svg=true)](https://ci.appveyor.com/project/marckassay/pstruecrypt/branch/master)
+
 # PSTrueCrypt
 PSTrueCrypt is a PowerShell module for mounting TrueCrypt and VeraCrypt containers.  
 
