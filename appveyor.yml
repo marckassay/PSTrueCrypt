@@ -1,6 +1,7 @@
 # completely stolen from: https://github.com/RamblingCookieMonster/PSDiskPart
 
-# See http://www.appveyor.com/docs/appveyor-yml for many more options
+version: 
+  - ps: "$env:APPVEYOR_REPO_BRANCH."+$env:APPVEYOR_REPO_COMMIT.Substring(0,3)
 
 # Skip on updates to the readme.
 # We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
@@ -10,12 +11,6 @@ skip_commits:
 install:
   - cinst pester
 
-build: false
-
 test_script:
-# Test with native PS version
-  - ps: . .\Test\appveyor.pester.ps1
-# Test with PS version 2
-  - ps: powershell.exe -version 2.0 -executionpolicy bypass -noprofile -file .\Test\appveyor.pester.ps1
-# Finalize pass - collect and upload results
-  - ps: . .\Test\appveyor.pester.ps1 -Finalize
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5 -Finalize
