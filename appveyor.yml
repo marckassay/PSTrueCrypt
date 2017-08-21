@@ -1,16 +1,59 @@
-# completely stolen from: https://github.com/RamblingCookieMonster/PSDiskPart
+# See http://www.appveyor.com/docs/appveyor-yml for many more options
+# Notes:
+#   - Minimal appveyor.yml file is an empty file. All sections are optional (perhaps not 'build'. set it 
+#     to 'off' as I have below if not needed).
+#   - Indent each level of configuration with 2 spaces. Do not use tabs!
+#   - All section names are case-sensitive.
+#   - Section names should be unique on each level.
+#   - appveyor.yml and UI coexistence:
+#      It’s worth noticing that both appveyor.yml and UI configuration are mutually exclusive.
+#      It’s always either YAML or UI - the settings from each are not merged. If you have appveyor.yml
+#      in your repo it will override all settings made on the UI unless explicitly disabled by Ignore 
+#      appveyor.yml. There are few exceptions, which are:
+#        1. Environment variables. Variables defined on UI are getting merged with those ones defined 
+#           in appveyor.yml. Variable values with the same names are getting overridden with values from UI.
+#        2. Notification settings defined on UI are getting merged with those ones defined in appveyor.yml.
+#        3. Build version format is taken from UI if it is not set in appveyor.yml.
+#
 
-version: 
-  - ps: "$env:APPVEYOR_REPO_BRANCH."+$env:APPVEYOR_REPO_COMMIT.Substring(0,3)
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+version: '{branch}.{build}'
 
 # Skip on updates to the readme.
 # We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
 skip_commits:
   message: /updated readme.*/
 
+# scripts that run after cloning repository
 install:
   - cinst pester
+
+#cache:
+#  - C:\ProgramData\chocolatey -> appveyor.yml
+#  - C:\ProgramData\chocolatey\lib\pester -> appveyor.yml
+
+# Automatically register private account and/or project AppVeyor NuGet feeds.
+#nuget:
+#  account_feed: true
+#  project_feed: true
 
 test_script:
   - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5
   - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5 -Finalize
+
+# deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
+deploy_script:
+  - ps: Publish-Module -Path $env:APPVEYOR_BUILD_FOLDER -NuGetApiKey $env:MyNuGetApiKey
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+build: off
+
+environment:
+  MyNuGetApiKey:
+    secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
