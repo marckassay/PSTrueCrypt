@@ -22,7 +22,7 @@ system environment 'path' variable
 Please add any feedback, concerns, requests and/or bugs in the 'Issues' section of this repository.
 
 ## Instructions
-* Download project to your PowerShell Module directory.  Or if PsGet is installed run the following command:
+* To install with PowerShellGet or PsGet run the following command below.  Or download project to your PowerShell Module directory.
 	```powershell
 	Install-Module PSTrueCrypt
 	```
