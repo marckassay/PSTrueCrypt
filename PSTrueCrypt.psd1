@@ -11,7 +11,7 @@
 RootModule = 'PSTrueCrypt.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.7'
+ModuleVersion = '0.0.7.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -97,6 +97,11 @@ AliasesToExport = @(
 
 # List of all files packaged with this module
 FileList = @( 
+    'en-US/PSTrueCrypt-help.xml',
+    'resx/Error.resx',
+    'resx/Information.resx',
+    'resx/Verbose.resx',
+    'resx/Warning.resx',
     'src/CIM/PSTrueCrypt.CIM.psm1',
     'src/Storage/Container.psm1',
     'src/Storage/PSTrueCrypt.Storage.psm1',
@@ -106,7 +111,10 @@ FileList = @(
     'src/Writer/PSTrueCrypt.Writer.psm1',
     'src/Writer/Verbose.psm1',
     'src/Writer/Warning.psm1',
-    'src/PSTrueCrypt.CommandLine.psm1'
+    'src/PSTrueCrypt.CommandLine.psm1',
+    'PSTrueCrypt.psd1',
+    'PSTrueCrypt.psm1',
+    'README.md'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
