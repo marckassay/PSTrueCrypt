@@ -47,7 +47,7 @@ test_script:
 
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
-  - ps: Publish-Module -Path $env:APPVEYOR_BUILD_FOLDER\PSTrueCrypt.psd1 -NuGetApiKey $env:MyNuGetApiKey
+  - ps: Publish-Module -Path $env:APPVEYOR_BUILD_FOLDER -NuGetApiKey $env:MyNuGetApiKey
 
 #---------------------------------#
 #       build configuration       #
