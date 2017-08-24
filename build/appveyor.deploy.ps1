@@ -19,5 +19,5 @@ $ENV:APPVEYOR_BUILD_FOLDER | Get-ChildItem -Recurse -File | ForEach-Object {
         $_.FullName | Copy-Item -Destination $DirectoryInfo
     }
 }
-Get-ChildItem -Recurse -File
-Publish-Module -Path $ENV:APPVEYOR_BUILD_FOLDER\PSTrueCrypt.psd1 -NuGetApiKey $ENV:MY_NUGET_API_KEY -WhatIf
+
+Publish-Module -Path .\PSTrueCrypt.psd1 -NuGetApiKey $ENV:MY_NUGET_API_KEY -WhatIf

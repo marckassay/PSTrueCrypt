@@ -51,6 +51,10 @@ test_script:
 #  account_feed: true
 #  project_feed: true
 
+artifacts:
+  - path: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)
+    name: PSTrueCrypt
+
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
   - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.deploy.ps1 -Version 5
