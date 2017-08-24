@@ -46,7 +46,7 @@ test_script:
 - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5 -Finalize
 
 before_deploy:
-- ps: . .\build\appveyor.beforedeploy.ps1
+- ps: Invoke-Expression .\build\appveyor.beforedeploy.ps1
 
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
