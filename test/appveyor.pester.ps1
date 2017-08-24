@@ -22,7 +22,10 @@ param([switch]$Finalize)
         "`n`tSTATUS: Testing with PowerShell $PSVersion`n"
 
         New-Item $ENV:OUT_TEST -ItemType Directory
+
+        Push-Location
         Set-Location $ENV:OUT_TEST
+
         refreshenv
 
         # on fresh install of Pester, the name seems to work using 'Pester' and not 'pester'.
@@ -50,6 +53,7 @@ param([switch]$Finalize)
             "COLLATING FILES:`n$($AllFiles | Out-String)"
 
         #Upload results for test page
+        <#
             Get-ChildItem -Path "$ENV:OUT_TEST\TestResultsPS*.xml" | Foreach-Object {
 
                 $Address = "https://ci.appveyor.com/api/testresults/nunit/$($ENV:APPVEYOR_JOB_ID)"
@@ -59,7 +63,7 @@ param([switch]$Finalize)
 
                 (New-Object 'System.Net.WebClient').UploadFile( $Address, $Source )
             }
-
+        #>
         #What failed?
             $Results = @( Get-ChildItem -Path "$ENV:OUT_TEST\PesterResults*.xml" | Import-Clixml )
 
@@ -89,4 +93,6 @@ param([switch]$Finalize)
 
                 throw "$FailedCount tests failed."
             }
+
+      Pop-Location
     }
