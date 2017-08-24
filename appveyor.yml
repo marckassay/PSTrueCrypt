@@ -63,7 +63,7 @@ artifacts:
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
   - ps: Write-Host "deploy_script"
-  - ps: Publish-Module -Name .\PSTrueCrypt.psd1 -NuGetApiKey $ENV:MY_NUGET_API_KEY -WhatIf
+  - ps: Publish-Module -Name .\PSTrueCrypt.psd1 -NuGetApiKey $ENV:MY_NUGET_API_KEY
 
 #---------------------------------#
 #          variables              #
