@@ -1,6 +1,6 @@
 # See http://www.appveyor.com/docs/appveyor-yml for many more options
 # Notes:
-#   - Minimal appveyor.yml file is an empty file. All sections are optional (perhaps not 'build'. set it 
+#   - Minimal appveyor.yml file is an empty file. All sections are optional (perhaps not 'build'. set it
 #     to 'off' as I have below if not needed).
 #   - Indent each level of configuration with 2 spaces. Do not use tabs!
 #   - All section names are case-sensitive.
@@ -8,74 +8,70 @@
 #   - appveyor.yml and UI coexistence:
 #      It's worth noticing that both appveyor.yml and UI configuration are mutually exclusive.
 #      It's always either YAML or UI - the settings from each are not merged. If you have appveyor.yml
-#      in your repo it will override all settings made on the UI unless explicitly disabled by Ignore 
+#      in your repo it will override all settings made on the UI unless explicitly disabled by Ignore
 #      appveyor.yml. There are few exceptions, which are:
-#        1. Environment variables. Variables defined on UI are getting merged with those ones defined 
+#        1. Environment variables. Variables defined on UI are getting merged with those ones defined
 #           in appveyor.yml. Variable values with the same names are getting overridden with values from UI.
 #        2. Notification settings defined on UI are getting merged with those ones defined in appveyor.yml.
 #        3. Build version format is taken from UI if it is not set in appveyor.yml.
 #
 
 #---------------------------------#
-#      general configuration      #
+#        sequential steps         #
 #---------------------------------#
 
-version: '{branch}.{build}'
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
 
-# Skip on updates to the readme.
-# We can force this by adding [skip ci] or [ci skip] anywhere in commit message 
-skip_commits:
-  message: /updated readme.*/
+cache:
+  - C:\Program Files\WindowsPowerShell\Modules\Pester
+  - C:\ProgramData\chocolatey
 
 # scripts that run after cloning repository
 install:
-- cinst pester
-- refreshenv
+  - ps: Write-Host "install"
+  - choco install Pester --version=3.4.6
+  - refreshenv
+  - ps: Write-Host $ENV:APPVEYOR_BUILD_FOLDER
+  - ps: New-Item "$ENV:APPVEYOR_BUILD_FOLDER\out-$($ENV:APPVEYOR_BUILD_VERSION)" -ItemType Directory
 
-#cache:
-#  - C:\ProgramData\chocolatey -> appveyor.yml
-#  - C:\ProgramData\chocolatey\lib\pester -> appveyor.yml
+environment:
+  Out_Build: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outbuild
+  Out_Test: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outtest
+  My_NuGet_Api_Key:
+    secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
+
+build_script:
+  - ps: Write-Host ("test_script - "+$ENV:OUT_BUILD)
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.build.ps1 -Version 5
+
+test_script:
+  - ps: Write-Host ("test_script - "+$ENV:OUT_TEST)
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5 -Finalize
 
 # Automatically register private account and/or project AppVeyor NuGet feeds.
 #nuget:
 #  account_feed: true
 #  project_feed: true
 
-test_script:
-- ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5
-- ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5 -Finalize
-
-before_deploy:
-- ps: |
-    New-Object psobject (Get-Content .\PSTrueCrypt.psd1 -Raw | Invoke-Expression) -OutVariable Manifest | Out-Null
-
-    Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -File | ForEach-Object {
-        $SubdirectoryPath = ($_.FullName -split "PSTrueCrypt\\").Get(1)
-
-        if($Manifest.FileList -contains $SubdirectoryPath) {
-
-            Join-Path ("$env:APPVEYOR_BUILD_FOLDER\Out") -ChildPath $SubdirectoryPath | Split-Path -Parent -OutVariable DestinationParent | Out-Null
-
-            if((Test-Path $DestinationParent) -eq $False) {
-                $DirectoryInfo = New-Item $DestinationParent -ItemType Directory
-            } else {
-                $DirectoryInfo = Get-Item $DestinationParent
-            }
-
-            $_.FullName | Copy-Item -Destination $DirectoryInfo
-        }
-      }
+artifacts:
+  - path: out-$(APPVEYOR_BUILD_VERSION)
+    name: PSTrueCrypt-$(APPVEYOR_BUILD_VERSION)
 
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
-- ps: Publish-Module -Path $env:APPVEYOR_BUILD_FOLDER -NuGetApiKey $env:MyNuGetApiKey
+  - ps: Write-Host "deploy_script"
+  - ps: Publish-Module -Name .\PSTrueCrypt.psd1 -NuGetApiKey $ENV:MY_NUGET_API_KEY -WhatIf
 
 #---------------------------------#
-#       build configuration       #
+#          variables              #
 #---------------------------------#
 
-build: off
+version: '{branch}.{build}'
 
-environment:
-  MyNuGetApiKey:
-    secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
+# Skip on updates to the readme.
+# We can force this by adding [skip ci] or [ci skip] anywhere in commit message
+skip_commits:
+  message: /updated readme.*/
