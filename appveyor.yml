@@ -24,9 +24,8 @@
 init:
   - git config --global core.autocrlf input
 
-#cache:
-#  - C:\ProgramData\chocolatey -> appveyor.yml
-#  - C:\ProgramData\chocolatey\lib\pester -> appveyor.yml
+cache:
+  - C:\Program Files\WindowsPowerShell\Modules
 
 # scripts that run after cloning repository
 install:
