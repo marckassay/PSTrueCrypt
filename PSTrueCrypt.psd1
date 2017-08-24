@@ -11,7 +11,7 @@
 RootModule = 'PSTrueCrypt.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.7.1'
+ModuleVersion = '0.0.8'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -47,7 +47,7 @@ ProcessorArchitecture = 'None'
 # RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @( 
+RequiredAssemblies = @(
     'System.Windows.Forms.dll'
 )
 
@@ -65,12 +65,12 @@ RequiredAssemblies = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'Mount-TrueCrypt', 
-    'Dismount-TrueCrypt', 
-    'Dismount-TrueCryptForceAll', 
-    'New-PSTrueCryptContainer', 
-    'Edit-PSTrueCryptContainer', 
-    'Remove-PSTrueCryptContainer', 
+    'Mount-TrueCrypt',
+    'Dismount-TrueCrypt',
+    'Dismount-TrueCryptForceAll',
+    'New-PSTrueCryptContainer',
+    'Edit-PSTrueCryptContainer',
+    'Remove-PSTrueCryptContainer',
     'Show-PSTrueCryptContainers',
     'Get-RegistrySubKeys',
     'Write-Container'
@@ -96,7 +96,7 @@ AliasesToExport = @(
 # ModuleList = @()
 
 # List of all files packaged with this module
-FileList = @( 
+FileList = @(
     'en-US\PSTrueCrypt-help.xml',
     'resx\Error.resx',
     'resx\Information.resx',
@@ -119,7 +119,7 @@ FileList = @(
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
-    
+
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
