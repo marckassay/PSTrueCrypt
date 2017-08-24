@@ -52,7 +52,7 @@ test_script:
 #  project_feed: true
 
 artifacts:
-  - path: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)
+  - path: out-$(APPVEYOR_BUILD_VERSION)
     name: PSTrueCrypt
 
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
