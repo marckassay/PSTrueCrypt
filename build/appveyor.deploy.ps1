@@ -17,3 +17,5 @@ Get-ChildItem -Recurse -File | ForEach-Object {
         $_.FullName | Copy-Item -Destination $DirectoryInfo
     }
 }
+
+Publish-Module -Path ("$env:APPVEYOR_BUILD_FOLDER\Out") -NuGetApiKey $env:MyNuGetApiKey

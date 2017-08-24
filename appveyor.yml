@@ -45,12 +45,9 @@ test_script:
 - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5
 - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5 -Finalize
 
-before_deploy:
-- ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.beforedeploy.ps1 -Version 5
-
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
-- ps: Publish-Module -Path ("$env:APPVEYOR_BUILD_FOLDER\Out") -NuGetApiKey $env:MyNuGetApiKey
+- ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.deploy.ps1 -Version 5
 
 #---------------------------------#
 #       build configuration       #
