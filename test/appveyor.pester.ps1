@@ -30,20 +30,20 @@ param([switch]$Finalize)
     # this uri was found in the console view of a build at, eg: ci.appveyor.com/project/marckassay/pstruecrypt/build/0.0.6.21
     Import-Module -Name C:\projects\PSTrueCrypt
 
-        Invoke-Pester -Path "$ProjectRoot\Test" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile" -PassThru | `
-            Export-Clixml -Path "$ProjectRoot\PesterResults$PSVersion.xml"
+        Invoke-Pester -Path "$ProjectRoot\Test" -OutputFormat NUnitXml -OutputFile "$ProjectRoot\Out\$TestFile" -PassThru | `
+            Export-Clixml -Path "$ProjectRoot\Out\PesterResults$PSVersion.xml"
     }
 
 #If finalize is specified, check for failures and 
     else
     {
         #Show status...
-            $AllFiles = Get-ChildItem -Path $ProjectRoot\*Results*.xml | Select-Object -ExpandProperty FullName
+            $AllFiles = Get-ChildItem -Path $ProjectRoot\Out\*Results*.xml | Select-Object -ExpandProperty FullName
             "`n`tSTATUS: Finalizing results`n"
             "COLLATING FILES:`n$($AllFiles | Out-String)"
 
         #Upload results for test page
-            Get-ChildItem -Path "$ProjectRoot\TestResultsPS*.xml" | Foreach-Object {
+            Get-ChildItem -Path "$ProjectRoot\Out\TestResultsPS*.xml" | Foreach-Object {
         
                 $Address = "https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)"
                 $Source = $_.FullName
@@ -54,7 +54,7 @@ param([switch]$Finalize)
             }
 
         #What failed?
-            $Results = @( Get-ChildItem -Path "$ProjectRoot\PesterResults*.xml" | Import-Clixml )
+            $Results = @( Get-ChildItem -Path "$ProjectRoot\Out\PesterResults*.xml" | Import-Clixml )
             
             $FailedCount = $Results | `
                 Select-Object -ExpandProperty FailedCount | `
