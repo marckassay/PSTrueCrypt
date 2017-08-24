@@ -25,7 +25,7 @@ init:
   - git config --global core.autocrlf input
 
 cache:
-  - C:\Program Files\WindowsPowerShell\Modules
+  - C:\ProgramData\chocolatey
 
 # scripts that run after cloning repository
 install:
@@ -41,6 +41,7 @@ environment:
     secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
 
 test_script:
+  - ps: Write-Host $ENV:OUT_TEST
   - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5
   - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5 -Finalize
 
