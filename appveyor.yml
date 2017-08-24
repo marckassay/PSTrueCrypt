@@ -30,7 +30,7 @@ cache:
 
 # scripts that run after cloning repository
 install:
-  - cinst pester
+  - chocolatey install Pester -version 3.4.6
   - refreshenv
   - ps: Write-Host $ENV:APPVEYOR_BUILD_FOLDER
   - ps: New-Item "$ENV:APPVEYOR_BUILD_FOLDER\out-$($ENV:APPVEYOR_BUILD_VERSION)" -ItemType Directory
