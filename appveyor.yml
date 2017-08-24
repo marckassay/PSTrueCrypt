@@ -17,44 +17,51 @@
 #
 
 #---------------------------------#
-#      general configuration      #
+#        sequential steps         #
 #---------------------------------#
 
-version: '{branch}.{build}'
-
-# Skip on updates to the readme.
-# We can force this by adding [skip ci] or [ci skip] anywhere in commit message
-skip_commits:
-  message: /updated readme.*/
-
-# scripts that run after cloning repository
-install:
-- cinst pester
-- refreshenv
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
 
 #cache:
 #  - C:\ProgramData\chocolatey -> appveyor.yml
 #  - C:\ProgramData\chocolatey\lib\pester -> appveyor.yml
+
+# scripts that run after cloning repository
+install:
+  - cinst pester
+  - refreshenv
+  - ps: New-Item $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION) -ItemType Directory
+
+environment:
+  Out_Test: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outtest
+  Out_Deploy: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outdeploy
+  My_NuGet_Api_Key:
+    secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
+
+test_script:
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5 -Finalize
 
 # Automatically register private account and/or project AppVeyor NuGet feeds.
 #nuget:
 #  account_feed: true
 #  project_feed: true
 
-test_script:
-- ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5
-- ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\Test\Appveyor.Pester.ps1 -Version 5 -Finalize
-
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
-- ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.deploy.ps1 -Version 5
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.deploy.ps1 -Version 5
 
 #---------------------------------#
-#       build configuration       #
+#          variables              #
 #---------------------------------#
+
+version: '{branch}.{build}'
 
 build: off
 
-environment:
-  MyNuGetApiKey:
-    secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
+# Skip on updates to the readme.
+# We can force this by adding [skip ci] or [ci skip] anywhere in commit message
+skip_commits:
+  message: /updated readme.*/
