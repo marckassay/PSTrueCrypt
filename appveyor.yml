@@ -35,8 +35,8 @@ install:
   - ps: New-Item "$ENV:APPVEYOR_BUILD_FOLDER\out-$($ENV:APPVEYOR_BUILD_VERSION)" -ItemType Directory
 
 environment:
-  Out_Test: "$ENV:APPVEYOR_BUILD_FOLDER\out-$($ENV:APPVEYOR_BUILD_VERSION)\outtest"
-  Out_Deploy: "$ENV:APPVEYOR_BUILD_FOLDER\out-$($ENV:APPVEYOR_BUILD_VERSION)\outdeploy"
+  Out_Test: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outtest
+  Out_Deploy: ($APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outdeploy
   My_NuGet_Api_Key:
     secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
 
