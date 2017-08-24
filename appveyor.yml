@@ -32,7 +32,8 @@ init:
 install:
   - cinst pester
   - refreshenv
-  - ps: New-Item $($ENV:APPVEYOR_BUILD_FOLDER)\out-$($ENV:APPVEYOR_BUILD_VERSION) -ItemType Directory
+  - ps: Write-Host $ENV:APPVEYOR_BUILD_FOLDER
+  - ps: New-Item "$ENV:APPVEYOR_BUILD_FOLDER\out-$($ENV:APPVEYOR_BUILD_VERSION)" -ItemType Directory
 
 environment:
   Out_Test: $($ENV:APPVEYOR_BUILD_FOLDER)\out-$($ENV:APPVEYOR_BUILD_VERSION)\outtest
