@@ -45,7 +45,7 @@ param([switch]$Finalize)
         #Upload results for test page
             Get-ChildItem -Path "$ENV:OUT_TEST\TestResultsPS*.xml" | Foreach-Object {
 
-                $Address = "https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)"
+                $Address = "https://ci.appveyor.com/api/testresults/nunit/$($ENV:APPVEYOR_JOB_ID)"
                 $Source = $_.FullName
 
                 "UPLOADING FILES: $Address $Source"
