@@ -1,14 +1,14 @@
 New-Object psobject (Get-Content $ENV:APPVEYOR_BUILD_FOLDER\PSTrueCrypt.psd1 -Raw | Invoke-Expression) -OutVariable Manifest | Out-Null
-
+Write-Host $Manifest
 New-Item $ENV:OUT_DEPLOY -ItemType Directory
 Set-Location $ENV:OUT_DEPLOY
 
-Get-ChildItem -Path $ENV:APPVEYOR_BUILD_FOLDER -Recurse -File | ForEach-Object {
+$ENV:APPVEYOR_BUILD_FOLDER | Get-ChildItem -Recurse -File | ForEach-Object {
 
     $SubdirectoryPath = ($_.FullName -split "PSTrueCrypt\\").Get(1)
 
     if($Manifest.FileList -contains $SubdirectoryPath) {
-
+Write-Host "matching item"
         Join-Path $ENV:OUT_DEPLOY -ChildPath $SubdirectoryPath | Split-Path -Parent -OutVariable DestinationParent | Out-Null
 
         if((Test-Path $DestinationParent) -eq $False) {
