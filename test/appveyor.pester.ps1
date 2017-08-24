@@ -15,20 +15,19 @@ param([switch]$Finalize)
     }
     $PSVersion = $PSVersionTable.PSVersion.Major
     $TestFile = "TestResultsPS$PSVersion.xml"
-    New-Item $ENV:OUT_TEST -ItemType Directory
-    Set-Location $ENV:OUT_TEST
-
 
 #Run a test with the current version of PowerShell
     if(-not $Finalize)
     {
         "`n`tSTATUS: Testing with PowerShell $PSVersion`n"
 
+        New-Item $ENV:OUT_TEST -ItemType Directory
+        Set-Location $ENV:OUT_TEST
         refreshenv
 
-    Import-Module Pester
-    # this uri was found in the console view of a build at, eg: ci.appveyor.com/project/marckassay/pstruecrypt/build/0.0.6.21
-    Import-Module -Name C:\projects\PSTrueCrypt
+        Import-Module Pester
+        # this uri was found in the console view of a build at, eg: ci.appveyor.com/project/marckassay/pstruecrypt/build/0.0.6.21
+        Import-Module -Name C:\projects\PSTrueCrypt
 
         Invoke-Pester -Path "$ENV:APPVEYOR_BUILD_FOLDER\Test" -OutputFormat NUnitXml -OutputFile "$ENV:OUT_TEST\$TestFile" -PassThru | `
             Export-Clixml -Path "$ENV:OUT_TEST\PesterResults$PSVersion.xml"
