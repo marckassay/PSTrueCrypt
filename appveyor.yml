@@ -57,8 +57,9 @@ test_script:
 #  project_feed: true
 
 artifacts:
-  - path: out-$(APPVEYOR_BUILD_VERSION)
-    name: PSTrueCrypt
+  - path: $(OUT_BUILD)
+  - path: $(OUT_TEST)
+    name: PSTrueCrypt-$(APPVEYOR_BUILD_VERSION)
 
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
@@ -70,8 +71,6 @@ deploy_script:
 #---------------------------------#
 
 version: '{branch}.{build}'
-
-build: off
 
 # Skip on updates to the readme.
 # We can force this by adding [skip ci] or [ci skip] anywhere in commit message
