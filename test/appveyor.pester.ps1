@@ -27,12 +27,13 @@ param([switch]$Finalize)
 
         # on fresh install of Pester, the name seems to work using 'Pester' and not 'pester'.
         # When cached, 'pester' is used.  Hence, Import-Module is case-sensitive
+        Get-Module
         try {
           Import-Module Pester
         } catch {
           Import-Module pester
         }
-
+        Get-Module
         # imports PSTrueCrypt by name
         Import-Module -Name $ENV:APPVEYOR_BUILD_FOLDER
 
