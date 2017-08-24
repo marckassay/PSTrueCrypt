@@ -24,8 +24,9 @@
 init:
   - git config --global core.autocrlf input
 
-cache:
-  - C:\ProgramData\chocolatey
+#cache:
+#  - C:\Program Files\WindowsPowerShell\Modules\Pester
+#  - C:\ProgramData\chocolatey
 
 # scripts that run after cloning repository
 install:
