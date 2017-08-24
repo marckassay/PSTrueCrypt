@@ -1,6 +1,6 @@
 New-Object psobject (Get-Content .\PSTrueCrypt.psd1 -Raw | Invoke-Expression) -OutVariable Manifest | Out-Null
 
-$env:APPVEYOR_BUILD_FOLDER | Get-ChildItem -Recurse -File | ForEach-Object {
+Get-ChildItem -Recurse -File | ForEach-Object {
 
     $SubdirectoryPath = ($_.FullName -split "PSTrueCrypt\\").Get(1)
 
