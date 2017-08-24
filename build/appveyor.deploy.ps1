@@ -20,4 +20,4 @@ $ENV:APPVEYOR_BUILD_FOLDER | Get-ChildItem -Recurse -File | ForEach-Object {
     }
 }
 Get-ChildItem -Recurse -File
-#Publish-Module -Path $ENV:OUT_DEPLOY -NuGetApiKey $ENV:MY_NUGET_API_KEY
+Publish-Module -Path $ENV:OUT_DEPLOY -NuGetApiKey $ENV:MY_NUGET_API_KEY -WhatIf
