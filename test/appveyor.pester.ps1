@@ -25,9 +25,16 @@ param([switch]$Finalize)
         Set-Location $ENV:OUT_TEST
         refreshenv
 
-        Import-Module Pester
-        # this uri was found in the console view of a build at, eg: ci.appveyor.com/project/marckassay/pstruecrypt/build/0.0.6.21
-        Import-Module -Name C:\projects\PSTrueCrypt
+        # on fresh install of Pester, the name seems to work using 'Pester' and not 'pester'.
+        # When cached, 'pester' is used.  Hence, Import-Module is case-sensitive
+        try {
+          Import-Module Pester
+        } catch {
+          Import-Module pester
+        }
+
+        # imports PSTrueCrypt by name
+        Import-Module -Name $ENV:APPVEYOR_BUILD_FOLDER
 
         Invoke-Pester -Path "$ENV:APPVEYOR_BUILD_FOLDER\Test" -OutputFormat NUnitXml -OutputFile "$ENV:OUT_TEST\$TestFile" -PassThru | `
             Export-Clixml -Path "$ENV:OUT_TEST\PesterResults$PSVersion.xml"
