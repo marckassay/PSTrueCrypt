@@ -30,19 +30,24 @@ cache:
 
 # scripts that run after cloning repository
 install:
+  - ps: Write-Host "install"
   - choco install Pester --version=3.4.6
   - refreshenv
   - ps: Write-Host $ENV:APPVEYOR_BUILD_FOLDER
   - ps: New-Item "$ENV:APPVEYOR_BUILD_FOLDER\out-$($ENV:APPVEYOR_BUILD_VERSION)" -ItemType Directory
 
 environment:
+  Out_Build: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outbuild
   Out_Test: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outtest
-  Out_Deploy: $(APPVEYOR_BUILD_FOLDER)\out-$(APPVEYOR_BUILD_VERSION)\outdeploy
   My_NuGet_Api_Key:
     secure: cO4umBABvn/thfk7Gd0/fcq8+h2Hfx1hFdGAkZn2zZhum1FSsQYBpd1neziRYUud
 
+build_script:
+  - ps: Write-Host ("test_script - "+$ENV:OUT_BUILD)
+  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.build.ps1 -Version 5
+
 test_script:
-  - ps: Write-Host $ENV:OUT_TEST
+  - ps: Write-Host ("test_script - "+$ENV:OUT_TEST)
   - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5
   - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\test\appveyor.pester.ps1 -Version 5 -Finalize
 
@@ -52,12 +57,14 @@ test_script:
 #  project_feed: true
 
 artifacts:
+  - ps: Write-Host ("test_script - out-"$(APPVEYOR_BUILD_VERSION))
   - path: out-$(APPVEYOR_BUILD_VERSION)
     name: PSTrueCrypt
 
 # deploys to: https://www.powershellgallery.com/packages/PSTrueCrypt
 deploy_script:
-  - ps: powershell.exe -version 5.0 -executionpolicy bypass -noprofile -file .\build\appveyor.deploy.ps1 -Version 5
+  - ps: Write-Host "deploy_script"
+  - ps: Publish-Module -Name .\PSTrueCrypt.psd1 -NuGetApiKey $ENV:MY_NUGET_API_KEY -WhatIf
 
 #---------------------------------#
 #          variables              #

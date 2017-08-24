@@ -1,6 +1,6 @@
 New-Object psobject (Get-Content $ENV:APPVEYOR_BUILD_FOLDER\PSTrueCrypt.psd1 -Raw | Invoke-Expression) -OutVariable Manifest | Out-Null
-New-Item $ENV:OUT_DEPLOY -ItemType Directory
-Set-Location $ENV:OUT_DEPLOY
+New-Item $ENV:OUT_BUILD -ItemType Directory
+Set-Location $ENV:OUT_BUILD
 
 $ENV:APPVEYOR_BUILD_FOLDER | Get-ChildItem -Recurse -File | ForEach-Object {
 
@@ -8,7 +8,7 @@ $ENV:APPVEYOR_BUILD_FOLDER | Get-ChildItem -Recurse -File | ForEach-Object {
 
     if($Manifest.FileList -contains $SubdirectoryPath) {
 
-        Join-Path $ENV:OUT_DEPLOY -ChildPath $SubdirectoryPath | Split-Path -Parent -OutVariable DestinationParent | Out-Null
+        Join-Path $ENV:OUT_BUILD -ChildPath $SubdirectoryPath | Split-Path -Parent -OutVariable DestinationParent | Out-Null
 
         if((Test-Path $DestinationParent) -eq $False) {
             $DirectoryInfo = New-Item $DestinationParent -ItemType Directory
@@ -19,5 +19,3 @@ $ENV:APPVEYOR_BUILD_FOLDER | Get-ChildItem -Recurse -File | ForEach-Object {
         $_.FullName | Copy-Item -Destination $DirectoryInfo
     }
 }
-
-Publish-Module -Name .\PSTrueCrypt.psd1 -NuGetApiKey $ENV:MY_NUGET_API_KEY -WhatIf
